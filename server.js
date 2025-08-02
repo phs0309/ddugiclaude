@@ -14,7 +14,15 @@ app.use(express.static(path.join(__dirname)));
 // Claude API endpoint
 app.post('/api/chat', async (req, res) => {
     const { message } = req.body;
-    const CLAUDE_API_KEY = process.env.CLAUDE_API_KEY || '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';
+    const CLAUDE_API_KEY = process.env.CLAUDE_API_KEY;
+
+    // API 키 확인
+    if (!CLAUDE_API_KEY) {
+        return res.status(500).json({ 
+            error: 'Claude API 키가 설정되지 않았습니다. 환경 변수를 확인해주세요.',
+            details: 'CLAUDE_API_KEY environment variable is required' 
+        });
+    }
 
     // 사용자 질문 분석하여 맛집 데이터 검색
     const searchCriteria = restaurantService.analyzeUserQuery(message);
