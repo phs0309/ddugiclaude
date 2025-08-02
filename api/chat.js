@@ -28,12 +28,14 @@ export default async function handler(req, res) {
         });
     } catch (error) {
         console.log('Claude API 실패, 기본 응답 사용:', error.message);
+        console.log('에러 상세:', error);
         // 실패시 기본 응답 사용
         const fallbackResponse = generateSimpleResponse(message);
         return res.status(200).json({
             response: fallbackResponse,
             success: true,
-            source: 'fallback'
+            source: 'fallback',
+            error: error.message
         });
     }
 }
@@ -45,19 +47,14 @@ async function callClaudeAPI(message) {
         throw new Error('Claude API 키가 설정되지 않았습니다.');
     }
 
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'x-api-key': apiKey,
-            'anthropic-version': '2023-06-01'
-        },
-        body: JSON.stringify({
-            model: 'claude-3-5-sonnet-20241022',
-            max_tokens: 1000,
-            messages: [{
-                role: 'user',
-                content: `당신은 뚜기라는 이름의 부산 맛집 전문 AI입니다. 🐧
+    // Vercel 환경에서 호환성을 위해 https 모듈 사용
+    const https = require('https');
+    const postData = JSON.stringify({
+        model: 'claude-3-5-sonnet-20241022',
+        max_tokens: 1000,
+        messages: [{
+            role: 'user',
+            content: `당신은 뚜기라는 이름의 부산 맛집 전문 AI입니다. 🐧
 
 부산의 로컬 맛집을 추천해주는 친근한 가이드입니다.
 부산 사투리를 섞어서 친근하게 대화하고, 구체적인 맛집 정보를 제공해주세요.
@@ -69,16 +66,52 @@ async function callClaudeAPI(message) {
 - 구체적인 맛집 추천 (가게명, 주소, 가격대, 특징)
 - 부산 사투리 사용
 - 이모지 활용`
-            }]
-        })
+        }]
     });
 
-    if (!response.ok) {
-        throw new Error(`Claude API 오류: ${response.status}`);
-    }
+    const options = {
+        hostname: 'api.anthropic.com',
+        port: 443,
+        path: '/v1/messages',
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': apiKey,
+            'anthropic-version': '2023-06-01',
+            'Content-Length': Buffer.byteLength(postData)
+        }
+    };
 
-    const data = await response.json();
-    return data.content[0].text;
+    return new Promise((resolve, reject) => {
+        const req = https.request(options, (res) => {
+            let data = '';
+            
+            res.on('data', (chunk) => {
+                data += chunk;
+            });
+            
+            res.on('end', () => {
+                try {
+                    if (res.statusCode !== 200) {
+                        reject(new Error(`Claude API 오류: ${res.statusCode} - ${data}`));
+                        return;
+                    }
+                    
+                    const response = JSON.parse(data);
+                    resolve(response.content[0].text);
+                } catch (error) {
+                    reject(new Error(`응답 파싱 오류: ${error.message}`));
+                }
+            });
+        });
+
+        req.on('error', (error) => {
+            reject(new Error(`네트워크 오류: ${error.message}`));
+        });
+
+        req.write(postData);
+        req.end();
+    });
 }
 
 function generateSimpleResponse(message) {
