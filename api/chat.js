@@ -1,3 +1,29 @@
+// 간단한 in-memory rate limiting (프로덕션에서는 Redis 사용 권장)
+const requestCounts = new Map();
+const RATE_LIMIT = 10; // 분당 10회
+const WINDOW_MS = 60 * 1000; // 1분
+
+function checkRateLimit(ip) {
+    const now = Date.now();
+    const windowStart = now - WINDOW_MS;
+    
+    if (!requestCounts.has(ip)) {
+        requestCounts.set(ip, []);
+    }
+    
+    const requests = requestCounts.get(ip);
+    // 오래된 요청 제거
+    const recentRequests = requests.filter(time => time > windowStart);
+    
+    if (recentRequests.length >= RATE_LIMIT) {
+        return false; // Rate limit 초과
+    }
+    
+    recentRequests.push(now);
+    requestCounts.set(ip, recentRequests);
+    return true;
+}
+
 export default async function handler(req, res) {
     // CORS 설정
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -12,13 +38,22 @@ export default async function handler(req, res) {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
+    // Rate limiting 체크
+    const clientIP = req.headers['x-forwarded-for'] || req.connection.remoteAddress || 'unknown';
+    if (!checkRateLimit(clientIP)) {
+        return res.status(429).json({ 
+            error: '너무 많은 요청입니다. 잠시 후 다시 시도해주세요.',
+            retryAfter: 60
+        });
+    }
+
     const { message } = req.body || {};
 
     if (!message) {
         return res.status(400).json({ error: '메시지가 필요합니다.' });
     }
 
-    // Claude API 사용 시도
+    // Claude API 사용 시도 (더 세심한 에러 처리)
     try {
         const claudeResponse = await callClaudeAPI(message);
         return res.status(200).json({
@@ -27,8 +62,18 @@ export default async function handler(req, res) {
             source: 'claude'
         });
     } catch (error) {
-        console.log('Claude API 실패, 기본 응답 사용:', error.message);
-        console.log('에러 상세:', error);
+        console.log('Claude API 실패:', error.message);
+        
+        // Rate limit 에러 체크
+        if (error.message.includes('429') || error.message.includes('rate')) {
+            console.log('Rate limit 감지됨');
+        }
+        
+        // Billing 에러 체크  
+        if (error.message.includes('400') || error.message.includes('credit')) {
+            console.log('Billing 문제 감지됨');
+        }
+        
         // 실패시 기본 응답 사용
         const fallbackResponse = generateSimpleResponse(message);
         return res.status(200).json({
@@ -40,7 +85,7 @@ export default async function handler(req, res) {
     }
 }
 
-async function callClaudeAPI(message) {
+async function callClaudeAPI(message, retryCount = 0) {
     const apiKey = process.env.CLAUDE_API_KEY;
     
     if (!apiKey) {
@@ -74,6 +119,7 @@ async function callClaudeAPI(message) {
         port: 443,
         path: '/v1/messages',
         method: 'POST',
+        timeout: 15000, // 15초 타임아웃
         headers: {
             'Content-Type': 'application/json',
             'x-api-key': apiKey,
@@ -92,17 +138,46 @@ async function callClaudeAPI(message) {
             
             res.on('end', () => {
                 try {
+                    console.log(`Claude API 응답 상태: ${res.statusCode}`);
+                    
+                    if (res.statusCode === 429) {
+                        // Rate limit - 잠시 후 재시도
+                        if (retryCount < 2) {
+                            console.log(`Rate limit 감지, ${retryCount + 1}번째 재시도...`);
+                            setTimeout(() => {
+                                callClaudeAPI(message, retryCount + 1)
+                                    .then(resolve)
+                                    .catch(reject);
+                            }, 2000 * (retryCount + 1)); // 점진적 백오프
+                            return;
+                        }
+                        reject(new Error(`Rate limit 초과: ${data}`));
+                        return;
+                    }
+                    
+                    if (res.statusCode === 400) {
+                        console.log('API 키 또는 billing 문제 가능성:', data);
+                        reject(new Error(`Billing/API 키 문제: ${data}`));
+                        return;
+                    }
+                    
                     if (res.statusCode !== 200) {
                         reject(new Error(`Claude API 오류: ${res.statusCode} - ${data}`));
                         return;
                     }
                     
                     const response = JSON.parse(data);
+                    console.log('Claude API 성공!');
                     resolve(response.content[0].text);
                 } catch (error) {
                     reject(new Error(`응답 파싱 오류: ${error.message}`));
                 }
             });
+        });
+
+        req.on('timeout', () => {
+            req.destroy();
+            reject(new Error('요청 타임아웃'));
         });
 
         req.on('error', (error) => {
