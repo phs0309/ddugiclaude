@@ -124,7 +124,9 @@ async function callClaudeAPI(message, retryCount = 0) {
             'Content-Type': 'application/json',
             'x-api-key': apiKey,
             'anthropic-version': '2023-06-01',
-            'Content-Length': Buffer.byteLength(postData)
+            'Content-Length': Buffer.byteLength(postData),
+            'User-Agent': 'Claude-Dduki-Bot/1.0',
+            'Accept': 'application/json'
         }
     };
 
