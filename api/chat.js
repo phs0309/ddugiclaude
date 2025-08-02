@@ -1,4 +1,4 @@
-export default function handler(req, res) {
+export default async function handler(req, res) {
     // CORS 설정
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -18,13 +18,67 @@ export default function handler(req, res) {
         return res.status(400).json({ error: '메시지가 필요합니다.' });
     }
 
-    // 간단한 응답 생성
-    const response = generateSimpleResponse(message);
+    // Claude API 사용 시도
+    try {
+        const claudeResponse = await callClaudeAPI(message);
+        return res.status(200).json({
+            response: claudeResponse,
+            success: true,
+            source: 'claude'
+        });
+    } catch (error) {
+        console.log('Claude API 실패, 기본 응답 사용:', error.message);
+        // 실패시 기본 응답 사용
+        const fallbackResponse = generateSimpleResponse(message);
+        return res.status(200).json({
+            response: fallbackResponse,
+            success: true,
+            source: 'fallback'
+        });
+    }
+}
 
-    return res.status(200).json({
-        response: response,
-        success: true
+async function callClaudeAPI(message) {
+    const apiKey = process.env.CLAUDE_API_KEY;
+    
+    if (!apiKey) {
+        throw new Error('Claude API 키가 설정되지 않았습니다.');
+    }
+
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': apiKey,
+            'anthropic-version': '2023-06-01'
+        },
+        body: JSON.stringify({
+            model: 'claude-3-5-sonnet-20241022',
+            max_tokens: 1000,
+            messages: [{
+                role: 'user',
+                content: `당신은 뚜기라는 이름의 부산 맛집 전문 AI입니다. 🐧
+
+부산의 로컬 맛집을 추천해주는 친근한 가이드입니다.
+부산 사투리를 섞어서 친근하게 대화하고, 구체적인 맛집 정보를 제공해주세요.
+
+사용자 질문: ${message}
+
+응답 형식:
+- 친근한 인사 (뚜기라고 소개)
+- 구체적인 맛집 추천 (가게명, 주소, 가격대, 특징)
+- 부산 사투리 사용
+- 이모지 활용`
+            }]
+        })
     });
+
+    if (!response.ok) {
+        throw new Error(`Claude API 오류: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.content[0].text;
 }
 
 function generateSimpleResponse(message) {
