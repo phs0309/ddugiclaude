@@ -311,7 +311,19 @@ class BusanChatBot {
         const card = document.createElement('div');
         card.className = 'restaurant-card';
         
+        const savedRestaurants = this.getSavedRestaurants();
+        const isSaved = savedRestaurants.includes(restaurant.id);
+        const heartIcon = isSaved ? '♥' : '♡';
+        const heartColor = isSaved ? '#ff4757' : '#666';
+        const buttonTitle = isSaved ? '저장된 맛집' : '맛집 저장하기';
+        
         card.innerHTML = `
+            <div class="restaurant-card-header">
+                <button class="heart-button" onclick="window.chatBot.toggleSaveRestaurant('${restaurant.id}', this)" 
+                        title="${buttonTitle}">
+                    <span class="heart-icon" style="color: ${heartColor}">${heartIcon}</span>
+                </button>
+            </div>
             <div class="restaurant-card-image">
                 <img src="${restaurant.thumbnail}" alt="${restaurant.name}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjE1MCIgdmlld0JveD0iMCAwIDIwMCAxNTAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMTUwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik04NSA2NUg2NVY4NUg4NVY2NVoiIGZpbGw9IiNEMUQ1REIiLz4KPHA+dGggZD0iTTEwNSA2MEw5MCA3NUwxMDUgOTBMMTIwIDc1TDEwNSA2MFoiIGZpbGw9IiNEMUQ1REIiLz4KPC9zdmc+'" />
             </div>
@@ -385,10 +397,65 @@ class BusanChatBot {
             return fallbackResponses[Math.floor(Math.random() * fallbackResponses.length)];
         }
     }
+
+    toggleSaveRestaurant(restaurantId, buttonElement) {
+        const heartIcon = buttonElement.querySelector('.heart-icon');
+        const savedRestaurants = this.getSavedRestaurants();
+        
+        if (savedRestaurants.includes(restaurantId)) {
+            // 저장 취소
+            const updatedSaved = savedRestaurants.filter(id => id !== restaurantId);
+            localStorage.setItem('savedRestaurants', JSON.stringify(updatedSaved));
+            heartIcon.textContent = '♡';
+            heartIcon.style.color = '#666';
+            buttonElement.title = '맛집 저장하기';
+            
+            // 간단한 피드백
+            this.showSaveNotification('저장 취소했어요!', 'remove');
+        } else {
+            // 저장 추가
+            savedRestaurants.push(restaurantId);
+            localStorage.setItem('savedRestaurants', JSON.stringify(savedRestaurants));
+            heartIcon.textContent = '♥';
+            heartIcon.style.color = '#ff4757';
+            buttonElement.title = '저장된 맛집';
+            
+            // 간단한 피드백
+            this.showSaveNotification('맛집을 저장했어요!', 'add');
+        }
+    }
+
+    getSavedRestaurants() {
+        const saved = localStorage.getItem('savedRestaurants');
+        return saved ? JSON.parse(saved) : [];
+    }
+
+    showSaveNotification(message, type) {
+        const notification = document.createElement('div');
+        notification.className = `save-notification ${type}`;
+        notification.textContent = message;
+        
+        document.body.appendChild(notification);
+        
+        // 애니메이션을 위한 약간의 지연
+        setTimeout(() => {
+            notification.classList.add('show');
+        }, 10);
+        
+        // 3초 후 제거
+        setTimeout(() => {
+            notification.classList.remove('show');
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 300);
+        }, 3000);
+    }
 }
 
 // Initialize the chatbot when the page loads
 document.addEventListener('DOMContentLoaded', () => {
-    const chatBot = new BusanChatBot();
-    chatBot.restoreLoginState();
+    window.chatBot = new BusanChatBot();
+    window.chatBot.restoreLoginState();
 });
