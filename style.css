@@ -207,6 +207,46 @@ body {
     border-bottom-right-radius: 4px;
 }
 
+/* 제안 버튼 스타일 */
+.suggestion-buttons {
+    padding: 15px;
+    background: white;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    border-top: 1px solid #e0e0e0;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.suggestion-buttons.hidden {
+    opacity: 0;
+    transform: translateY(-10px);
+    pointer-events: none;
+}
+
+.suggestion-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 12px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.suggestion-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+}
+
+.suggestion-btn:active {
+    transform: translateY(0);
+}
+
 .chat-input-container {
     padding: 15px;
     background: white;
@@ -554,18 +594,6 @@ body {
     margin: 10px 0;
 }
 
-/* 단일 카드 스타일 */
-.restaurant-cards-container.single-card {
-    margin: 5px 0;
-}
-
-.single-card-wrapper {
-    justify-content: center;
-}
-
-.single-card-message {
-    margin-bottom: 15px;
-}
 
 .restaurant-cards-wrapper {
     display: flex;
@@ -643,28 +671,38 @@ body {
     font-size: 13px;
     color: #666;
     line-height: 1.4;
-    margin: 0 0 12px;
+    margin: 0 0 8px;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
 
+.restaurant-card-rating {
+    display: flex;
+    align-items: center;
+    margin: 0 0 10px;
+    gap: 4px;
+}
+
+.star-icon {
+    color: #ffc107;
+    font-size: 16px;
+}
+
+.rating-score {
+    color: #333;
+    font-size: 14px;
+    font-weight: 500;
+}
+
 .restaurant-card-info {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
     align-items: center;
     margin-bottom: 12px;
 }
 
-.restaurant-card-area {
-    font-size: 12px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 4px 8px;
-    border-radius: 12px;
-    font-weight: 500;
-}
 
 .restaurant-card-price {
     font-size: 12px;
@@ -689,8 +727,12 @@ body {
 
 /* 모바일 최적화 */
 @media (max-width: 768px) {
+    .restaurant-cards-wrapper {
+        padding: 10px 5px;
+    }
+    
     .restaurant-card {
-        flex: 0 0 250px;
+        flex: 0 0 220px;
     }
     
     .restaurant-card-content {
@@ -703,6 +745,24 @@ body {
     
     .restaurant-card-review {
         font-size: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .restaurant-card {
+        flex: 0 0 200px;
+    }
+    
+    .restaurant-card-content {
+        padding: 10px;
+    }
+    
+    .restaurant-card-title {
+        font-size: 14px;
+    }
+    
+    .restaurant-card-review {
+        font-size: 11px;
     }
 }
 
@@ -738,12 +798,17 @@ body {
 .heart-icon {
     font-size: 18px;
     color: #666;
-    transition: all 0.2s ease;
+    transition: color 0.2s ease;
     user-select: none;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .heart-button:hover .heart-icon {
-    transform: scale(1.1);
+    transform: none;
 }
 
 /* 저장 알림 스타일 */
