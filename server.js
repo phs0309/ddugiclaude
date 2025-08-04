@@ -25,9 +25,73 @@ app.post('/api/chat', async (req, res) => {
         });
     }
 
-    // 사용자 질문 분석하여 맛집 데이터 검색
-    const searchCriteria = restaurantService.analyzeUserQuery(message);
+    // 맛집 추천 요청인지 확인
+    const isRecommendationRequest = restaurantService.isRestaurantRecommendationRequest(message);
+    console.log('맛집 추천 요청 여부:', isRecommendationRequest);
+
     let relevantRestaurants = [];
+    let searchCriteria = {};
+
+    if (!isRecommendationRequest) {
+        // 맛집 추천 요청이 아닌 경우 일반 대화
+        const systemPrompt = `너 이름은 뚜기야, 부산 현지인이야.
+
+특징:
+- 부산 사투리를 조금 써 
+- 상남자 스타일이야
+- ~~ 아이가?, 있다이가 ~~, ~~ 해봐라 같은 문장을 써줘
+- ~~노, ~~카이 같은 문장은 쓰지마
+- 말을 시작할 때 마! 라고 시작하고 항상 반말로 대화해
+- 맛집에 대한 질문이 아니면 "맛집 추천해달라고 하면 추천해줄게 아이가!" 라고 말해줘
+
+응답 규칙:
+- 항상 한국어로 답변하세요
+- 맛집 관련 질문이 아닌 경우에는 간단히 답변하고 맛집 추천을 유도하세요`;
+
+        try {
+            const response = await fetch('https://api.anthropic.com/v1/messages', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-api-key': CLAUDE_API_KEY,
+                    'anthropic-version': '2023-06-01'
+                },
+                body: JSON.stringify({
+                    model: 'claude-3-5-sonnet-20241022',
+                    max_tokens: 500,
+                    system: systemPrompt,
+                    messages: [
+                        {
+                            role: 'user',
+                            content: message
+                        }
+                    ]
+                })
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('Claude API Error:', errorText);
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            return res.json({ 
+                response: data.content[0].text,
+                restaurants: [],
+                searchCriteria: {},
+                isRecommendation: false
+            });
+        } catch (error) {
+            console.error('Error:', error);
+            return res.status(500).json({ 
+                error: 'API 요청 중 오류가 발생했습니다.' 
+            });
+        }
+    }
+
+    // 사용자 질문 분석하여 맛집 데이터 검색 (맛집 추천 요청인 경우만)
+    searchCriteria = restaurantService.analyzeUserQuery(message);
 
     if (Object.keys(searchCriteria).length > 0) {
         relevantRestaurants = restaurantService.findRestaurants(searchCriteria);
@@ -51,7 +115,7 @@ app.post('/api/chat', async (req, res) => {
 - 대표메뉴: ${restaurant.specialties.join(', ')}`
     ).join('\n\n');
 
-    const systemPrompt = `넌 뚜기 부산 현지인 맛집을 소개시켜주는 돼지야.
+    const systemPrompt = `너 이름은 뚜기야, 부산 현지인 맛집을 소개시켜줘.
 
 특징:
 - 부산의 로컬 맛집과 숨은 맛집들을 잘 알고 있어
@@ -102,7 +166,8 @@ ${restaurantDataText}`;
         res.json({ 
             response: data.content[0].text,
             restaurants: relevantRestaurants,
-            searchCriteria: searchCriteria
+            searchCriteria: searchCriteria,
+            isRecommendation: true
         });
     } catch (error) {
         console.error('Error:', error);

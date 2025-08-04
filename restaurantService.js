@@ -88,6 +88,18 @@ class RestaurantService {
         return shuffled.slice(0, count);
     }
 
+    // 맛집 추천 요청인지 확인
+    isRestaurantRecommendationRequest(query) {
+        const lowerQuery = query.toLowerCase();
+        const recommendationKeywords = [
+            '추천', '맛집', '음식점', '식당', '먹을', '먹고', '드실', '어디', '뭐먹', '뭘먹',
+            '밥', '점심', '저녁', '식사', '회식', '데이트', '소개', '알려줘', '찾아줘',
+            '가볼만한', '유명한', '맛있는', '괜찮은', '좋은', '갈만한'
+        ];
+        
+        return recommendationKeywords.some(keyword => lowerQuery.includes(keyword));
+    }
+
     // 사용자 질문 분석하여 검색 조건 추출
     analyzeUserQuery(query) {
         const criteria = {};

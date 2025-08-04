@@ -225,9 +225,16 @@ class BusanChatBot {
         this.showTypingIndicator();
 
         try {
-            const response = await this.callClaudeAPI(message);
+            const responseData = await this.callClaudeAPI(message);
             this.hideTypingIndicator();
-            this.addMessage(response, 'bot');
+            
+            if (responseData.isRecommendation && responseData.restaurants && responseData.restaurants.length > 0) {
+                // 맛집 추천 응답인 경우 카드와 함께 표시
+                this.addMessageWithRestaurants(responseData.response, responseData.restaurants);
+            } else {
+                // 일반 응답인 경우 텍스트만 표시
+                this.addMessage(responseData.response || responseData, 'bot');
+            }
         } catch (error) {
             this.hideTypingIndicator();
             this.addMessage('죄송합니다. 잠시 문제가 발생했어요. 다시 시도해주세요! 🙏', 'bot');
@@ -247,6 +254,60 @@ class BusanChatBot {
         messageDiv.appendChild(contentDiv);
         this.chatMessages.appendChild(messageDiv);
         this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+    }
+
+    addMessageWithRestaurants(content, restaurants) {
+        // 먼저 텍스트 메시지 추가
+        this.addMessage(content, 'bot');
+        
+        // 맛집 카드 컨테이너 생성
+        const cardContainer = document.createElement('div');
+        cardContainer.className = 'restaurant-cards-container';
+        
+        const cardsWrapper = document.createElement('div');
+        cardsWrapper.className = 'restaurant-cards-wrapper';
+        
+        // 최대 3개의 맛집만 표시
+        const restaurantsToShow = restaurants.slice(0, 3);
+        
+        restaurantsToShow.forEach(restaurant => {
+            const card = this.createRestaurantCard(restaurant);
+            cardsWrapper.appendChild(card);
+        });
+        
+        cardContainer.appendChild(cardsWrapper);
+        
+        // 메시지 영역에 카드 컨테이너 추가
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'message bot-message restaurant-cards-message';
+        messageDiv.appendChild(cardContainer);
+        
+        this.chatMessages.appendChild(messageDiv);
+        this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+    }
+
+    createRestaurantCard(restaurant) {
+        const card = document.createElement('div');
+        card.className = 'restaurant-card';
+        
+        card.innerHTML = `
+            <div class="restaurant-card-image">
+                <img src="${restaurant.thumbnail}" alt="${restaurant.name}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjE1MCIgdmlld0JveD0iMCAwIDIwMCAxNTAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMTUwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik04NSA2NUg2NVY4NUg4NVY2NVoiIGZpbGw9IiNEMUQ1REIiLz4KPHA+dGggZD0iTTEwNSA2MEw5MCA3NUwxMDUgOTBMMTIwIDc1TDEwNSA2MFoiIGZpbGw9IiNEMUQ1REIiLz4KPC9zdmc+'" />
+            </div>
+            <div class="restaurant-card-content">
+                <h3 class="restaurant-card-title">${restaurant.name}</h3>
+                <p class="restaurant-card-review">${restaurant.reviewSummary}</p>
+                <div class="restaurant-card-info">
+                    <span class="restaurant-card-area">${restaurant.area}</span>
+                    <span class="restaurant-card-price">${restaurant.priceRange}</span>
+                </div>
+                <a href="${restaurant.naverPlaceUrl}" target="_blank" class="restaurant-card-link">
+                    네이버 플레이스에서 보기 →
+                </a>
+            </div>
+        `;
+        
+        return card;
     }
 
     showTypingIndicator() {
@@ -289,7 +350,7 @@ class BusanChatBot {
             }
 
             const data = await response.json();
-            return data.response;
+            return data;
         } catch (error) {
             console.error('API Error:', error);
             
