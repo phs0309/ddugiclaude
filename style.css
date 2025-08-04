@@ -554,6 +554,19 @@ body {
     margin: 10px 0;
 }
 
+/* 단일 카드 스타일 */
+.restaurant-cards-container.single-card {
+    margin: 5px 0;
+}
+
+.single-card-wrapper {
+    justify-content: center;
+}
+
+.single-card-message {
+    margin-bottom: 15px;
+}
+
 .restaurant-cards-wrapper {
     display: flex;
     gap: 12px;

@@ -257,29 +257,50 @@ class BusanChatBot {
     }
 
     addMessageWithRestaurants(content, restaurants) {
-        // 먼저 텍스트 메시지 추가
+        // 먼저 전체 인사말 메시지 추가
         this.addMessage(content, 'bot');
-        
-        // 맛집 카드 컨테이너 생성
-        const cardContainer = document.createElement('div');
-        cardContainer.className = 'restaurant-cards-container';
-        
-        const cardsWrapper = document.createElement('div');
-        cardsWrapper.className = 'restaurant-cards-wrapper';
         
         // 최대 3개의 맛집만 표시
         const restaurantsToShow = restaurants.slice(0, 3);
         
-        restaurantsToShow.forEach(restaurant => {
-            const card = this.createRestaurantCard(restaurant);
-            cardsWrapper.appendChild(card);
+        // 각 음식점별로 개별 메시지와 카드를 순서대로 추가
+        restaurantsToShow.forEach((restaurant, index) => {
+            // 개별 음식점 설명 메시지
+            const restaurantDescription = this.generateRestaurantDescription(restaurant, index + 1);
+            this.addMessage(restaurantDescription, 'bot');
+            
+            // 해당 음식점의 개별 카드
+            this.addSingleRestaurantCard(restaurant);
         });
+    }
+
+    generateRestaurantDescription(restaurant, index) {
+        const descriptions = [
+            `${index}번째로 추천할 곳은 **${restaurant.name}**이야 아이가!`,
+            `${index}번째는 **${restaurant.name}**를 추천해줄게!`,
+            `${index}번째 맛집은 **${restaurant.name}**이다 아이가!`
+        ];
+        
+        const randomDescription = descriptions[Math.floor(Math.random() * descriptions.length)];
+        return `${randomDescription}\n\n${restaurant.description} ${restaurant.specialties.join(', ')} 맛이 끝내준다 아이가! 한번 가봐라~`;
+    }
+
+    addSingleRestaurantCard(restaurant) {
+        // 단일 맛집 카드 컨테이너 생성
+        const cardContainer = document.createElement('div');
+        cardContainer.className = 'restaurant-cards-container single-card';
+        
+        const cardsWrapper = document.createElement('div');
+        cardsWrapper.className = 'restaurant-cards-wrapper single-card-wrapper';
+        
+        const card = this.createRestaurantCard(restaurant);
+        cardsWrapper.appendChild(card);
         
         cardContainer.appendChild(cardsWrapper);
         
         // 메시지 영역에 카드 컨테이너 추가
         const messageDiv = document.createElement('div');
-        messageDiv.className = 'message bot-message restaurant-cards-message';
+        messageDiv.className = 'message bot-message restaurant-cards-message single-card-message';
         messageDiv.appendChild(cardContainer);
         
         this.chatMessages.appendChild(messageDiv);

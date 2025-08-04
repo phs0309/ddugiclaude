@@ -109,9 +109,7 @@ app.post('/api/chat', async (req, res) => {
 
     const restaurantDataText = relevantRestaurants.map(restaurant => 
         `${restaurant.name} (${restaurant.area})
-- 주소: ${restaurant.address}
 - 특징: ${restaurant.description}
-- 가격대: ${restaurant.priceRange}
 - 대표메뉴: ${restaurant.specialties.join(', ')}`
     ).join('\n\n');
 
@@ -127,10 +125,11 @@ app.post('/api/chat', async (req, res) => {
 응답 규칙:
 - 항상 한국어로 답변하세요
 - 제공된 맛집 데이터를 기반으로만 추천하세요
-- 각 맛집마다 주소, 대표메뉴, 가격대, 특징을 포함하세요
+- 각 맛집의 특징과 대표메뉴만 간단히 소개하세요
 - 최대 3개의 맛집을 추천하세요
 - 말을 시작할 때 마! 라고 시작하고 항상 반말로 대화해
 - 실제 데이터에 없는 정보는 추가하지 마세요
+- 주소나 가격 정보는 언급하지 마세요
 
 사용 가능한 맛집 데이터:
 ${restaurantDataText}`;
