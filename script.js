@@ -16,6 +16,7 @@ class BusanChatBot {
         
         // User state
         this.currentUser = null;
+        this.userLocation = null;
         
         this.initEventListeners();
         this.initMenuListeners();
@@ -46,11 +47,21 @@ class BusanChatBot {
         const randomFoods = ['돼지국밥', '밀면', '회', '곰장어', '충무김밥', '비빔당면', '씨앗호떡', '부산어묵', '동래파전', '해물찜'];
         
         suggestionButtons.forEach(button => {
-            button.addEventListener('click', () => {
+            button.addEventListener('click', async () => {
                 let message = button.dataset.message;
                 
+                // 주변 맛집 버튼인 경우 GPS 위치 가져오기
+                if (button.textContent.includes('주변')) {
+                    await this.getUserLocation();
+                    if (this.userLocation) {
+                        // GPS 위치를 직접 sendMessage에 전달하고 입력창에는 표시하지 않음
+                        this.sendLocationBasedMessage(message);
+                        this.hideSuggestionButtons();
+                        return;
+                    }
+                }
                 // 랜덤 음식 버튼인 경우 랜덤하게 음식 선택
-                if (button.id === 'randomFoodBtn') {
+                else if (button.id === 'randomFoodBtn') {
                     const randomFood = randomFoods[Math.floor(Math.random() * randomFoods.length)];
                     message = `${randomFood} 먹고싶어!`;
                 }
@@ -60,6 +71,89 @@ class BusanChatBot {
                 this.hideSuggestionButtons();
             });
         });
+    }
+
+    // GPS 위치 가져오기 함수
+    async getUserLocation() {
+        if (this.userLocation) return this.userLocation;
+
+        return new Promise((resolve) => {
+            if (!navigator.geolocation) {
+                alert('위치 서비스를 지원하지 않는 브라우저입니다.');
+                resolve(null);
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    this.userLocation = {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude
+                    };
+                    resolve(this.userLocation);
+                },
+                (error) => {
+                    console.log('위치 정보를 가져올 수 없습니다:', error);
+                    // 위치 거부 시 부산 중심부 좌표로 설정 (서면)
+                    this.userLocation = { lat: 35.1579, lng: 129.0602 };
+                    alert('위치 정보 접근이 거부되었습니다. 서면 지역 기준으로 추천해드릴게요!');
+                    resolve(this.userLocation);
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 300000 // 5분간 캐시
+                }
+            );
+        });
+    }
+
+    // 두 GPS 좌표 간의 거리 계산 (Haversine formula)
+    calculateDistance(lat1, lng1, lat2, lng2) {
+        const R = 6371; // 지구 반지름 (km)
+        const dLat = this.toRadians(lat2 - lat1);
+        const dLng = this.toRadians(lng2 - lng1);
+        const a = 
+            Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(this.toRadians(lat1)) * Math.cos(this.toRadians(lat2)) * 
+            Math.sin(dLng/2) * Math.sin(dLng/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        return R * c; // 거리 (km)
+    }
+
+    toRadians(degrees) {
+        return degrees * (Math.PI/180);
+    }
+
+    // 위치 기반 메시지 전송 (입력창에 GPS 좌표 표시하지 않음)
+    async sendLocationBasedMessage(message) {
+        // 사용자에게는 원본 메시지만 표시
+        this.addMessage(message, 'user');
+        this.userInput.value = '';
+        this.sendButton.disabled = true;
+
+        this.showTypingIndicator();
+
+        try {
+            // 서버에는 GPS 좌표 포함된 메시지 전송
+            const messageWithLocation = `${message} (위도: ${this.userLocation.lat}, 경도: ${this.userLocation.lng})`;
+            const responseData = await this.callClaudeAPI(messageWithLocation);
+            this.hideTypingIndicator();
+            
+            if (responseData.isRecommendation && responseData.restaurants && responseData.restaurants.length > 0) {
+                // 맛집 추천 응답인 경우 카드와 함께 표시
+                this.addMessageWithRestaurants(responseData.response, responseData.restaurants);
+            } else {
+                // 일반 응답인 경우 텍스트만 표시
+                this.addMessage(responseData.response || responseData, 'bot');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            this.hideTypingIndicator();
+            this.addMessage('죄송합니다. 오류가 발생했습니다. 다시 시도해주세요.', 'bot');
+        }
+
+        this.sendButton.disabled = false;
     }
     
     hideSuggestionButtons() {

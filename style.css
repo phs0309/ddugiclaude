@@ -209,12 +209,12 @@ body {
 
 /* 제안 버튼 스타일 */
 .suggestion-buttons {
+    display: flex;
+    gap: 8px;
     padding: 15px;
     background: white;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    border-top: 1px solid #e0e0e0;
+    justify-content: center;
+    flex-wrap: wrap;
     transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
@@ -225,26 +225,46 @@ body {
 }
 
 .suggestion-btn {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
+    padding: 10px 16px;
     border: none;
-    padding: 12px 16px;
     border-radius: 20px;
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s ease;
-    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+    font-family: inherit;
+    color: white;
 }
 
-.suggestion-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-    background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+.suggestion-btn:first-child {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
 }
 
-.suggestion-btn:active {
-    transform: translateY(0);
+.suggestion-btn:first-child:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(79, 172, 254, 0.3);
+    opacity: 0.9;
+}
+
+#budgetBtn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+#budgetBtn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    opacity: 0.9;
+}
+
+#randomFoodBtn {
+    background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+    color: #555;
+}
+
+#randomFoodBtn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(168, 237, 234, 0.3);
+    opacity: 0.9;
 }
 
 .chat-input-container {

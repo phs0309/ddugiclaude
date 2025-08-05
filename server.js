@@ -46,7 +46,7 @@ app.post('/api/chat', async (req, res) => {
 
 응답 규칙:
 - 항상 한국어로 답변하세요
-- 맛집 관련 질문이 아닌 경우에는 간단히 답변하고 맛집 추천을 유도하세요`;
+- 사용자랑 친해지려고 노력해`;
 
         try {
             const response = await fetch('https://api.anthropic.com/v1/messages', {
