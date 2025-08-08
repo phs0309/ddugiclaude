@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const restaurantService = require('./restaurantService');
+const ogs = require('open-graph-scraper');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -173,6 +174,34 @@ ${restaurantDataText}`;
             error: 'API 호출 중 오류가 발생했습니다.',
             details: error.message 
         });
+    }
+});
+
+// OG 메타데이터 가져오는 엔드포인트
+app.get('/api/og-data', async (req, res) => {
+    const { url } = req.query;
+    
+    if (!url) {
+        return res.status(400).json({ error: 'URL parameter is required' });
+    }
+    
+    try {
+        const { error, result } = await ogs({ url });
+        
+        if (error) {
+            console.error('OGS Error:', error);
+            return res.status(500).json({ error: 'Failed to fetch OG data' });
+        }
+        
+        res.json({
+            title: result.ogTitle || result.twitterTitle || 'No title',
+            description: result.ogDescription || result.twitterDescription || 'No description',
+            image: result.ogImage?.[0]?.url || result.twitterImage?.[0]?.url || null,
+            url: result.ogUrl || url
+        });
+    } catch (error) {
+        console.error('Error fetching OG data:', error);
+        res.status(500).json({ error: 'Failed to fetch OG data' });
     }
 });
 

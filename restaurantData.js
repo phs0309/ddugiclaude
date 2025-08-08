@@ -12,8 +12,7 @@ const restaurants = [
         specialties: ["한우갈비", "갈비탕", "냉면"],
         coordinates: { lat: 35.1595, lng: 129.1600 },
         reviewSummary: "숯불향이 일품인 전통 갈비맛집, 가격은 있지만 맛은 확실함",
-        naverPlaceUrl: "https://place.naver.com/restaurant/1234567890",
-        thumbnail: "https://search.pstatic.net/common/?src=https%3A%2F%2Fldb-phinf.pstatic.net%2F20210315_123%2F1615778889123abcde_JPEG%2F갈비.jpg"
+        blogUrl: "https://blog.naver.com/busan_galbi/223456789"
     },
     {
         id: 2,
@@ -26,8 +25,7 @@ const restaurants = [
         specialties: ["손칼국수", "비빔국수", "만두"],
         coordinates: { lat: 35.1785, lng: 129.1991 },
         reviewSummary: "바닷바람 맞으며 먹는 진짜 손칼국수, 할머니표 정성이 가득",
-        naverPlaceUrl: "https://place.naver.com/restaurant/2345678901",
-        thumbnail: "https://search.pstatic.net/common/?src=https%3A%2F%2Fldb-phinf.pstatic.net%2F20210315_456%2F1615778889456bcdef_JPEG%2F칼국수.jpg"
+        blogUrl: "https://blog.naver.com/songjeong_noodle/223567890"
     },
     {
         id: 3,
@@ -40,8 +38,7 @@ const restaurants = [
         specialties: ["삼계탕", "능이백숙", "전복삼계탕"],
         coordinates: { lat: 35.1587, lng: 129.1603 },
         reviewSummary: "진짜 한약재 우린 국물맛, 여름철 보양식으론 최고",
-        naverPlaceUrl: "https://place.naver.com/restaurant/3456789012",
-        thumbnail: "https://search.pstatic.net/common/?src=https%3A%2F%2Fldb-phinf.pstatic.net%2F20210315_789%2F1615778889789cdefg_JPEG%2F삼계탕.jpg"
+        blogUrl: "https://blog.naver.com/haeundae_samgyetang/223678901"
     },
 
     // 서면/부산진 지역
@@ -56,8 +53,7 @@ const restaurants = [
         specialties: ["돼지국밥", "수육", "순대국"],
         coordinates: { lat: 35.1579, lng: 129.0602 },
         reviewSummary: "부산 돼지국밥의 진짜 원조, 진한 국물에 푸짐한 고기",
-        naverPlaceUrl: "https://place.naver.com/restaurant/4567890123",
-        thumbnail: "https://search.pstatic.net/common/?src=https%3A%2F%2Fldb-phinf.pstatic.net%2F20210315_012%2F1615778889012defgh_JPEG%2F돼지국밥.jpg"
+        blogUrl: "https://blog.naver.com/seomyeon_pork_soup/223789012"
     },
     {
         id: 5,
@@ -70,8 +66,7 @@ const restaurants = [
         specialties: ["물밀면", "비빔밀면", "만두"],
         coordinates: { lat: 35.1368, lng: 129.0566 },
         reviewSummary: "부산 밀면의 성지, 쫄깃한 면발과 시원한 육수가 일품",
-        naverPlaceUrl: "https://place.naver.com/restaurant/5678901234",
-        thumbnail: "https://search.pstatic.net/common/?src=https%3A%2F%2Fldb-phinf.pstatic.net%2F20210315_345%2F1615778889345efghi_JPEG%2F밀면.jpg"
+        blogUrl: "https://blog.naver.com/beomil_milmyeon/223890123"
     },
     {
         id: 6,
@@ -84,8 +79,7 @@ const restaurants = [
         specialties: ["떡볶이", "튀김", "김밥"],
         coordinates: { lat: 35.1580, lng: 129.0595 },
         reviewSummary: "달콤한 부산식 떡볶이, 어릴 때 추억의 분식 맛",
-        naverPlaceUrl: "https://place.naver.com/restaurant/6789012345",
-        thumbnail: "https://search.pstatic.net/common/?src=https%3A%2F%2Fldb-phinf.pstatic.net%2F20210315_678%2F1615778889678fghij_JPEG%2F떡볶이.jpg"
+        blogUrl: "https://blog.naver.com/seomyeon_tteokbokki/223901234"
     },
 
     // 남포동/중구 지역
@@ -100,8 +94,7 @@ const restaurants = [
         specialties: ["회", "활어구이", "해물탕"],
         coordinates: { lat: 35.0969, lng: 129.0306 },
         reviewSummary: "자갈치 최고의 싱싱한 회, 바다 냄새와 함께 먹는 진짜 맛",
-        naverPlaceUrl: "https://place.naver.com/restaurant/7890123456",
-        thumbnail: "https://search.pstatic.net/common/?src=https%3A%2F%2Fldb-phinf.pstatic.net%2F20210315_901%2F1615778889901ghijk_JPEG%2F회.jpg"
+        blogUrl: "https://blog.naver.com/jagalchi_market/224012345"
     },
     {
         id: 8,
@@ -114,8 +107,7 @@ const restaurants = [
         specialties: ["씨앗호떡", "견과류호떡"],
         coordinates: { lat: 35.0999, lng: 129.0323 },
         reviewSummary: "부산 왔으면 꼭 먹어야 할 씨앗호떡, 바삭하고 달콤해서 중독됨",
-        naverPlaceUrl: "https://place.naver.com/restaurant/8901234567",
-        thumbnail: "https://search.pstatic.net/common/?src=https%3A%2F%2Fldb-phinf.pstatic.net%2F20210315_234%2F1615778889234hijkl_JPEG%2F호떡.jpg"
+        blogUrl: "https://blog.naver.com/nampo_hotteok/224123456"
     },
     {
         id: 9,
@@ -128,8 +120,7 @@ const restaurants = [
         specialties: ["비빔당면", "어묵", "김밥"],
         coordinates: { lat: 35.1005, lng: 129.0297 },
         reviewSummary: "50년 전통의 매콤달콤 비빔당면, 국제시장 구경하며 먹는 별미",
-        naverPlaceUrl: "https://place.naver.com/restaurant/9012345678",
-        thumbnail: "https://search.pstatic.net/common/?src=https%3A%2F%2Fldb-phinf.pstatic.net%2F20210315_567%2F1615778889567ijklm_JPEG%2F비빔당면.jpg"
+        blogUrl: "https://blog.naver.com/gukje_market_naengmyeon/224234567"
     },
 
     // 광안리/수영 지역
@@ -144,8 +135,7 @@ const restaurants = [
         specialties: ["회", "매운탕", "조개구이"],
         coordinates: { lat: 35.1532, lng: 129.1183 },
         reviewSummary: "광안대교 야경과 함께하는 회, 분위기 끝판왕 데이트 코스",
-        naverPlaceUrl: "https://place.naver.com/restaurant/1023456789",
-        thumbnail: "https://search.pstatic.net/common/?src=https%3A%2F%2Fldb-phinf.pstatic.net%2F20210315_890%2F1615778889890jklmn_JPEG%2F회광안리.jpg"
+        blogUrl: "https://blog.naver.com/gwangalli_hoe/224345678"
     },
     {
         id: 11,
@@ -158,8 +148,7 @@ const restaurants = [
         specialties: ["곰장어구이", "곰장어탕", "소주"],
         coordinates: { lat: 35.1443, lng: 129.1120 },
         reviewSummary: "쫄깃하고 고소한 곰장어, 소주 한잔과 함께하면 금상첨화",
-        naverPlaceUrl: "https://place.naver.com/restaurant/1134567890",
-        thumbnail: "https://search.pstatic.net/common/?src=https%3A%2F%2Fldb-phinf.pstatic.net%2F20210315_123%2F1615778889123klmno_JPEG%2F곰장어.jpg"
+        blogUrl: "https://blog.naver.com/suyeong_eel/224456789"
     },
 
     // 기장/정관 지역
@@ -174,8 +163,7 @@ const restaurants = [
         specialties: ["멸치회", "멸치국수", "미역국"],
         coordinates: { lat: 35.2446, lng: 129.2226 },
         reviewSummary: "기장 특산 멸치회, 달콤하고 쫄깃한 식감이 일품인 별미",
-        naverPlaceUrl: "https://place.naver.com/restaurant/1245678901",
-        thumbnail: "https://search.pstatic.net/common/?src=https%3A%2F%2Fldb-phinf.pstatic.net%2F20210315_456%2F1615778889456lmnop_JPEG%2F멸치회.jpg"
+        blogUrl: "https://blog.naver.com/gijang_anchovy/224567890"
     },
 
     // 동래/온천장 지역
@@ -190,8 +178,7 @@ const restaurants = [
         specialties: ["동래파전", "막걸리", "전"],
         coordinates: { lat: 35.2074, lng: 129.0843 },
         reviewSummary: "부산 3대 별미 동래파전, 막걸리와 함께 먹으면 최고",
-        naverPlaceUrl: "https://place.naver.com/restaurant/1356789012",
-        thumbnail: "https://search.pstatic.net/common/?src=https%3A%2F%2Fldb-phinf.pstatic.net%2F20210315_789%2F1615778889789mnopq_JPEG%2F파전.jpg"
+        blogUrl: "https://blog.naver.com/dongnae_pajeon/224678901"
     },
     {
         id: 14,
@@ -204,8 +191,7 @@ const restaurants = [
         specialties: ["족발", "보쌈", "막국수"],
         coordinates: { lat: 35.2087, lng: 129.0892 },
         reviewSummary: "쫄깃담백한 족발과 보쌈, 온천장 맛집의 진수를 보여주는 곳",
-        naverPlaceUrl: "https://place.naver.com/restaurant/1467890123",
-        thumbnail: "https://search.pstatic.net/common/?src=https%3A%2F%2Fldb-phinf.pstatic.net%2F20210315_012%2F1615778889012nopqr_JPEG%2F족발.jpg"
+        blogUrl: "https://blog.naver.com/oncheonjang_jokbal/224789012"
     },
 
     // 부산대/장전동 지역
@@ -220,8 +206,7 @@ const restaurants = [
         specialties: ["쭈꾸미볶음", "볶음밥", "소주"],
         coordinates: { lat: 35.2312, lng: 129.0845 },
         reviewSummary: "매콤한 쭈꾸미에 볶음밥까지, 부산대생들의 소울푸드",
-        naverPlaceUrl: "https://place.naver.com/restaurant/1578901234",
-        thumbnail: "https://search.pstatic.net/common/?src=https%3A%2F%2Fldb-phinf.pstatic.net%2F20210315_345%2F1615778889345opqrs_JPEG%2F쭈꾸미.jpg"
+        blogUrl: "https://blog.naver.com/pusan_univ_jjukkumi/224890123"
     },
 
     // 태종대/영도 지역
@@ -236,8 +221,7 @@ const restaurants = [
         specialties: ["자연산회", "전복구이", "해물찜"],
         coordinates: { lat: 35.0532, lng: 129.0870 },
         reviewSummary: "태종대 절경과 함께하는 자연산 회, 경치와 맛 모두 일품",
-        naverPlaceUrl: "https://place.naver.com/restaurant/1689012345",
-        thumbnail: "https://search.pstatic.net/common/?src=https%3A%2F%2Fldb-phinf.pstatic.net%2F20210315_678%2F1615778889678pqrst_JPEG%2F자연산회.jpg"
+        blogUrl: "https://blog.naver.com/taejongdae_hoe/224901234"
     },
 
     // 사하구/하단 지역
@@ -252,8 +236,7 @@ const restaurants = [
         specialties: ["제육볶음", "김치찌개", "된장찌개"],
         coordinates: { lat: 35.1057, lng: 128.9693 },
         reviewSummary: "푸짐하고 서민적인 한식, 집밥 같은 정겨운 맛이 일품",
-        naverPlaceUrl: "https://place.naver.com/restaurant/1790123456",
-        thumbnail: "https://search.pstatic.net/common/?src=https%3A%2F%2Fldb-phinf.pstatic.net%2F20210315_901%2F1615778889901qrstu_JPEG%2F제육볶음.jpg"
+        blogUrl: "https://blog.naver.com/hadan_restaurant/225012345"
     },
 
     // 연산동 지역
@@ -268,8 +251,7 @@ const restaurants = [
         specialties: ["곱창", "막창", "볶음밥"],
         coordinates: { lat: 35.1793, lng: 129.0805 },
         reviewSummary: "쫄깃하고 고소한 곱창, 서민 맛집의 진수를 보여주는 곳",
-        naverPlaceUrl: "https://place.naver.com/restaurant/1801234567",
-        thumbnail: "https://search.pstatic.net/common/?src=https%3A%2F%2Fldb-phinf.pstatic.net%2F20210315_234%2F1615778889234rstuv_JPEG%2F곱창.jpg"
+        blogUrl: "https://blog.naver.com/yeonsan_gopchang/225123456"
     },
 
     // 사직/덕천 지역
@@ -284,8 +266,7 @@ const restaurants = [
         specialties: ["후라이드치킨", "양념치킨", "맥주"],
         coordinates: { lat: 35.1940, lng: 129.0611 },
         reviewSummary: "야구 경기 후 치킨과 맥주, 사직야구장의 전통적인 맛",
-        naverPlaceUrl: "https://place.naver.com/restaurant/1912345678",
-        thumbnail: "https://search.pstatic.net/common/?src=https%3A%2F%2Fldb-phinf.pstatic.net%2F20210315_567%2F1615778889567stuvw_JPEG%2F치킨.jpg"
+        blogUrl: "https://blog.naver.com/sajik_chicken/225234567"
     },
 
     // 김해공항/강서 지역
@@ -300,8 +281,7 @@ const restaurants = [
         specialties: ["한정식", "갈비찜", "전복구이"],
         coordinates: { lat: 35.2013, lng: 128.9802 },
         reviewSummary: "정갈한 전통 한정식, 특별한 날에 찾는 고급 한식의 정수",
-        naverPlaceUrl: "https://place.naver.com/restaurant/2023456789",
-        thumbnail: "https://search.pstatic.net/common/?src=https%3A%2F%2Fldb-phinf.pstatic.net%2F20210315_890%2F1615778889890tuvwx_JPEG%2F한정식.jpg"
+        blogUrl: "https://blog.naver.com/gangseo_hanjeongsik/225345678"
     }
 ];
 

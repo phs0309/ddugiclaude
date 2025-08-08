@@ -391,7 +391,7 @@ class BusanChatBot {
         this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
     }
 
-    addMessageWithRestaurants(content, restaurants) {
+    async addMessageWithRestaurants(content, restaurants) {
         // 먼저 텍스트 메시지 추가
         this.addMessage(content, 'bot');
         
@@ -405,10 +405,11 @@ class BusanChatBot {
         // 최대 3개의 맛집만 표시
         const restaurantsToShow = restaurants.slice(0, 3);
         
-        restaurantsToShow.forEach(restaurant => {
-            const card = this.createRestaurantCard(restaurant);
+        // 모든 카드를 비동기로 생성
+        for (const restaurant of restaurantsToShow) {
+            const card = await this.createRestaurantCard(restaurant);
             cardsWrapper.appendChild(card);
-        });
+        }
         
         cardContainer.appendChild(cardsWrapper);
         
@@ -421,7 +422,7 @@ class BusanChatBot {
         this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
     }
 
-    createRestaurantCard(restaurant) {
+    async createRestaurantCard(restaurant) {
         const card = document.createElement('div');
         card.className = 'restaurant-card';
         
@@ -431,6 +432,9 @@ class BusanChatBot {
         const heartColor = isSaved ? '#ff4757' : '#666';
         const buttonTitle = isSaved ? '저장된 맛집' : '맛집 저장하기';
         
+        // 기본 이미지 (로딩 중 또는 실패 시)
+        const defaultImage = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjE1MCIgdmlld0JveD0iMCAwIDIwMCAxNTAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMTUwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik04NSA2NUg2NVY4NUg4NVY2NVoiIGZpbGw9IiNEMUQ1REIiLz4KPHA+dGggZD0iTTEwNSA2MEw5MCA3NUwxMDUgOTBMMTIwIDc1TDEwNSA2MFoiIGZpbGw9IiNEMUQ1REIiLz4KPC9zdmc+';
+        
         card.innerHTML = `
             <div class="restaurant-card-header">
                 <button class="heart-button" onclick="window.chatBot.toggleSaveRestaurant('${restaurant.id}', this)" 
@@ -439,7 +443,7 @@ class BusanChatBot {
                 </button>
             </div>
             <div class="restaurant-card-image">
-                <img src="${restaurant.thumbnail}" alt="${restaurant.name}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjE1MCIgdmlld0JveD0iMCAwIDIwMCAxNTAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMTUwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik04NSA2NUg2NVY4NUg4NVY2NVoiIGZpbGw9IiNEMUQ1REIiLz4KPHA+dGggZD0iTTEwNSA2MEw5MCA3NUwxMDUgOTBMMTIwIDc1TDEwNSA2MFoiIGZpbGw9IiNEMUQ1REIiLz4KPC9zdmc+'" />
+                <img src="${defaultImage}" alt="${restaurant.name}" class="loading-image" />
             </div>
             <div class="restaurant-card-content">
                 <h3 class="restaurant-card-title">${restaurant.name}</h3>
@@ -451,13 +455,35 @@ class BusanChatBot {
                 <div class="restaurant-card-info">
                     <span class="restaurant-card-price">${restaurant.priceRange}</span>
                 </div>
-                <a href="${restaurant.naverPlaceUrl}" target="_blank" class="restaurant-card-link">
-                    지도에서 보기 →
+                <a href="${restaurant.blogUrl}" target="_blank" class="restaurant-card-link">
+                    블로그에서 보기 →
                 </a>
             </div>
         `;
         
+        // OG 이미지 비동기 로드
+        if (restaurant.blogUrl) {
+            this.loadOGImage(restaurant.blogUrl, card.querySelector('img'));
+        }
+        
         return card;
+    }
+
+    async loadOGImage(blogUrl, imgElement) {
+        try {
+            const response = await fetch(`/api/og-data?url=${encodeURIComponent(blogUrl)}`);
+            
+            if (response.ok) {
+                const ogData = await response.json();
+                
+                if (ogData.image) {
+                    imgElement.src = ogData.image;
+                    imgElement.classList.remove('loading-image');
+                }
+            }
+        } catch (error) {
+            console.error('Error loading OG image:', error);
+        }
     }
 
     showTypingIndicator() {

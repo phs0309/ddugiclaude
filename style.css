@@ -671,6 +671,17 @@ body {
     transition: transform 0.3s;
 }
 
+.restaurant-card-image img.loading-image {
+    opacity: 0.6;
+    animation: loading-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes loading-pulse {
+    0% { opacity: 0.6; }
+    50% { opacity: 0.3; }
+    100% { opacity: 0.6; }
+}
+
 .restaurant-card:hover .restaurant-card-image img {
     transform: scale(1.05);
 }
