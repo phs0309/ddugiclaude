@@ -11,11 +11,11 @@ const PORT = process.env.PORT || 3000;
 // Middleware
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname)));
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Claude API endpoint
 app.post('/api/chat', async (req, res) => {
-    const { message } = req.body;
+    const { message, mode } = req.body;
     const CLAUDE_API_KEY = process.env.CLAUDE_API_KEY;
 
     // API 키 확인
@@ -92,12 +92,20 @@ app.post('/api/chat', async (req, res) => {
 
     // 사용자 질문 분석하여 맛집 데이터 검색 (맛집 추천 요청인 경우만)
     searchCriteria = restaurantService.analyzeUserQuery(message);
+    
+    // 모드 정보를 검색 조건에 추가
+    if (mode) {
+        searchCriteria.mode = mode;
+    }
 
     if (Object.keys(searchCriteria).length > 0) {
         relevantRestaurants = restaurantService.findRestaurants(searchCriteria);
     } else {
-        // 키워드가 없으면 전체 검색
-        relevantRestaurants = restaurantService.searchRestaurants(message);
+        // 키워드가 없으면 전체 검색 (모드별 필터링 포함)
+        const allRestaurants = restaurantService.getAllRestaurants();
+        relevantRestaurants = mode ? 
+            restaurantService.filterByMode(allRestaurants, mode) : 
+            allRestaurants;
     }
 
     // 결과가 없거나 너무 많으면 랜덤 추천
@@ -113,6 +121,20 @@ app.post('/api/chat', async (req, res) => {
 - 대표메뉴: ${restaurant.specialties.join(', ')}`
     ).join('\n\n');
 
+    // 모드별 추천 방식 설정
+    const getModeDescription = (mode) => {
+        switch (mode) {
+            case 'authentic':
+                return `찐 맛집 모드: 유명하고 소문난 전통있는 맛집들을 우선적으로 추천해줘. 오래된 전통이나 명성이 있는 곳들을 강조해서 소개해.`;
+            case 'budget':
+                return `가성비 모드: 저렴하면서도 맛있는 현지인들이 자주 가는 동네 맛집들을 추천해줘. 가격 대비 만족도가 높은 곳들을 강조해서 소개해.`;
+            case 'date':
+                return `데이트 맛집 모드: 분위기 좋고 깔끔한 인테리어의 맛집들을 추천해줘. 연인과 함께 가기 좋은 곳들을 강조해서 소개해.`;
+            default:
+                return `일반 맛집을 추천해줘.`;
+        }
+    };
+
     const systemPrompt = `너 이름은 뚜기야, 부산 현지인 맛집을 소개시켜줘.
 
 특징:
@@ -121,6 +143,8 @@ app.post('/api/chat', async (req, res) => {
 - 상남자 스타일이야
 - ~~ 아이가?, 있다이가 ~~, ~~ 해봐라 같은 문장을 써줘
 - ~~노, ~~카이 같은 문장은 쓰지마
+
+${getModeDescription(mode)}
 
 응답 규칙:
 - 항상 한국어로 답변하세요

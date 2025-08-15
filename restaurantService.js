@@ -43,9 +43,14 @@ class RestaurantService {
         );
     }
 
-    // 복합 조건으로 맛집 검색
+    // 복합 조건으로 맛집 검색 (모드별 필터링 포함)
     findRestaurants(criteria) {
         let results = restaurants;
+
+        // 모드별 맛집 필터링
+        if (criteria.mode) {
+            results = this.filterByMode(results, criteria.mode);
+        }
 
         if (criteria.area) {
             results = results.filter(restaurant => 
@@ -118,6 +123,138 @@ class RestaurantService {
 
     toRadians(degrees) {
         return degrees * (Math.PI/180);
+    }
+
+    // 모드별 맛집 필터링 및 우선순위 정렬
+    filterByMode(restaurants, mode) {
+        switch (mode) {
+            case 'authentic': // 찐 맛집 - 유명하고 소문난 맛집 위주
+                return this.sortByAuthenticity(restaurants);
+            
+            case 'budget': // 가성비 - 저렴하고 현지인 맛집 위주
+                return this.sortByBudgetFriendly(restaurants);
+            
+            case 'date': // 데이트 맛집 - 깔끔하고 인테리어 신경 쓴 맛집
+                return this.sortByDateFriendly(restaurants);
+            
+            default:
+                return restaurants;
+        }
+    }
+
+    // 찐 맛집 모드: 유명하고 전통있는 맛집 우선
+    sortByAuthenticity(restaurants) {
+        const authenticKeywords = ['전통', '유명', '명소', '오래된', '역사', '원조', '본점', '갈비집', '회센터'];
+        const highPriceRestaurants = restaurants.filter(r => {
+            const price = this.extractMinPrice(r.priceRange);
+            return price >= 20000; // 2만원 이상
+        });
+        
+        return restaurants
+            .map(restaurant => ({
+                ...restaurant,
+                authenticScore: this.calculateAuthenticScore(restaurant, authenticKeywords)
+            }))
+            .sort((a, b) => b.authenticScore - a.authenticScore);
+    }
+
+    // 가성비 모드: 저렴하고 현지인들이 자주 가는 맛집 우선
+    sortByBudgetFriendly(restaurants) {
+        const budgetKeywords = ['가성비', '저렴', '현지', '동네', '골목', '분식', '국밥'];
+        
+        return restaurants
+            .filter(restaurant => {
+                const price = this.extractMinPrice(restaurant.priceRange);
+                return price <= 20000; // 2만원 이하
+            })
+            .map(restaurant => ({
+                ...restaurant,
+                budgetScore: this.calculateBudgetScore(restaurant, budgetKeywords)
+            }))
+            .sort((a, b) => b.budgetScore - a.budgetScore);
+    }
+
+    // 데이트 맛집 모드: 깔끔하고 인테리어 좋은 맛집 우선
+    sortByDateFriendly(restaurants) {
+        const dateKeywords = ['깔끔', '인테리어', '분위기', '뷰', '전망', '센텀', '해운대', '카페', '레스토랑'];
+        
+        return restaurants
+            .map(restaurant => ({
+                ...restaurant,
+                dateScore: this.calculateDateScore(restaurant, dateKeywords)
+            }))
+            .sort((a, b) => b.dateScore - a.dateScore);
+    }
+
+    // 가격 범위에서 최소 가격 추출
+    extractMinPrice(priceRange) {
+        const priceMatch = priceRange.match(/(\d+,?\d*)/);
+        if (priceMatch) {
+            return parseInt(priceMatch[1].replace(',', ''));
+        }
+        return 0;
+    }
+
+    // 찐 맛집 점수 계산
+    calculateAuthenticScore(restaurant, keywords) {
+        let score = 0;
+        const text = (restaurant.name + ' ' + restaurant.description).toLowerCase();
+        
+        keywords.forEach(keyword => {
+            if (text.includes(keyword)) score += 2;
+        });
+        
+        // 높은 가격대 가산점
+        const price = this.extractMinPrice(restaurant.priceRange);
+        if (price >= 30000) score += 3;
+        else if (price >= 20000) score += 1;
+        
+        // 한식, 해산물 카테고리 가산점
+        if (restaurant.category === '한식' || restaurant.category === '해산물') score += 2;
+        
+        return score;
+    }
+
+    // 가성비 점수 계산
+    calculateBudgetScore(restaurant, keywords) {
+        let score = 0;
+        const text = (restaurant.name + ' ' + restaurant.description).toLowerCase();
+        
+        keywords.forEach(keyword => {
+            if (text.includes(keyword)) score += 2;
+        });
+        
+        // 저렴한 가격대 가산점
+        const price = this.extractMinPrice(restaurant.priceRange);
+        if (price <= 10000) score += 3;
+        else if (price <= 15000) score += 2;
+        else if (price <= 20000) score += 1;
+        
+        // 분식, 한식 카테고리 가산점
+        if (restaurant.category === '분식' || restaurant.category === '한식') score += 1;
+        
+        return score;
+    }
+
+    // 데이트 맛집 점수 계산
+    calculateDateScore(restaurant, keywords) {
+        let score = 0;
+        const text = (restaurant.name + ' ' + restaurant.description + ' ' + restaurant.area).toLowerCase();
+        
+        keywords.forEach(keyword => {
+            if (text.includes(keyword)) score += 2;
+        });
+        
+        // 해운대, 센텀, 광안리 지역 가산점 (뷰 좋은 곳)
+        if (restaurant.area.includes('해운대') || restaurant.area.includes('센텀') || restaurant.area.includes('광안리')) {
+            score += 3;
+        }
+        
+        // 적당한 가격대 가산점 (너무 싸지도 비싸지도 않은)
+        const price = this.extractMinPrice(restaurant.priceRange);
+        if (price >= 15000 && price <= 40000) score += 2;
+        
+        return score;
     }
 
     // 랜덤 맛집 추천

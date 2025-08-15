@@ -381,7 +381,8 @@ class BusanChatBot {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    message: userMessage
+                    message: userMessage,
+                    mode: this.currentMode
                 })
             });
 
