@@ -14,13 +14,21 @@ class BusanChatBot {
         this.loginClose = document.getElementById('loginClose');
         this.googleLoginBtn = document.getElementById('googleLoginBtn');
         
+        // Mode selector elements
+        this.modeButton = document.getElementById('modeButton');
+        this.modeDropdown = document.getElementById('modeDropdown');
+        this.modeText = document.getElementById('modeText');
+        
         // User state
         this.currentUser = null;
+        this.currentMode = 'authentic'; // 기본값: 찐 맛집
         
         this.initEventListeners();
         this.initMenuListeners();
         this.initLoginListeners();
+        this.initModeSelector();
         this.initGoogleAuth();
+        this.setTheme(this.currentMode);
     }
 
     initEventListeners() {
@@ -214,6 +222,100 @@ class BusanChatBot {
         alert('설정 기능은 준비 중입니다! ⚙️');
     }
 
+    initModeSelector() {
+        // Mode button click event
+        this.modeButton.addEventListener('click', () => {
+            this.toggleModeDropdown();
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!this.modeButton.contains(e.target) && !this.modeDropdown.contains(e.target)) {
+                this.closeModeDropdown();
+            }
+        });
+
+        // Mode option click events
+        const modeOptions = document.querySelectorAll('.mode-option');
+        modeOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                const mode = option.getAttribute('data-mode');
+                this.selectMode(mode);
+            });
+        });
+
+        // Set initial selected mode
+        this.updateModeSelection();
+    }
+
+    toggleModeDropdown() {
+        const isOpen = this.modeDropdown.classList.contains('open');
+        if (isOpen) {
+            this.closeModeDropdown();
+        } else {
+            this.openModeDropdown();
+        }
+    }
+
+    openModeDropdown() {
+        this.modeDropdown.classList.add('open');
+        this.modeButton.classList.add('open');
+    }
+
+    closeModeDropdown() {
+        this.modeDropdown.classList.remove('open');
+        this.modeButton.classList.remove('open');
+    }
+
+    selectMode(mode) {
+        this.currentMode = mode;
+        this.setTheme(mode);
+        this.updateModeSelection();
+        this.closeModeDropdown();
+        
+        // Save mode to localStorage
+        localStorage.setItem('ddugi_mode', mode);
+    }
+
+    updateModeSelection() {
+        // Update button text
+        const modeTexts = {
+            'authentic': '찐 맛집',
+            'budget': '가성비',
+            'date': '데이트 맛집'
+        };
+        this.modeText.textContent = modeTexts[this.currentMode];
+
+        // Update selected option
+        const modeOptions = document.querySelectorAll('.mode-option');
+        modeOptions.forEach(option => {
+            const mode = option.getAttribute('data-mode');
+            if (mode === this.currentMode) {
+                option.classList.add('selected');
+            } else {
+                option.classList.remove('selected');
+            }
+        });
+    }
+
+    setTheme(mode) {
+        // Remove all theme classes
+        document.body.classList.remove('theme-authentic', 'theme-budget', 'theme-date');
+        
+        // Add the selected theme class
+        document.body.classList.add(`theme-${mode}`);
+    }
+
+    restoreMode() {
+        // Restore saved mode from localStorage
+        const savedMode = localStorage.getItem('ddugi_mode');
+        if (savedMode && ['authentic', 'budget', 'date'].includes(savedMode)) {
+            this.currentMode = savedMode;
+            this.setTheme(savedMode);
+            this.updateModeSelection();
+        }
+    }
+
     async sendMessage() {
         const message = this.userInput.value.trim();
         if (!message) return;
@@ -309,4 +411,5 @@ class BusanChatBot {
 document.addEventListener('DOMContentLoaded', () => {
     const chatBot = new BusanChatBot();
     chatBot.restoreLoginState();
+    chatBot.restoreMode();
 });

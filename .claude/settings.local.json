@@ -3,7 +3,9 @@
     "allow": [
       "Bash(git push:*)",
       "Bash(git rm:*)",
-      "Bash(git reset:*)"
+      "Bash(git reset:*)",
+      "Bash(git commit:*)",
+      "Bash(npm start)"
     ],
     "deny": []
   }

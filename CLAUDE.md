@@ -8,6 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `npm install` - Install dependencies
 - `npm start` - Start production server on port 3000
 - `npm run dev` - Start development server with auto-restart (nodemon)
+- `npm run build` - Build command (currently echo placeholder)
 
 **Server Management:**
 - Server runs on `http://localhost:3000`
@@ -15,17 +16,22 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Architecture Overview
 
-This is a Korean chatbot web application that recommends Busan restaurants using Claude AI. The architecture consists of:
+This is a Korean chatbot web application ("뚜기") that recommends Busan restaurants using Claude AI. The project supports both local Express.js development and Vercel serverless deployment.
+
+**Dual Architecture:**
+1. **Local Development**: Express.js server (`server.js`) for local testing
+2. **Production Deployment**: Vercel serverless functions (`/api/`) for cloud deployment
 
 **Frontend (Vanilla JS/HTML/CSS):**
-- `index.html` - Chat interface with Korean UI
-- `style.css` - Modern chat styling with gradients and animations
-- `script.js` - Chat functionality, sends requests to `/api/chat`
+- `index.html` / `public/index.html` - Chat interface with Korean UI  
+- `style.css` / `public/style.css` - Modern chat styling with gradients and animations
+- `script.js` / `public/script.js` - Chat functionality, sends requests to `/api/chat`
 
-**Backend (Express.js):**
-- `server.js` - Main server with Claude API integration
-- `restaurantService.js` - Restaurant search and filtering logic
-- `restaurantData.js` - Static database of 20 Busan restaurants
+**Backend (Dual Structure):**
+- `server.js` - Express.js server for local development
+- `api/chat.js` - Vercel serverless function (production endpoint)
+- `restaurantService.js` / `api/restaurantService.js` - Restaurant search and filtering logic
+- `restaurantData.js` / `api/restaurantData.js` - Static database of 20 Busan restaurants
 
 **Key Backend Flow:**
 1. User message → `restaurantService.analyzeUserQuery()` extracts search criteria (area, category, keywords, price)
@@ -49,8 +55,18 @@ Each restaurant has: `id`, `name`, `address`, `description`, `priceRange`, `cate
 - Character: Friendly Busan restaurant guide named "뚜기"
 - Responses limited to provided restaurant data only
 
+**Deployment Configuration:**
+- `vercel.json` - Vercel deployment settings with 30s timeout for chat API
+- Environment variable `CLAUDE_API_KEY` required for Claude AI integration
+- Rate limiting implemented in serverless function (10 requests/minute per IP)
+
 **Critical Notes:**
-- API key must be configured in `server.js` before running
-- All restaurant recommendations are limited to the 20 entries in `restaurantData.js`
-- Claude AI is instructed to never generate information beyond the provided dataset
+- API key must be configured via `CLAUDE_API_KEY` environment variable
+- Fallback responses provided when API key not available  
+- All restaurant recommendations limited to 20 entries in `restaurantData.js`
+- Claude AI responds as "뚜기" character using Busan dialect
 - Korean language interface and responses throughout
+- Duplicate file structure supports both local development and Vercel deployment
+
+**Live Demo:**
+- Production URL: https://ddugiclaude.vercel.app
