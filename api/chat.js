@@ -178,8 +178,10 @@ async function callClaudeAPI(message, matchedRestaurants = [], currentHour = new
     let restaurantContext = '';
     if (matchedRestaurants.length > 0) {
         restaurantContext = '\n\n비짓부산에서 찾은 맛집들:\n' + matchedRestaurants.map(r => 
-            `- ${r.name} (${r.area}): ${r.description}${r.menu ? ', 대표메뉴: ' + r.menu : ''}${r.rating > 0 ? ', 평점: ' + r.rating + '점' : ''}`
-        ).join('\n');
+            `- ${r.name} (${r.area})
+  📍 주소: ${r.address}
+  ${r.description}${r.menu ? ', 대표메뉴: ' + r.menu : ''}${r.rating > 0 ? ', 평점: ' + r.rating + '점' : ''}${r.phone ? ', 전화: ' + r.phone : ''}`
+        ).join('\n\n');
     }
     
     let promptContent = '';
@@ -228,11 +230,13 @@ async function callClaudeAPI(message, matchedRestaurants = [], currentHour = new
 - 맛집을 추천할 때는 대화 흐름에 맞춰서 적절한 시점에 추천해
 - 사용자가 지역이나 음식 종류를 언급하면 그에 맞는 맛집을 자연스럽게 추천해
 - 핵심을 잘 파악하고 간결하게 대답해
+- 맛집을 추천할 때는 반드시 주소도 함께 알려줘
 
 응답 규칙:
 - 항상 한국어로 답변하세요
 - 말을 시작할 때 마! 라고 시작하고 항상 반말로 대화해
-- 현재 시간대를 고려한 맛집을 소개하세요${restaurantContext}
+- 현재 시간대를 고려한 맛집을 소개하세요
+- 맛집 이름과 함께 정확한 주소 정보를 포함하세요${restaurantContext}
 
 사용자 질문: ${message}`;
     }
@@ -352,6 +356,7 @@ function generateSimpleResponse(message, matchedRestaurants = [], timeMessage = 
         const restaurant = matchedRestaurants[0];
         const ratingText = restaurant.rating > 0 ? `⭐ ${restaurant.rating}점` : '';
         const menuText = restaurant.menu ? `🍽️ ${restaurant.menu}` : '';
+        const phoneText = restaurant.phone ? `📞 ${restaurant.phone}` : '';
         
         return `${greeting}
 
@@ -360,6 +365,7 @@ ${restaurant.area}에서 ${restaurant.category} 맛집 찾았다!
 🍜 **${restaurant.name}**
 📍 ${restaurant.address}
 ${menuText}
+${phoneText}
 ${ratingText}
 ✨ ${restaurant.description}
 
