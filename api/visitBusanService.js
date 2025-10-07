@@ -21,7 +21,8 @@ class VisitBusanService {
     loadData() {
         try {
             const csvPath = join(__dirname, '..', 'R_data', '비짓부산_cleaned_reviews.csv');
-            const csvContent = fs.readFileSync(csvPath, 'utf-8');
+            // BOM 제거하고 UTF-8로 읽기
+            const csvContent = fs.readFileSync(csvPath, 'utf-8').replace(/^\uFEFF/, '');
             const lines = csvContent.split('\n');
             const headers = lines[0].split(',');
             
@@ -88,37 +89,43 @@ class VisitBusanService {
 
         return {
             id: obj.UC_SEQ || Math.random().toString(36).substring(7),
-            name: obj.MAIN_TITLE.trim(),
-            address: `부산 ${obj.GUGUN_NM} ${obj.ADDR1 || ''}`.trim(),
+            name: this.cleanText(obj.MAIN_TITLE || '').trim(),
+            address: this.cleanText(`부산 ${obj.GUGUN_NM} ${obj.ADDR1 || ''}`).trim(),
             description: this.cleanDescription(obj.ITEMCNTNTS || ''),
-            area: obj.GUGUN_NM,
+            area: this.cleanText(obj.GUGUN_NM || ''),
             category: this.determineCategory(obj.RPRSNTV_MENU, obj.MAIN_TITLE),
-            phone: obj.CNTCT_TEL || '',
-            menu: obj.RPRSNTV_MENU || '',
+            phone: this.cleanText(obj.CNTCT_TEL || ''),
+            menu: this.cleanText(obj.RPRSNTV_MENU || ''),
             rating: parseFloat(obj.google_rating) || 0,
             reviewCount: parseInt(obj.google_review_count) || 0,
             lat: parseFloat(obj.LAT) || parseFloat(obj.google_lat) || 0,
             lng: parseFloat(obj.LNG) || parseFloat(obj.google_lng) || 0,
             image: obj.MAIN_IMG_NORMAL || obj.MAIN_IMG_THUMB || '',
             homepage: obj.HOMEPAGE_URL || '',
-            hours: obj.USAGE_DAY_WEEK_AND_TIME || '',
+            hours: this.cleanText(obj.USAGE_DAY_WEEK_AND_TIME || ''),
             reviews: [
                 obj.review_1_text,
                 obj.review_2_text,
                 obj.review_3_text,
                 obj.review_4_text,
                 obj.review_5_text
-            ].filter(review => review && review.trim())
+            ].filter(review => review && review.trim()).map(review => this.cleanText(review))
         };
+    }
+
+    cleanText(text) {
+        if (!text) return '';
+        return text
+            .replace(/\r\n/g, ' ')
+            .replace(/\n/g, ' ')
+            .replace(/\r/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
     }
 
     cleanDescription(description) {
         if (!description) return '';
-        return description
-            .replace(/\n/g, ' ')
-            .replace(/\s+/g, ' ')
-            .trim()
-            .substring(0, 200);
+        return this.cleanText(description).substring(0, 200);
     }
 
     determineCategory(menu, title) {
