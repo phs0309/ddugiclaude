@@ -55,14 +55,17 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: '메시지가 필요합니다.' });
     }
 
-    // 현재 시간 정보
+    // 현재 한국 시간 정보
     const now = new Date();
-    const currentHour = now.getHours();
+    const koreaDate = new Date(now.toLocaleString("en-US", {timeZone: "Asia/Seoul"}));
+    const currentHour = koreaDate.getHours();
     const koreaTime = new Intl.DateTimeFormat('ko-KR', { 
         timeZone: 'Asia/Seoul', 
         hour: '2-digit', 
         minute: '2-digit' 
-    }).format(now);
+    }).format(koreaDate);
+    
+    console.log(`현재 한국 시간: ${currentHour}시 (${koreaTime})`);
 
     // 맛집 검색 및 분석 (현재 시간 포함)
     const searchCriteria = visitBusanService.analyzeUserQuery(message, currentHour);

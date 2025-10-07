@@ -11,6 +11,13 @@ class VisitBusanService {
         this.loadData();
     }
 
+    // 한국 시간 가져오기
+    getKoreaHour() {
+        const now = new Date();
+        const koreaDate = new Date(now.toLocaleString("en-US", {timeZone: "Asia/Seoul"}));
+        return koreaDate.getHours();
+    }
+
     loadData() {
         try {
             const csvPath = join(__dirname, '..', 'R_data', '비짓부산_cleaned_reviews.csv');
@@ -241,8 +248,8 @@ class VisitBusanService {
         return shuffled.slice(0, count);
     }
 
-    // 시간대별 맛집 추천
-    getTimeBasedRecommendations(hour = new Date().getHours()) {
+    // 시간대별 맛집 추천 (한국 시간 기준)
+    getTimeBasedRecommendations(hour = this.getKoreaHour()) {
         let mealType = '';
         let categories = [];
         let keywords = [];
@@ -409,7 +416,7 @@ ${locationOptions.join('\n')}
     }
 
     // 사용자 질문 분석하여 검색 조건 추출
-    analyzeUserQuery(query, currentHour = new Date().getHours()) {
+    analyzeUserQuery(query, currentHour = this.getKoreaHour()) {
         const criteria = {};
         const lowerQuery = query.toLowerCase();
         
