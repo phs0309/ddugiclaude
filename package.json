@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "start": "echo 'Static site - use Vercel for deployment'",
-    "dev": "echo 'For local development, use a static server'",
+    "dev": "node --experimental-modules server.cjs",
     "build": "echo 'Build completed'",
     "vercel-build": "echo 'Vercel build completed'"
   },

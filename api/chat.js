@@ -1,9 +1,19 @@
 import visitBusanService from './visitBusanService.js';
+import ConversationAnalyzer from './conversationAnalyzer.js';
 
 // 간단한 in-memory rate limiting (프로덕션에서는 Redis 사용 권장)
 const requestCounts = new Map();
 const RATE_LIMIT = 10; // 분당 10회
 const WINDOW_MS = 60 * 1000; // 1분
+
+// 대화 기록 메모리 저장소 (세션별)
+const conversationMemory = new Map();
+const MAX_MEMORY_ENTRIES = 100; // 최대 세션 수
+const MAX_CONVERSATION_LENGTH = 20; // 세션당 최대 대화 수
+const MEMORY_CLEANUP_INTERVAL = 60 * 60 * 1000; // 1시간마다 정리
+
+// AI 대화 분석기 초기화
+const conversationAnalyzer = new ConversationAnalyzer();
 
 function checkRateLimit(ip) {
     const now = Date.now();
@@ -24,6 +34,190 @@ function checkRateLimit(ip) {
     recentRequests.push(now);
     requestCounts.set(ip, recentRequests);
     return true;
+}
+
+// 메모리 정리 함수
+function cleanupMemory() {
+    const now = Date.now();
+    for (const [sessionId, sessionData] of conversationMemory.entries()) {
+        // 1시간 이상 비활성 세션 제거
+        if (now - sessionData.lastActivity > MEMORY_CLEANUP_INTERVAL) {
+            conversationMemory.delete(sessionId);
+        }
+    }
+    
+    // 최대 세션 수 초과시 오래된 것부터 제거
+    if (conversationMemory.size > MAX_MEMORY_ENTRIES) {
+        const sessions = Array.from(conversationMemory.entries())
+            .sort((a, b) => a[1].lastActivity - b[1].lastActivity);
+        
+        const toRemove = sessions.slice(0, conversationMemory.size - MAX_MEMORY_ENTRIES);
+        toRemove.forEach(([sessionId]) => conversationMemory.delete(sessionId));
+    }
+}
+
+// 대화 기록 관리 함수
+function getConversationHistory(sessionId) {
+    if (!conversationMemory.has(sessionId)) {
+        conversationMemory.set(sessionId, {
+            messages: [],
+            userPreferences: {
+                preferredAreas: [],
+                preferredCategories: [],
+                priceRange: null,
+                lastVisitedArea: null
+            },
+            lastActivity: Date.now()
+        });
+    }
+    
+    const sessionData = conversationMemory.get(sessionId);
+    sessionData.lastActivity = Date.now();
+    return sessionData;
+}
+
+function addToConversationHistory(sessionId, message, role) {
+    const sessionData = getConversationHistory(sessionId);
+    
+    sessionData.messages.push({
+        role: role,
+        content: message,
+        timestamp: Date.now()
+    });
+    
+    // 대화 길이 제한
+    if (sessionData.messages.length > MAX_CONVERSATION_LENGTH) {
+        sessionData.messages = sessionData.messages.slice(-MAX_CONVERSATION_LENGTH);
+    }
+    
+    // 사용자 선호도 분석 및 업데이트
+    if (role === 'user') {
+        updateUserPreferences(sessionData, message);
+    }
+}
+
+function updateUserPreferences(sessionData, message) {
+    const lowerMessage = message.toLowerCase();
+    
+    // 지역 선호도 업데이트
+    const areas = ['해운대', '서면', '남포동', '광안리', '부산대', '강서구', '동래', '기장', '센텀'];
+    areas.forEach(area => {
+        if (lowerMessage.includes(area)) {
+            if (!sessionData.userPreferences.preferredAreas.includes(area)) {
+                sessionData.userPreferences.preferredAreas.push(area);
+            }
+            sessionData.userPreferences.lastVisitedArea = area;
+        }
+    });
+    
+    // 카테고리 선호도 업데이트
+    const categories = ['한식', '해산물', '분식', '카페', '양식', '중식', '일식', '치킨', '피자'];
+    categories.forEach(category => {
+        if (lowerMessage.includes(category)) {
+            if (!sessionData.userPreferences.preferredCategories.includes(category)) {
+                sessionData.userPreferences.preferredCategories.push(category);
+            }
+        }
+    });
+    
+    // 가격 선호도 업데이트
+    if (lowerMessage.includes('저렴') || lowerMessage.includes('가성비') || lowerMessage.includes('싸')) {
+        sessionData.userPreferences.priceRange = 'budget';
+    } else if (lowerMessage.includes('비싸') || lowerMessage.includes('고급') || lowerMessage.includes('특별한')) {
+        sessionData.userPreferences.priceRange = 'premium';
+    }
+}
+
+// AI 분석 결과를 검색 조건으로 변환
+function buildSearchCriteriaFromAnalysis(analysis, userPreferences, currentHour) {
+    const criteria = {
+        timeHour: currentHour
+    };
+    
+    // AI 분석에서 추출된 정보 사용
+    const extractedInfo = analysis.extractedInfo || {};
+    const context = analysis.context || {};
+    
+    // 지역 정보 (더 적극적인 기억 활용)
+    if (extractedInfo.preferredArea) {
+        criteria.area = extractedInfo.preferredArea;
+    } else if (userPreferences.lastVisitedArea && 
+               (context.locationIntent === 'flexible' || 
+                context.locationIntent === 'unknown' || 
+                !context.locationIntent)) {
+        // 이전에 언급한 지역을 기본값으로 사용
+        criteria.area = userPreferences.lastVisitedArea;
+        console.log(`🏖️ 이전 대화에서 언급한 지역 활용: ${criteria.area}`);
+    }
+    
+    // 음식 카테고리
+    if (extractedInfo.foodCategory) {
+        criteria.category = extractedInfo.foodCategory;
+    } else if (userPreferences.preferredCategories.length > 0) {
+        criteria.category = userPreferences.preferredCategories[0];
+    }
+    
+    // 특정 음식 키워드
+    if (extractedInfo.specificFood) {
+        criteria.keyword = extractedInfo.specificFood;
+    } else if (extractedInfo.keywords && extractedInfo.keywords.length > 0) {
+        criteria.keyword = extractedInfo.keywords[0];
+    }
+    
+    // 시간대별 추론
+    const timePreference = context.timePreference;
+    if (timePreference && timePreference !== 'flexible') {
+        const timeHourMap = {
+            'breakfast': 9,
+            'lunch': 12,
+            'snack': 16,
+            'dinner': 19,
+            'late_night': 23
+        };
+        
+        if (timeHourMap[timePreference]) {
+            criteria.timeHour = timeHourMap[timePreference];
+        }
+    }
+    
+    // 예산 고려사항
+    if (context.budgetConcern === 'budget' || userPreferences.priceRange === 'budget') {
+        criteria.priceRange = 'budget';
+        criteria.minRating = 3.5; // 가성비 중심이므로 평점 기준 낮춤
+    } else if (context.budgetConcern === 'premium') {
+        criteria.priceRange = 'premium';
+        criteria.minRating = 4.3; // 고급 맛집이므로 평점 기준 높임
+    } else {
+        criteria.minRating = 4.0; // 기본 평점 기준
+    }
+    
+    // 분위기 고려사항
+    if (context.atmospherePreference) {
+        criteria.atmosphere = context.atmospherePreference;
+    }
+    
+    // 사회적 맥락 고려
+    if (context.socialContext === 'date') {
+        criteria.atmosphere = 'fancy';
+        criteria.minRating = 4.2;
+    } else if (context.socialContext === 'with_friends') {
+        criteria.atmosphere = 'lively';
+    }
+    
+    // 위치 정보 필요 여부 판단
+    criteria.needsLocationClarification = analysis.conversationFlow?.needsMoreInfo && 
+                                        !extractedInfo.preferredArea && 
+                                        !userPreferences.lastVisitedArea &&
+                                        context.locationIntent === 'unknown';
+    
+    // 긴급도에 따른 추천 개수 조정
+    if (analysis.urgency === 'high') {
+        criteria.limit = 3; // 빠른 추천을 위해 3개만
+    } else {
+        criteria.limit = 6; // 일반적으로 6개
+    }
+    
+    return criteria;
 }
 
 export default async function handler(req, res) {
@@ -49,11 +243,28 @@ export default async function handler(req, res) {
         });
     }
 
-    const { message } = req.body || {};
+    const { message, sessionId = 'anonymous_' + Date.now() } = req.body || {};
 
     if (!message) {
         return res.status(400).json({ error: '메시지가 필요합니다.' });
     }
+
+    // 메모리 정리 실행 (확률적으로)
+    if (Math.random() < 0.1) { // 10% 확률로 정리 실행
+        cleanupMemory();
+    }
+
+    // 세션별 대화 기록 가져오기
+    const sessionData = getConversationHistory(sessionId);
+    
+    // 사용자 메시지를 대화 기록에 추가
+    addToConversationHistory(sessionId, message, 'user');
+    
+    console.log(`📝 현재 세션 선호도:`, {
+        preferredAreas: sessionData.userPreferences.preferredAreas,
+        lastVisitedArea: sessionData.userPreferences.lastVisitedArea,
+        preferredCategories: sessionData.userPreferences.preferredCategories
+    });
 
     // 현재 한국 시간 정보
     const now = new Date();
@@ -67,14 +278,28 @@ export default async function handler(req, res) {
     
     console.log(`현재 한국 시간: ${currentHour}시 (${koreaTime})`);
 
-    // 의도 분석: 일상 대화 vs 맛집 추천
-    const isCasualChat = visitBusanService.isCasualConversation(message);
-    const isRestaurantRequest = visitBusanService.isRestaurantRecommendationRequest(message);
+    // AI 기반 대화 분석
+    console.log('🤖 AI 대화 분석 시작...');
+    const conversationAnalysis = await conversationAnalyzer.analyzeConversation(
+        message, 
+        sessionData.messages,
+        sessionData.userPreferences
+    );
+    
+    console.log('분석 결과:', JSON.stringify(conversationAnalysis, null, 2));
+    
+    // 분석 결과를 기반으로 의도 파악
+    const isCasualChat = conversationAnalysis.intent === 'greeting' || 
+                        conversationAnalysis.intent === 'emotion' || 
+                        conversationAnalysis.intent === 'general';
+    const isRestaurantRequest = conversationAnalysis.intent === 'restaurant_recommendation';
     
     // 일상 대화인 경우 맛집 검색하지 않고 자연스러운 대화
     if (isCasualChat && !isRestaurantRequest) {
         try {
-            const casualResponse = await callClaudeAPI(message, [], currentHour, '', 'casual');
+            const casualResponse = await callClaudeAPI(message, [], currentHour, '', 'casual', sessionData, conversationAnalysis);
+            addToConversationHistory(sessionId, casualResponse, 'assistant');
+            
             return res.status(200).json({
                 response: casualResponse,
                 restaurants: [], // 일상 대화이므로 맛집 카드 없음
@@ -85,7 +310,9 @@ export default async function handler(req, res) {
             });
         } catch (error) {
             // 일상 대화 fallback
-            const casualFallback = generateCasualResponse(message);
+            const casualFallback = generateCasualResponse(message, conversationAnalysis);
+            addToConversationHistory(sessionId, casualFallback, 'assistant');
+            
             return res.status(200).json({
                 response: casualFallback,
                 restaurants: [],
@@ -97,8 +324,10 @@ export default async function handler(req, res) {
         }
     }
     
-    // 맛집 추천 요청인 경우에만 기존 로직 실행
-    const searchCriteria = visitBusanService.analyzeUserQuery(message, currentHour);
+    // AI 분석 결과를 기반으로 검색 조건 생성
+    const searchCriteria = buildSearchCriteriaFromAnalysis(conversationAnalysis, sessionData.userPreferences, currentHour);
+    
+    console.log('생성된 검색 조건:', JSON.stringify(searchCriteria, null, 2));
     
     // 위치 정보 없는 일반적인 음식 질문인 경우 위치를 먼저 물어봄
     if (searchCriteria.needsLocationClarification) {
@@ -126,7 +355,9 @@ export default async function handler(req, res) {
 
     // Claude API 사용 시도 (더 세심한 에러 처리)
     try {
-        const claudeResponse = await callClaudeAPI(message, matchedRestaurants, currentHour, timeMessage);
+        const claudeResponse = await callClaudeAPI(message, matchedRestaurants, currentHour, timeMessage, 'restaurant', sessionData, conversationAnalysis);
+        addToConversationHistory(sessionId, claudeResponse, 'assistant');
+        
         return res.status(200).json({
             response: claudeResponse,
             restaurants: matchedRestaurants.slice(0, 6), // 최대 6개 카드
@@ -151,6 +382,8 @@ export default async function handler(req, res) {
         
         // 실패시 기본 응답 사용
         const fallbackResponse = generateSimpleResponse(message, matchedRestaurants, timeMessage, searchCriteria.needsLocationClarification);
+        addToConversationHistory(sessionId, fallbackResponse, 'assistant');
+        
         return res.status(200).json({
             response: fallbackResponse,
             restaurants: searchCriteria.needsLocationClarification ? [] : matchedRestaurants.slice(0, 6),
@@ -165,7 +398,7 @@ export default async function handler(req, res) {
     }
 }
 
-async function callClaudeAPI(message, matchedRestaurants = [], currentHour = new Date().getHours(), timeMessage = '', conversationType = 'restaurant', retryCount = 0) {
+async function callClaudeAPI(message, matchedRestaurants = [], currentHour = new Date().getHours(), timeMessage = '', conversationType = 'restaurant', sessionData = null, conversationAnalysis = null, retryCount = 0) {
     const apiKey = process.env.CLAUDE_API_KEY;
     
     if (!apiKey) {
@@ -184,6 +417,69 @@ async function callClaudeAPI(message, matchedRestaurants = [], currentHour = new
         ).join('\n\n');
     }
     
+    // 대화 컨텍스트 생성
+    let conversationContext = '';
+    if (sessionData && sessionData.messages.length > 0) {
+        const recentMessages = sessionData.messages.slice(-6); // 최근 6개 메시지만 사용
+        conversationContext = '\n\n최근 대화 내용:\n' + recentMessages.map(msg => 
+            `${msg.role === 'user' ? '사용자' : '뚜기'}: ${msg.content}`
+        ).join('\n');
+    }
+    
+    // 사용자 선호도 정보 생성
+    let preferencesContext = '';
+    if (sessionData && sessionData.userPreferences) {
+        const prefs = sessionData.userPreferences;
+        let prefInfo = [];
+        
+        if (prefs.preferredAreas.length > 0) {
+            prefInfo.push(`선호 지역: ${prefs.preferredAreas.join(', ')}`);
+        }
+        if (prefs.preferredCategories.length > 0) {
+            prefInfo.push(`선호 음식: ${prefs.preferredCategories.join(', ')}`);
+        }
+        if (prefs.lastVisitedArea) {
+            prefInfo.push(`최근 관심 지역: ${prefs.lastVisitedArea}`);
+        }
+        if (prefs.priceRange) {
+            prefInfo.push(`가격 선호도: ${prefs.priceRange === 'budget' ? '가성비' : '고급'}`);
+        }
+        
+        if (prefInfo.length > 0) {
+            preferencesContext = '\n\n사용자 선호도 정보:\n' + prefInfo.join('\n');
+        }
+    }
+    
+    // AI 분석 컨텍스트 생성
+    let analysisContext = '';
+    if (conversationAnalysis) {
+        let analysisInfo = [];
+        
+        if (conversationAnalysis.context) {
+            const ctx = conversationAnalysis.context;
+            if (ctx.mood && ctx.mood !== 'neutral') {
+                analysisInfo.push(`현재 기분: ${ctx.mood}`);
+            }
+            if (ctx.socialContext && ctx.socialContext !== 'alone') {
+                analysisInfo.push(`동행: ${ctx.socialContext === 'date' ? '연인' : ctx.socialContext === 'with_friends' ? '친구들' : ctx.socialContext === 'family' ? '가족' : ctx.socialContext}`);
+            }
+            if (ctx.urgency && ctx.urgency === 'high') {
+                analysisInfo.push(`급함: 빠른 추천 필요`);
+            }
+            if (ctx.atmospherePreference && ctx.atmospherePreference !== 'casual') {
+                analysisInfo.push(`원하는 분위기: ${ctx.atmospherePreference}`);
+            }
+        }
+        
+        if (conversationAnalysis.emotions && conversationAnalysis.emotions.length > 0) {
+            analysisInfo.push(`감정 상태: ${conversationAnalysis.emotions.join(', ')}`);
+        }
+        
+        if (analysisInfo.length > 0) {
+            analysisContext = '\n\n상황 분석:\n' + analysisInfo.join('\n');
+        }
+    }
+
     let promptContent = '';
     
     if (conversationType === 'casual') {
@@ -200,6 +496,7 @@ async function callClaudeAPI(message, matchedRestaurants = [], currentHour = new
 대화 방식:
 - 자연스러운 일상 대화를 나눠
 - 상대방에게 관심을 보이고 친근하게 대화해
+- 이전 대화 내용을 기억하고 연결지어서 대화해
 - 맛집이나 음식 관련 질문이 아니면 맛집을 추천하지 말고 일반 대화를 해
 - 핵심을 잘 파악하고 간결하게 대답해
 
@@ -207,6 +504,7 @@ async function callClaudeAPI(message, matchedRestaurants = [], currentHour = new
 - 항상 한국어로 답변하세요
 - 말을 시작할 때 마! 라고 시작하고 항상 반말로 대화해
 - 일상적인 주제로 자연스럽게 대화해
+- 상황과 감정을 잘 파악해서 맞춤형 응답을 해줘${conversationContext}${preferencesContext}${analysisContext}
 
 사용자 질문: ${message}`;
     } else {
@@ -225,6 +523,7 @@ async function callClaudeAPI(message, matchedRestaurants = [], currentHour = new
 - 시간대 메시지: ${timeMessage}
 
 대화 방식:
+- 이전 대화 내용과 사용자 선호도를 기억하고 반영해서 추천해
 - 현재 시간대에 맞는 음식을 우선 추천해
 - 자연스러운 대화를 통해 사용자의 취향과 상황을 파악해
 - 맛집을 추천할 때는 대화 흐름에 맞춰서 적절한 시점에 추천해
@@ -236,7 +535,8 @@ async function callClaudeAPI(message, matchedRestaurants = [], currentHour = new
 - 항상 한국어로 답변하세요
 - 말을 시작할 때 마! 라고 시작하고 항상 반말로 대화해
 - 현재 시간대를 고려한 맛집을 소개하세요
-- 맛집 이름과 함께 정확한 주소 정보를 포함하세요${restaurantContext}
+- 맛집 이름과 함께 정확한 주소 정보를 포함하세요
+- 사용자의 상황과 감정, 동행자를 고려해서 맞춤형 추천을 해줘${restaurantContext}${conversationContext}${preferencesContext}${analysisContext}
 
 사용자 질문: ${message}`;
     }
@@ -408,8 +708,44 @@ ${ratingText}
 뭘 먹고 싶은지 말해봐~ 😊`;
 }
 
-function generateCasualResponse(message) {
+function generateCasualResponse(message, conversationAnalysis = null) {
     const lowerMessage = message.toLowerCase();
+    
+    // AI 분석 결과를 활용한 맞춤형 응답
+    if (conversationAnalysis) {
+        const mood = conversationAnalysis.context?.mood;
+        const emotions = conversationAnalysis.emotions || [];
+        
+        // 감정 상태에 맞는 응답
+        if (emotions.includes('hungry')) {
+            return `마! 배고프구나! 🤤
+            
+뭔가 맛있는 거 먹고 싶나? 
+부산에 맛집이 진짜 많은데, 뭘 먹을지 말해봐라!`;
+        }
+        
+        if (emotions.includes('tired')) {
+            return `마! 많이 피곤하구나... 😴
+            
+부산 와서 돌아다니느라 힘들었지?
+편하게 쉴 수 있는 카페나 든든한 음식 먹고 힘내봐라!`;
+        }
+        
+        if (emotions.includes('excited')) {
+            return `마! 기분 좋아 보이네! 😄
+            
+부산 여행 재미있지? 뭔가 특별한 걸 찾고 있나?
+신나는 기분에 맛있는 거 하나 추천해줄까?`;
+        }
+        
+        // 동행자에 따른 응답
+        if (conversationAnalysis.context?.socialContext === 'date') {
+            return `마! 연인이랑 왔구나! 💕
+            
+부산에서 데이트하기 좋은 곳들이 많아!
+분위기 좋은 맛집이나 카페 찾고 있으면 말해봐라~`;
+        }
+    }
     
     // 인사 응답
     if (lowerMessage.includes('안녕') || lowerMessage.includes('하이')) {
