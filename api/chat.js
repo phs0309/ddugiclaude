@@ -1,4 +1,4 @@
-import restaurantService from './restaurantService.js';
+import visitBusanService from './visitBusanService.js';
 
 // 간단한 in-memory rate limiting (프로덕션에서는 Redis 사용 권장)
 const requestCounts = new Map();
@@ -56,8 +56,8 @@ export default async function handler(req, res) {
     }
 
     // 맛집 검색 및 분석
-    const searchCriteria = restaurantService.analyzeUserQuery(message);
-    const matchedRestaurants = restaurantService.findRestaurants(searchCriteria);
+    const searchCriteria = visitBusanService.analyzeUserQuery(message);
+    const matchedRestaurants = visitBusanService.findRestaurants(searchCriteria);
 
     // Claude API 사용 시도 (더 세심한 에러 처리)
     try {
@@ -105,8 +105,8 @@ async function callClaudeAPI(message, matchedRestaurants = [], retryCount = 0) {
     
     let restaurantContext = '';
     if (matchedRestaurants.length > 0) {
-        restaurantContext = '\n\n찾은 맛집들:\n' + matchedRestaurants.map(r => 
-            `- ${r.name} (${r.area}): ${r.description}, 가격대: ${r.priceRange}`
+        restaurantContext = '\n\n비짓부산에서 찾은 맛집들:\n' + matchedRestaurants.map(r => 
+            `- ${r.name} (${r.area}): ${r.description}${r.menu ? ', 대표메뉴: ' + r.menu : ''}${r.rating > 0 ? ', 평점: ' + r.rating + '점' : ''}`
         ).join('\n');
     }
     
@@ -221,13 +221,17 @@ function generateSimpleResponse(message, matchedRestaurants = []) {
     // 맛집 데이터가 있으면 사용
     if (matchedRestaurants.length > 0) {
         const restaurant = matchedRestaurants[0];
+        const ratingText = restaurant.rating > 0 ? `⭐ ${restaurant.rating}점` : '';
+        const menuText = restaurant.menu ? `🍽️ ${restaurant.menu}` : '';
+        
         return `마! 뚜기다이가! 🐧
 
 ${restaurant.area}에서 ${restaurant.category} 맛집 찾았다!
 
 🍜 **${restaurant.name}**
 📍 ${restaurant.address}
-💰 ${restaurant.priceRange}
+${menuText}
+${ratingText}
 ✨ ${restaurant.description}
 
 이 집 진짜 맛있다 아이가! 한번 가봐라~ 😋`;
