@@ -1,0 +1,214 @@
+{
+  "totalPosts": 15,
+  "locationStats": {
+    "해운대": 7,
+    "서면": 5,
+    "광안리": 2,
+    "남포동": 1
+  },
+  "foodTypeStats": {
+    "돼지국밥": 5,
+    "밀면": 5,
+    "회": 5
+  },
+  "topRestaurants": [
+    {
+      "name": "해운대돼지국밥",
+      "location": "해운대",
+      "foodType": "돼지국밥",
+      "mentions": 5,
+      "totalLikes": 3388
+    },
+    {
+      "name": "광안리횟집",
+      "location": "광안리",
+      "foodType": "회",
+      "mentions": 5,
+      "totalLikes": 2408
+    },
+    {
+      "name": "서면밀면집",
+      "location": "서면",
+      "foodType": "밀면",
+      "mentions": 5,
+      "totalLikes": 1837
+    }
+  ],
+  "hashtags": {
+    "부산맛집": {
+      "hashtag": "부산맛집",
+      "posts": [
+        {
+          "id": "mock_1755960533783_1",
+          "caption": "#부산맛집 오늘 해운대에서 먹은 돼지국밥 진짜 맛있었어요! 국물이 진하고 고기도 많이 들어있어서 대만족 ㅎㅎ #부산맛집 #해운대맛집 #돼지국밥",
+          "location": "해운대",
+          "likes": 767,
+          "timestamp": "2025-08-23T14:48:53.783Z",
+          "user": "user_772",
+          "restaurant_mentioned": "해운대돼지국밥",
+          "food_type": "돼지국밥"
+        },
+        {
+          "id": "mock_1755960533784_2",
+          "caption": "서면 맛집 추천! 이 밀면집은 정말 숨은 보석이에요 🍜 #부산맛집 #서면맛집 #밀면 #부산여행",
+          "location": "서면",
+          "likes": 389,
+          "timestamp": "2025-08-23T14:48:53.784Z",
+          "user": "user_306",
+          "restaurant_mentioned": "서면밀면집",
+          "food_type": "밀면"
+        },
+        {
+          "id": "mock_1755960533784_3",
+          "caption": "광안리 바다 보면서 먹는 회는 또 다른 맛이네요! #부산맛집 #광안리맛집 #회 #부산데이트 #바다뷰",
+          "location": "광안리",
+          "likes": 250,
+          "timestamp": "2025-08-23T14:48:53.784Z",
+          "user": "user_97",
+          "restaurant_mentioned": "광안리횟집",
+          "food_type": "회"
+        }
+      ]
+    },
+    "해운대맛집": {
+      "hashtag": "해운대맛집",
+      "posts": [
+        {
+          "id": "mock_1755960534798_1",
+          "caption": "#해운대맛집 오늘 해운대에서 먹은 돼지국밥 진짜 맛있었어요! 국물이 진하고 고기도 많이 들어있어서 대만족 ㅎㅎ #부산맛집 #해운대맛집 #돼지국밥",
+          "location": "해운대",
+          "likes": 1048,
+          "timestamp": "2025-08-23T14:48:54.798Z",
+          "user": "user_719",
+          "restaurant_mentioned": "해운대돼지국밥",
+          "food_type": "돼지국밥"
+        },
+        {
+          "id": "mock_1755960534798_2",
+          "caption": "서면 맛집 추천! 이 밀면집은 정말 숨은 보석이에요 🍜 #해운대맛집 #서면맛집 #밀면 #부산여행",
+          "location": "서면",
+          "likes": 216,
+          "timestamp": "2025-08-23T14:48:54.798Z",
+          "user": "user_232",
+          "restaurant_mentioned": "서면밀면집",
+          "food_type": "밀면"
+        },
+        {
+          "id": "mock_1755960534798_3",
+          "caption": "광안리 바다 보면서 먹는 회는 또 다른 맛이네요! #해운대맛집 #광안리맛집 #회 #부산데이트 #바다뷰",
+          "location": "광안리",
+          "likes": 909,
+          "timestamp": "2025-08-23T14:48:54.798Z",
+          "user": "user_425",
+          "restaurant_mentioned": "광안리횟집",
+          "food_type": "회"
+        }
+      ]
+    },
+    "서면맛집": {
+      "hashtag": "서면맛집",
+      "posts": [
+        {
+          "id": "mock_1755960535799_1",
+          "caption": "#서면맛집 오늘 해운대에서 먹은 돼지국밥 진짜 맛있었어요! 국물이 진하고 고기도 많이 들어있어서 대만족 ㅎㅎ #부산맛집 #해운대맛집 #돼지국밥",
+          "location": "해운대",
+          "likes": 841,
+          "timestamp": "2025-08-23T14:48:55.799Z",
+          "user": "user_464",
+          "restaurant_mentioned": "해운대돼지국밥",
+          "food_type": "돼지국밥"
+        },
+        {
+          "id": "mock_1755960535799_2",
+          "caption": "서면 맛집 추천! 이 밀면집은 정말 숨은 보석이에요 🍜 #서면맛집 #서면맛집 #밀면 #부산여행",
+          "location": "서면",
+          "likes": 327,
+          "timestamp": "2025-08-23T14:48:55.799Z",
+          "user": "user_617",
+          "restaurant_mentioned": "서면밀면집",
+          "food_type": "밀면"
+        },
+        {
+          "id": "mock_1755960535799_3",
+          "caption": "광안리 바다 보면서 먹는 회는 또 다른 맛이네요! #서면맛집 #광안리맛집 #회 #부산데이트 #바다뷰",
+          "location": "광안리",
+          "likes": 247,
+          "timestamp": "2025-08-23T14:48:55.799Z",
+          "user": "user_827",
+          "restaurant_mentioned": "광안리횟집",
+          "food_type": "회"
+        }
+      ]
+    },
+    "남포동맛집": {
+      "hashtag": "남포동맛집",
+      "posts": [
+        {
+          "id": "mock_1755960536803_1",
+          "caption": "#남포동맛집 오늘 해운대에서 먹은 돼지국밥 진짜 맛있었어요! 국물이 진하고 고기도 많이 들어있어서 대만족 ㅎㅎ #부산맛집 #해운대맛집 #돼지국밥",
+          "location": "해운대",
+          "likes": 262,
+          "timestamp": "2025-08-23T14:48:56.803Z",
+          "user": "user_333",
+          "restaurant_mentioned": "해운대돼지국밥",
+          "food_type": "돼지국밥"
+        },
+        {
+          "id": "mock_1755960536803_2",
+          "caption": "서면 맛집 추천! 이 밀면집은 정말 숨은 보석이에요 🍜 #남포동맛집 #서면맛집 #밀면 #부산여행",
+          "location": "서면",
+          "likes": 454,
+          "timestamp": "2025-08-23T14:48:56.803Z",
+          "user": "user_490",
+          "restaurant_mentioned": "서면밀면집",
+          "food_type": "밀면"
+        },
+        {
+          "id": "mock_1755960536803_3",
+          "caption": "광안리 바다 보면서 먹는 회는 또 다른 맛이네요! #남포동맛집 #광안리맛집 #회 #부산데이트 #바다뷰",
+          "location": "광안리",
+          "likes": 404,
+          "timestamp": "2025-08-23T14:48:56.803Z",
+          "user": "user_45",
+          "restaurant_mentioned": "광안리횟집",
+          "food_type": "회"
+        }
+      ]
+    },
+    "광안리맛집": {
+      "hashtag": "광안리맛집",
+      "posts": [
+        {
+          "id": "mock_1755960537811_1",
+          "caption": "#광안리맛집 오늘 해운대에서 먹은 돼지국밥 진짜 맛있었어요! 국물이 진하고 고기도 많이 들어있어서 대만족 ㅎㅎ #부산맛집 #해운대맛집 #돼지국밥",
+          "location": "해운대",
+          "likes": 470,
+          "timestamp": "2025-08-23T14:48:57.811Z",
+          "user": "user_491",
+          "restaurant_mentioned": "해운대돼지국밥",
+          "food_type": "돼지국밥"
+        },
+        {
+          "id": "mock_1755960537811_2",
+          "caption": "서면 맛집 추천! 이 밀면집은 정말 숨은 보석이에요 🍜 #광안리맛집 #서면맛집 #밀면 #부산여행",
+          "location": "서면",
+          "likes": 451,
+          "timestamp": "2025-08-23T14:48:57.811Z",
+          "user": "user_763",
+          "restaurant_mentioned": "서면밀면집",
+          "food_type": "밀면"
+        },
+        {
+          "id": "mock_1755960537811_3",
+          "caption": "광안리 바다 보면서 먹는 회는 또 다른 맛이네요! #광안리맛집 #광안리맛집 #회 #부산데이트 #바다뷰",
+          "location": "광안리",
+          "likes": 598,
+          "timestamp": "2025-08-23T14:48:57.811Z",
+          "user": "user_200",
+          "restaurant_mentioned": "광안리횟집",
+          "food_type": "회"
+        }
+      ]
+    }
+  }
+}

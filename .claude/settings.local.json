@@ -5,8 +5,26 @@
       "Bash(git rm:*)",
       "Bash(git reset:*)",
       "Bash(git commit:*)",
-      "Bash(npm start)"
+      "Bash(npm start)",
+      "Bash(python:*)",
+      "WebFetch(domain:www.visitbusan.net)",
+      "Bash(dir:*)",
+      "Bash(PORT=3005 npm start)",
+      "Bash(npm install:*)",
+      "Bash(npm run dev:*)",
+      "Bash(start http://localhost:3000)",
+      "Bash(node:*)",
+      "Bash(awk:*)",
+      "Bash(taskkill:*)",
+      "Bash(sed:*)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(cmd /c:*)",
+      "Bash(set PORT=3012)",
+      "Bash(git add:*)",
+      "Bash(copy server.js server.cjs)"
     ],
-    "deny": []
+    "deny": [],
+    "defaultMode": "acceptEdits"
   }
 }

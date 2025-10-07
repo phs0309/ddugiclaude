@@ -1,28 +1,59 @@
 const restaurants = require('./restaurantData');
+const { loadVisitBusanData } = require('./visitBusanDataLoader');
+
+let visitBusanRestaurants = [];
+
+// 비짓부산 데이터 로드 (Google Places 리뷰 포함)
+async function initializeVisitBusanData() {
+    try {
+        visitBusanRestaurants = await loadVisitBusanData('./R_data/비짓부산_cleaned_reviews.csv');
+        console.log(`비짓부산 맛집 데이터 로드 완료: ${visitBusanRestaurants.length}개`);
+    } catch (error) {
+        console.error('비짓부산 데이터 로드 실패:', error);
+        // 백업 파일로 재시도
+        try {
+            visitBusanRestaurants = await loadVisitBusanData('./R_data/비짓부산_438.csv');
+            console.log(`백업 데이터 로드 완료: ${visitBusanRestaurants.length}개`);
+        } catch (backupError) {
+            console.error('백업 데이터 로드도 실패:', backupError);
+            visitBusanRestaurants = [];
+        }
+    }
+}
+
+// 초기화 실행
+initializeVisitBusanData();
 
 class RestaurantService {
-    // 모든 맛집 가져오기
+    // 모든 맛집 가져오기 (비짓부산 데이터 우선, 기존 데이터는 백업용)
     getAllRestaurants() {
+        // 비짓부산 데이터가 있으면 우선 사용, 없으면 기본 데이터 사용
+        if (visitBusanRestaurants.length > 0) {
+            return visitBusanRestaurants;
+        }
         return restaurants;
     }
 
     // 지역별 맛집 검색
     getRestaurantsByArea(area) {
-        return restaurants.filter(restaurant => 
+        const allRestaurants = this.getAllRestaurants();
+        return allRestaurants.filter(restaurant => 
             restaurant.area.toLowerCase().includes(area.toLowerCase())
         );
     }
 
     // 카테고리별 맛집 검색
     getRestaurantsByCategory(category) {
-        return restaurants.filter(restaurant => 
+        const allRestaurants = this.getAllRestaurants();
+        return allRestaurants.filter(restaurant => 
             restaurant.category.toLowerCase().includes(category.toLowerCase())
         );
     }
 
     // 가격대별 맛집 검색
     getRestaurantsByPrice(maxPrice) {
-        return restaurants.filter(restaurant => {
+        const allRestaurants = this.getAllRestaurants();
+        return allRestaurants.filter(restaurant => {
             const priceMatch = restaurant.priceRange.match(/(\d+,?\d*)-?(\d+,?\d*)?원?/);
             if (priceMatch) {
                 const minPrice = parseInt(priceMatch[1].replace(',', ''));
@@ -35,7 +66,8 @@ class RestaurantService {
     // 키워드로 맛집 검색 (이름, 설명, 특산품에서 검색)
     searchRestaurants(keyword) {
         const searchTerm = keyword.toLowerCase();
-        return restaurants.filter(restaurant => 
+        const allRestaurants = this.getAllRestaurants();
+        return allRestaurants.filter(restaurant => 
             restaurant.name.toLowerCase().includes(searchTerm) ||
             restaurant.description.toLowerCase().includes(searchTerm) ||
             restaurant.specialties.some(specialty => specialty.toLowerCase().includes(searchTerm)) ||
@@ -45,7 +77,7 @@ class RestaurantService {
 
     // 복합 조건으로 맛집 검색 (모드별 필터링 포함)
     findRestaurants(criteria) {
-        let results = restaurants;
+        let results = this.getAllRestaurants();
 
         // 모드별 맛집 필터링
         if (criteria.mode) {
@@ -263,16 +295,86 @@ class RestaurantService {
         return shuffled.slice(0, count);
     }
 
-    // 맛집 추천 요청인지 확인
+    // 맛집 추천 요청인지 확인 (더 정확한 의도 감지)
     isRestaurantRecommendationRequest(query) {
         const lowerQuery = query.toLowerCase();
-        const recommendationKeywords = [
-            '추천', '맛집', '음식점', '식당', '먹을', '먹고', '드실', '어디', '뭐먹', '뭘먹',
+        
+        // 명확한 맛집 추천 키워드들
+        const strongKeywords = [
+            '추천', '맛집', '음식점', '식당', '먹을', '먹고', '드실', '어디서', '뭐먹', '뭘먹',
             '밥', '점심', '저녁', '식사', '회식', '데이트', '소개', '알려줘', '찾아줘',
-            '가볼만한', '유명한', '맛있는', '괜찮은', '좋은', '갈만한'
+            '가볼만한', '유명한', '맛있는', '괜찮은', '좋은', '갈만한', '가게', '곳'
         ];
         
-        return recommendationKeywords.some(keyword => lowerQuery.includes(keyword));
+        // 음식 관련 키워드들
+        const foodKeywords = [
+            '국밥', '밀면', '회', '갈비', '치킨', '삼겹살', '해물', '냉면', '짜장면',
+            '돼지국밥', '곰장어', '족발', '곱창', '파전', '호떡', '떡볶이', '김밥',
+            '한식', '중식', '일식', '양식', '분식', '해산물', '구이', '찜', '탕'
+        ];
+        
+        // 지역 키워드들
+        const areas = ['해운대', '서면', '남포동', '광안리', '센텀', '동래', '기장', '영도', '사상'];
+        
+        // 일반적인 인사말이나 감사 표현 (맛집 추천이 아님)
+        const casualExpressions = [
+            '안녕', '하이', '헬로', '반가', '고마워', '감사', '고맙', '수고',
+            '잘가', '안녕히', '바이', '나중에', '다음에', '또봐', '잘있어',
+            '뭐해', '어떻게', '잘지내', '어디야', '뭐하고', '잘있었어'
+        ];
+        
+        // 대화성 질문들 (맛집 추천이 아님)
+        const conversationalQuestions = [
+            '뭐야', '왜', '어떻게', '언제', '누구', '몇시', '얼마나', '어디야',
+            '이름이', '나이가', '직업이', '취미가', '좋아하는', '싫어하는'
+        ];
+        
+        // 먼저 일반적인 인사말이나 대화성 질문인지 확인
+        if (casualExpressions.some(expr => lowerQuery.includes(expr)) && 
+            !strongKeywords.some(keyword => lowerQuery.includes(keyword))) {
+            return false;
+        }
+        
+        if (conversationalQuestions.some(question => lowerQuery.includes(question)) &&
+            !strongKeywords.some(keyword => lowerQuery.includes(keyword)) &&
+            !foodKeywords.some(food => lowerQuery.includes(food))) {
+            return false;
+        }
+        
+        // 강한 맛집 추천 키워드가 있으면 즉시 true
+        if (strongKeywords.some(keyword => lowerQuery.includes(keyword))) {
+            return true;
+        }
+        
+        // 음식 관련 키워드가 있으면 true
+        if (foodKeywords.some(food => lowerQuery.includes(food))) {
+            return true;
+        }
+        
+        // 지역 + "가서" "에서" 같은 조합
+        const hasArea = areas.some(area => lowerQuery.includes(area));
+        const hasLocationIntent = lowerQuery.includes('가서') || lowerQuery.includes('에서') || 
+                                 lowerQuery.includes('갈만한') || lowerQuery.includes('놀러');
+        
+        if (hasArea && hasLocationIntent) {
+            return true;
+        }
+        
+        // 매우 짧은 메시지는 일반 대화로 처리
+        if (query.trim().length <= 3) {
+            return false;
+        }
+        
+        // 의문문 형태인데 맛집 관련 단어가 없으면 일반 대화
+        if (lowerQuery.includes('?') || lowerQuery.includes('ㅇ') || lowerQuery.includes('ㄱ')) {
+            if (!strongKeywords.some(keyword => lowerQuery.includes(keyword)) &&
+                !foodKeywords.some(food => lowerQuery.includes(food))) {
+                return false;
+            }
+        }
+        
+        // 기본적으로는 false (맛집 추천 의도가 명확하지 않으면 일반 대화로 처리)
+        return false;
     }
 
     // 사용자 질문 분석하여 검색 조건 추출

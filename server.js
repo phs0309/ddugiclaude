@@ -120,7 +120,7 @@ app.get('/api/tag-analyzer', async (req, res) => {
 });
 
 // 새로운 AI 대화 관리자 import
-const AIConversationManager = require('./api/aiConversationManager.cjs');
+const AIConversationManager = require('./api/aiConversationManagerServer.cjs');
 const aiManager = new AIConversationManager();
 
 // Claude API endpoint  

@@ -15,7 +15,7 @@ body {
     transition: all 0.3s ease;
 }
 
-/* 테마별 CSS 변수 */
+/* CSS 변수 - 단일 테마로 통합 */
 :root {
     --primary-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
     --primary-color: #4facfe;
@@ -25,42 +25,6 @@ body {
     --chat-background: #f8f9fa;
     --bot-message-bg: #e3f2fd;
     --user-message-bg: #4facfe;
-}
-
-/* 가성비 테마 (기본 - 현재 색상) */
-body.theme-budget {
-    --primary-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-    --primary-color: #4facfe;
-    --primary-dark: #1565c0;
-    --menu-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-    --background-color: #f5f5f5;
-    --chat-background: #f8f9fa;
-    --bot-message-bg: #e3f2fd;
-    --user-message-bg: #4facfe;
-}
-
-/* 데이트 맛집 테마 (핑크) */
-body.theme-date {
-    --primary-gradient: linear-gradient(135deg, #ff6b9d 0%, #ffd93d 100%);
-    --primary-color: #ff6b9d;
-    --primary-dark: #c2185b;
-    --menu-gradient: linear-gradient(135deg, #ff6b9d 0%, #ffd93d 100%);
-    --background-color: #fdf2f8;
-    --chat-background: #fef7ff;
-    --bot-message-bg: #fce7f3;
-    --user-message-bg: #ff6b9d;
-}
-
-/* 찐 맛집 테마 (주황/빨강 - 매운맛 느낌) */
-body.theme-authentic {
-    --primary-gradient: linear-gradient(135deg, #ff6347 0%, #ff8c00 100%);
-    --primary-color: #ff6347;
-    --primary-dark: #d2691e;
-    --menu-gradient: linear-gradient(135deg, #ff6347 0%, #ff8c00 100%);
-    --background-color: #fff8f5;
-    --chat-background: #fffaf7;
-    --bot-message-bg: #ffebe6;
-    --user-message-bg: #ff6347;
 }
 
 /* 메뉴 버튼 */
@@ -194,6 +158,325 @@ body.theme-authentic {
     display: flex;
     flex-direction: column;
     overflow: hidden;
+}
+
+/* 맛집 카드 컨테이너 */
+.restaurant-cards-container {
+    position: relative;
+    margin: 15px 0;
+    max-width: 100%;
+}
+
+.restaurant-cards-wrapper {
+    display: flex;
+    overflow-x: auto;
+    gap: 15px;
+    padding: 10px 0;
+    scroll-behavior: smooth;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none;  /* Internet Explorer 10+ */
+}
+
+.restaurant-cards-wrapper::-webkit-scrollbar { /* WebKit */
+    display: none;
+}
+
+/* 맛집 카드 */
+.restaurant-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    min-width: 280px;
+    max-width: 280px;
+    flex-shrink: 0;
+}
+
+.restaurant-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* 맛집 카드 이미지 */
+.restaurant-card-image {
+    position: relative;
+    width: 100%;
+    height: 200px;
+    overflow: hidden;
+    background: #f8f9fa;
+}
+
+.restaurant-card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+/* 이미지 플레이스홀더 */
+.image-placeholder {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    color: #6c757d;
+    font-size: 14px;
+    z-index: 1;
+}
+
+.image-placeholder i {
+    font-size: 32px;
+    margin-bottom: 8px;
+    color: #adb5bd;
+}
+
+.image-placeholder span {
+    font-weight: 500;
+}
+
+/* 북마크 버튼 */
+.bookmark-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(0, 0, 0, 0.6);
+    border: none;
+    border-radius: 20px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    z-index: 3;
+}
+
+.bookmark-btn:hover {
+    background: rgba(0, 0, 0, 0.8);
+    transform: scale(1.1);
+}
+
+.bookmark-btn i {
+    font-size: 14px;
+    color: white;
+    transition: all 0.2s ease;
+}
+
+.bookmark-btn.bookmarked i {
+    color: #ffd700;
+}
+
+.bookmark-btn:hover i {
+    color: #ffd700;
+}
+
+.restaurant-card:hover .restaurant-card-image img {
+    transform: scale(1.05);
+}
+
+.restaurant-card-overlay {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 12px;
+}
+
+.restaurant-rating {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.restaurant-rating i {
+    color: #ffd700;
+}
+
+.review-count {
+    opacity: 0.8;
+    font-size: 11px;
+}
+
+/* 맛집 카드 내용 */
+.restaurant-card-content {
+    padding: 15px;
+}
+
+.restaurant-name {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 8px;
+    color: #333;
+    line-height: 1.2;
+}
+
+.restaurant-area {
+    color: #666;
+    font-size: 14px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.restaurant-area i {
+    color: var(--primary-color);
+}
+
+.restaurant-description {
+    color: #555;
+    font-size: 13px;
+    line-height: 1.4;
+    margin-bottom: 12px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* 특산품 태그 */
+.restaurant-specialties {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 15px;
+}
+
+.specialty-tag {
+    background: var(--primary-gradient);
+    color: white;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 500;
+}
+
+/* 구글 리뷰 정보 */
+.restaurant-google-review {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 12px 0;
+    padding: 8px 12px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    border-left: 3px solid #4285f4;
+}
+
+.google-label {
+    font-size: 13px;
+    color: #666;
+    font-weight: 500;
+}
+
+.google-rating {
+    font-size: 16px;
+    font-weight: bold;
+    color: #4285f4;
+}
+
+.google-count {
+    font-size: 13px;
+    color: #666;
+    margin-left: 4px;
+}
+
+/* 카드 액션 버튼 */
+.restaurant-card-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    border-top: 1px solid #f0f0f0;
+    padding-top: 12px;
+    margin-top: 8px;
+}
+
+.action-btn {
+    background: none;
+    border: none;
+    padding: 8px;
+    border-radius: 8px;
+    cursor: pointer;
+    color: #666;
+    font-size: 16px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.action-btn:hover {
+    background: #f5f5f5;
+    color: var(--primary-color);
+    transform: scale(1.1);
+}
+
+.save-btn:hover {
+    color: #ff4757;
+}
+
+.share-btn:hover {
+    color: #2ecc71;
+}
+
+.directions-btn:hover {
+    color: #3742fa;
+}
+
+/* 슬라이드 네비게이션 버튼 */
+.slide-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    transition: all 0.2s ease;
+    z-index: 10;
+    font-size: 18px;
+    color: var(--primary-color);
+}
+
+.slide-nav:hover {
+    background: white;
+    transform: translateY(-50%) scale(1.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.slide-nav-prev {
+    left: -20px;
+}
+
+.slide-nav-next {
+    right: -20px;
+}
+
+.slide-nav:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+    transform: translateY(-50%);
+}
+
+.slide-nav:disabled:hover {
+    transform: translateY(-50%);
 }
 
 .chat-header {

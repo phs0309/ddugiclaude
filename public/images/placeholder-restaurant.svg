@@ -1,0 +1,10 @@
+<svg width="400" height="200" viewBox="0 0 400 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect width="400" height="200" fill="#F5F5F5"/>
+<circle cx="200" cy="80" r="24" fill="#CCCCCC"/>
+<path d="M176 80C176 68.95 184.95 60 196 60H204C215.05 60 224 68.95 224 80V100C224 111.05 215.05 120 204 120H196C184.95 120 176 111.05 176 100V80Z" fill="#DDDDDD"/>
+<rect x="180" y="130" width="40" height="4" fill="#BBBBBB"/>
+<rect x="180" y="140" width="30" height="4" fill="#BBBBBB"/>
+<rect x="180" y="150" width="35" height="4" fill="#BBBBBB"/>
+<path d="M190 75L195 85L205 85L197 92L200 102L190 95L180 102L183 92L175 85L185 85L190 75Z" fill="#4FACFE"/>
+<text x="200" y="175" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#999999">맛집 이미지</text>
+</svg>
