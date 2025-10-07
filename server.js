@@ -119,179 +119,110 @@ app.get('/api/tag-analyzer', async (req, res) => {
     }
 });
 
-// 대화 메모리 저장소 (세션별)
-const conversationMemory = new Map();
+// 새로운 AI 대화 관리자 import
+const AIConversationManager = require('./api/aiConversationManager.cjs');
+const aiManager = new AIConversationManager();
 
-// Claude API endpoint
+// Claude API endpoint  
 app.post('/api/chat', async (req, res) => {
     const { message, mode, sessionId = 'default_' + Date.now() } = req.body;
-    const CLAUDE_API_KEY = process.env.CLAUDE_API_KEY;
 
-    // API 키 확인
-    if (!CLAUDE_API_KEY) {
-        return res.status(500).json({ 
-            error: 'Claude API 키가 설정되지 않았습니다. 환경 변수를 확인해주세요.',
-            details: 'CLAUDE_API_KEY environment variable is required' 
-        });
+    if (!message) {
+        return res.status(400).json({ error: '메시지가 필요합니다.' });
     }
 
-    // 대화 기록 가져오기 또는 초기화
-    if (!conversationMemory.has(sessionId)) {
-        conversationMemory.set(sessionId, []);
-    }
-    const conversationHistory = conversationMemory.get(sessionId);
-
-    // 현재 사용자 메시지를 기록에 추가
-    conversationHistory.push({ role: 'user', content: message });
-
-    // 맛집 추천 서비스 로드
-    const restaurantService = require('./restaurantService');
-    
-    // 맛집 추천 의도 감지
-    const isRestaurantRequest = restaurantService.isRestaurantRecommendationRequest(message);
-    
-    let selectedRestaurants = [];
-    let restaurantDataText = '';
-    
-    if (isRestaurantRequest) {
-        // 맛집 추천 요청일 때만 맛집 데이터 포함
-        const criteria = restaurantService.analyzeUserQuery(message);
-        criteria.mode = mode; // 현재 선택된 모드 추가
-        
-        selectedRestaurants = restaurantService.findRestaurants(criteria).slice(0, 5);
-        
-        restaurantDataText = selectedRestaurants.map(restaurant => 
-            `${restaurant.name} (${restaurant.area})
-- 특징: ${restaurant.description}
-- 대표메뉴: ${restaurant.specialties.join(', ')}`
-        ).join('\n\n');
-    }
-
-    // 모드별 추천 방식 설정
-    const getModeDescription = (mode) => {
-        switch (mode) {
-            case 'authentic':
-                return `찐 맛집 모드: 유명하고 소문난 전통있는 맛집들을 우선적으로 추천해줘. 오래된 전통이나 명성이 있는 곳들을 강조해서 소개해.`;
-            case 'budget':
-                return `가성비 모드: 저렴하면서도 맛있는 현지인들이 자주 가는 동네 맛집들을 추천해줘. 가격 대비 만족도가 높은 곳들을 강조해서 소개해.`;
-            case 'date':
-                return `데이트 맛집 모드: 분위기 좋고 깔끔한 인테리어의 맛집들을 추천해줘. 연인과 함께 가기 좋은 곳들을 강조해서 소개해.`;
-            default:
-                return `일반적인 맛집을 자연스럽게 추천해줘.`;
-        }
-    };
-
-    // 시스템 프롬프트 구성 (맛집 추천 여부에 따라 다르게)
-    let systemPrompt;
-    
-    if (isRestaurantRequest && selectedRestaurants.length > 0) {
-        systemPrompt = `너 이름은 뚜기야, 부산 현지인이야.
-
-특징:
-- 부산의 로컬 맛집과 숨은 맛집들을 잘 알고 있어
-- 부산 사투리를 조금 써 
-- 상남자 스타일이야
-- ~~ 아이가?, 있다이가 ~~, ~~ 해봐라 같은 문장을 써줘
-- ~~노, ~~카이 같은 문장은 쓰지마
-
-대화 방식:
-- 자연스러운 대화를 통해 사용자의 취향과 상황을 파악해
-- 맛집을 추천할 때는 대화 흐름에 맞춰서 적절한 시점에 추천해
-- 사용자가 지역이나 음식 종류를 언급하면 그에 맞는 맛집을 추천해
-
-${getModeDescription(mode)}
-
-응답 규칙:
-- 항상 한국어로 답변하세요
-- 아래 제공된 맛집 데이터를 기반으로만 추천하세요
-- 자연스러운 대화 흐름 속에서 맛집을 소개하세요
-- 말을 시작할 때 마! 라고 시작하고 항상 반말로 대화해
-- 실제 데이터에 없는 정보는 추가하지 마세요
-
-사용 가능한 맛집 데이터:
-${restaurantDataText}`;
-    } else {
-        systemPrompt = `너 이름은 뚜기야, 부산 현지인이야.
-
-특징:
-- 부산의 로컬 맛집과 숨은 맛집들을 잘 알고 있어
-- 부산 사투리를 조금 써 
-- 상남자 스타일이야
-- ~~ 아이가?, 있다이가 ~~, ~~ 해봐라 같은 문장을 써줘
-- ~~노, ~~카이 같은 문장은 쓰지마
-
-대화 방식:
-- 자연스럽고 친근한 대화를 나누세요
-- 사용자가 인사하거나 일반적인 질문을 하면 자연스럽게 응답해주세요
-- 맛집에 대한 질문이 있을 때만 맛집을 추천해주세요
-
-응답 규칙:
-- 항상 한국어로 답변하세요
-- 말을 시작할 때 마! 라고 시작하고 항상 반말로 대화해
-- 자연스러운 대화를 이어가세요`;
-    }
+    console.log(`💬 로컬 서버 메시지: "${message}" (세션: ${sessionId})`);
 
     try {
-        // 대화 기록을 최대 10개까지만 유지 (토큰 제한 고려)
-        const recentHistory = conversationHistory.slice(-10);
+        // 1단계: AI가 먼저 대화를 처리하고 맛집 데이터가 필요한지 판단
+        let initialResponse = await aiManager.handleConversation(message, sessionId, []);
         
-        const response = await fetch('https://api.anthropic.com/v1/messages', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'x-api-key': CLAUDE_API_KEY,
-                'anthropic-version': '2023-06-01'
-            },
-            body: JSON.stringify({
-                model: 'claude-3-5-sonnet-20241022',
-                max_tokens: 1000,
-                system: systemPrompt,
-                messages: recentHistory
-            })
+        console.log('🤖 AI 1차 응답:', {
+            conversationType: initialResponse.conversationType,
+            needsRestaurantData: initialResponse.needsRestaurantData,
+            searchQuery: initialResponse.searchQuery
         });
 
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('Claude API Error:', errorText);
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        const aiResponse = data.content[0].text;
-        
-        // AI 응답을 대화 기록에 추가
-        conversationHistory.push({ role: 'assistant', content: aiResponse });
-        
-        // 대화 기록이 너무 길어지면 오래된 것부터 제거 (최대 20개 메시지)
-        if (conversationHistory.length > 20) {
-            conversationHistory.splice(0, conversationHistory.length - 20);
-        }
-        
-        // 디버깅을 위해 맛집 추천 여부 로그 출력
-        console.log('맛집 추천 요청:', isRestaurantRequest);
-        if (selectedRestaurants.length > 0) {
-            console.log('첫 번째 맛집 데이터:', {
-                name: selectedRestaurants[0].name,
-                image: selectedRestaurants[0].image,
-                googleRating: selectedRestaurants[0].googleRating,
-                googleReviewCount: selectedRestaurants[0].googleReviewCount
+        // 2단계: AI가 맛집 데이터를 요청했다면 검색해서 다시 처리
+        if (initialResponse.needsRestaurantData && initialResponse.searchQuery) {
+            console.log('🔍 맛집 검색 시작:', initialResponse.searchQuery);
+            
+            // 검색 조건에 맞는 맛집 데이터 가져오기
+            const restaurantData = findRestaurantsForAI(initialResponse.searchQuery);
+            console.log(`📍 찾은 맛집 수: ${restaurantData.length}개`);
+            
+            // 맛집 데이터와 함께 AI가 최종 응답 생성
+            const finalResponse = await aiManager.handleConversation(
+                message, 
+                sessionId + '_final',
+                restaurantData
+            );
+            
+            return res.json({
+                response: finalResponse.response,
+                restaurants: finalResponse.restaurants || restaurantData.slice(0, 6),
+                conversationType: finalResponse.conversationType,
+                currentTime: finalResponse.currentTime,
+                isRecommendation: true
             });
         }
-        
-        res.json({ 
-            response: aiResponse,
-            restaurants: isRestaurantRequest ? selectedRestaurants : [],
-            searchCriteria: {},
-            isRecommendation: isRestaurantRequest
+
+        // 3단계: 일반 대화인 경우 그대로 반환
+        return res.json({
+            response: initialResponse.response,
+            restaurants: [],
+            conversationType: initialResponse.conversationType,
+            currentTime: initialResponse.currentTime,
+            isRecommendation: false
         });
+
     } catch (error) {
-        console.error('Error:', error);
-        res.status(500).json({ 
-            error: 'API 호출 중 오류가 발생했습니다.',
-            details: error.message 
+        console.error('AI 대화 처리 오류:', error);
+        
+        return res.json({
+            response: `마! 미안하다... 😅\n\n잠깐 머리가 하얘졌네. 다시 말해봐라!`,
+            restaurants: [],
+            conversationType: 'error',
+            isRecommendation: false
         });
     }
 });
+
+// AI 검색 쿼리를 실제 맛집 검색으로 변환 (로컬 서버용)
+function findRestaurantsForAI(searchQuery) {
+    try {
+        // 맛집 서비스 로드
+        const restaurantService = require('./restaurantService');
+        
+        const criteria = {
+            timeHour: new Date().getHours()
+        };
+        
+        if (searchQuery.area) {
+            criteria.area = searchQuery.area;
+        }
+        
+        if (searchQuery.category) {
+            criteria.category = searchQuery.category;
+        }
+        
+        if (searchQuery.keyword) {
+            criteria.keyword = searchQuery.keyword;
+        }
+        
+        // 기본적으로 평점 있는 맛집만
+        criteria.minRating = 3.5;
+        
+        console.log('🔍 실제 검색 조건:', criteria);
+        
+        const results = restaurantService.findRestaurants(criteria);
+        return results.slice(0, 20); // 최대 20개
+        
+    } catch (error) {
+        console.error('맛집 검색 오류:', error);
+        return [];
+    }
+}
 
 // Instagram Only Scraper API (인스타그램 전용)
 app.post('/api/instagram-scraper', async (req, res) => {
