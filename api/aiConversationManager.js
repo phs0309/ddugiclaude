@@ -119,9 +119,9 @@ class AIConversationManager {
         // 맛집 데이터 컨텍스트
         let restaurantContext = '';
         if (restaurantData.length > 0) {
-            restaurantContext = '\n\n사용 가능한 맛집 정보:\n' + 
-                restaurantData.slice(0, 20).map((r, idx) => 
-                    `${idx + 1}. ${r.name} (${r.area}) - ${r.category}\n   ${r.address}\n   ${r.description}`
+            restaurantContext = '\n\n찾은 맛집 정보:\n' + 
+                restaurantData.slice(0, 6).map((r, idx) => 
+                    `${idx + 1}. ${r.name} (${r.area})\n   ${r.address}\n   ${r.description}`
                 ).join('\n\n');
         }
 
@@ -158,7 +158,7 @@ ${conversationContext}
 
 맛집 추천이 필요할 때:
 {
-    "response": "간결한 맛집 추천 응답 (지역 물어볼 때도 짧게)",
+    "response": "간단한 맛집 추천 멘트 (맛집 카드는 별도로 표시되니까 간단히만)",
     "conversationType": "restaurant_recommendation", 
     "needsRestaurantData": true,
     "searchQuery": {
@@ -175,11 +175,11 @@ ${conversationContext}
 - 키워드만 보고 판단하기
 - 길고 장황한 설명 (항상 간결하게!)
 
-**맛집 데이터 (필요시에만 사용):**${restaurantContext}
+**맛집 데이터 (참고용):**${restaurantContext}
 
 사용자 메시지: "${message}"
 
-위 내용을 바탕으로 자연스럽고 상황에 맞는 응답을 JSON 형태로 해줘.`;
+**중요**: 맛집 추천 시에는 간단한 멘트만 하고, 상세한 맛집 정보(이름, 주소, 평점)는 별도 카드로 표시되니까 중복하지 마. JSON 형태로 응답해줘.`;
 
         // Vercel 환경에서 호환성을 위해 https 모듈 사용  
         const { default: https } = await import('https');
