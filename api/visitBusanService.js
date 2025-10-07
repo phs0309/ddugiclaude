@@ -175,6 +175,22 @@ class VisitBusanService {
     findRestaurants(criteria) {
         let results = [...this.restaurants];
 
+        // 시간대별 필터링 추가
+        if (criteria.timeHour !== undefined) {
+            const timeBasedRecs = this.getTimeBasedRecommendations(criteria.timeHour);
+            
+            // 시간대 맞춤 필터링이 있으면 우선 적용
+            if (timeBasedRecs.restaurants.length > 0 && !criteria.area && !criteria.category && !criteria.keyword) {
+                results = timeBasedRecs.restaurants;
+            } else {
+                // 시간대에 맞는 추가 가중치 부여
+                const timeRelevantIds = new Set(timeBasedRecs.restaurants.map(r => r.id));
+                results.forEach(r => {
+                    r.timeRelevant = timeRelevantIds.has(r.id);
+                });
+            }
+        }
+
         if (criteria.area) {
             results = results.filter(restaurant => 
                 restaurant.area && restaurant.area.includes(criteria.area)
@@ -202,8 +218,14 @@ class VisitBusanService {
             );
         }
 
-        // 평점 순으로 정렬
+        // 평점 순으로 정렬 (시간 관련성도 고려)
         results.sort((a, b) => {
+            // 시간대 관련성 우선 고려
+            if (a.timeRelevant !== b.timeRelevant) {
+                return b.timeRelevant ? 1 : -1;
+            }
+            
+            // 그 다음 평점 순
             if (b.rating !== a.rating) {
                 return b.rating - a.rating;
             }
@@ -219,10 +241,108 @@ class VisitBusanService {
         return shuffled.slice(0, count);
     }
 
+    // 시간대별 맛집 추천
+    getTimeBasedRecommendations(hour = new Date().getHours()) {
+        let mealType = '';
+        let categories = [];
+        let keywords = [];
+
+        if (hour >= 6 && hour < 11) {
+            // 아침 (6-11시)
+            mealType = '아침';
+            categories = ['카페', '베이커리'];
+            keywords = ['아침', '커피', '빵', '토스트', '샌드위치'];
+        } else if (hour >= 11 && hour < 15) {
+            // 점심 (11-15시)
+            mealType = '점심';
+            categories = ['한식', '분식', '중식', '일식'];
+            keywords = ['국밥', '정식', '백반', '덮밥', '면', '국수', '짜장면', '김밥'];
+        } else if (hour >= 15 && hour < 18) {
+            // 간식/카페 시간 (15-18시)
+            mealType = '간식';
+            categories = ['카페', '베이커리', '분식'];
+            keywords = ['커피', '케이크', '떡볶이', '튀김', '호떡'];
+        } else if (hour >= 18 && hour < 22) {
+            // 저녁 (18-22시)
+            mealType = '저녁';
+            categories = ['한식', '해산물', '양식', '중식', '일식'];
+            keywords = ['갈비', '삼겹살', '회', '파스타', '고기', '구이', '찜', '정식'];
+        } else {
+            // 야식 (22-6시)
+            mealType = '야식';
+            categories = ['한식', '치킨', '분식'];
+            keywords = ['치킨', '족발', '곱창', '라면', '떡볶이', '안주', '술집'];
+        }
+
+        const results = this.restaurants.filter(restaurant => {
+            // 카테고리 매칭
+            const categoryMatch = categories.some(cat => 
+                restaurant.category && restaurant.category.includes(cat)
+            );
+            
+            // 키워드 매칭 (이름, 메뉴, 설명에서)
+            const keywordMatch = keywords.some(keyword => 
+                restaurant.name.toLowerCase().includes(keyword) ||
+                restaurant.menu.toLowerCase().includes(keyword) ||
+                restaurant.description.toLowerCase().includes(keyword)
+            );
+
+            return categoryMatch || keywordMatch;
+        });
+
+        // 평점 순으로 정렬
+        results.sort((a, b) => {
+            if (b.rating !== a.rating) {
+                return b.rating - a.rating;
+            }
+            return b.reviewCount - a.reviewCount;
+        });
+
+        return {
+            mealType,
+            hour,
+            restaurants: results.slice(0, 12), // 최대 12개
+            message: this.getMealTimeMessage(mealType, hour)
+        };
+    }
+
+    getMealTimeMessage(mealType, hour) {
+        const messages = {
+            '아침': `좋은 아침이다이가! ☀️ 하루를 시작하는 든든한 아침 먹을 곳 추천해줄게!`,
+            '점심': `점심시간이다! 🍚 배고프지? 맛있는 점심 한 끼 어떠카?`,
+            '간식': `간식시간이네~ ☕ 달콤한 디저트나 커피 한 잔 어때?`,
+            '저녁': `저녁시간이다! 🌆 오늘 하루 수고했으니 맛있는 거 먹어야지!`,
+            '야식': `야식시간이네! 🌙 밤늦게까지 고생하니 든든한 야식 어떠카?`
+        };
+        
+        return messages[mealType] || `맛있는 거 먹고 싶을 시간이다! 🍽️`;
+    }
+
     // 사용자 질문 분석하여 검색 조건 추출
-    analyzeUserQuery(query) {
+    analyzeUserQuery(query, currentHour = new Date().getHours()) {
         const criteria = {};
         const lowerQuery = query.toLowerCase();
+
+        // 시간대 키워드 분석 추가
+        if (lowerQuery.includes('아침') || lowerQuery.includes('모닝')) {
+            criteria.mealTime = 'morning';
+            criteria.timeHour = 9;
+        } else if (lowerQuery.includes('점심') || lowerQuery.includes('런치')) {
+            criteria.mealTime = 'lunch';
+            criteria.timeHour = 12;
+        } else if (lowerQuery.includes('간식') || lowerQuery.includes('디저트') || lowerQuery.includes('커피')) {
+            criteria.mealTime = 'snack';
+            criteria.timeHour = 16;
+        } else if (lowerQuery.includes('저녁') || lowerQuery.includes('디너')) {
+            criteria.mealTime = 'dinner';
+            criteria.timeHour = 19;
+        } else if (lowerQuery.includes('야식') || lowerQuery.includes('밤') || lowerQuery.includes('늦은')) {
+            criteria.mealTime = 'latenight';
+            criteria.timeHour = 23;
+        } else {
+            // 시간 키워드가 없으면 현재 시간 사용
+            criteria.timeHour = currentHour;
+        }
 
         // 지역 키워드 매핑
         const areaKeywords = {

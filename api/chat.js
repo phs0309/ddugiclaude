@@ -55,16 +55,32 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: '메시지가 필요합니다.' });
     }
 
-    // 맛집 검색 및 분석
-    const searchCriteria = visitBusanService.analyzeUserQuery(message);
+    // 현재 시간 정보
+    const now = new Date();
+    const currentHour = now.getHours();
+    const koreaTime = new Intl.DateTimeFormat('ko-KR', { 
+        timeZone: 'Asia/Seoul', 
+        hour: '2-digit', 
+        minute: '2-digit' 
+    }).format(now);
+
+    // 맛집 검색 및 분석 (현재 시간 포함)
+    const searchCriteria = visitBusanService.analyzeUserQuery(message, currentHour);
     const matchedRestaurants = visitBusanService.findRestaurants(searchCriteria);
+    
+    // 시간대별 추천 메시지 생성
+    const timeBasedRec = visitBusanService.getTimeBasedRecommendations(currentHour);
+    const timeMessage = timeBasedRec.message;
 
     // Claude API 사용 시도 (더 세심한 에러 처리)
     try {
-        const claudeResponse = await callClaudeAPI(message, matchedRestaurants);
+        const claudeResponse = await callClaudeAPI(message, matchedRestaurants, currentHour, timeMessage);
         return res.status(200).json({
             response: claudeResponse,
             restaurants: matchedRestaurants.slice(0, 6), // 최대 6개 카드
+            timeMessage: timeMessage,
+            currentTime: koreaTime,
+            mealType: timeBasedRec.mealType,
             success: true,
             source: 'claude'
         });
@@ -82,10 +98,13 @@ export default async function handler(req, res) {
         }
         
         // 실패시 기본 응답 사용
-        const fallbackResponse = generateSimpleResponse(message, matchedRestaurants);
+        const fallbackResponse = generateSimpleResponse(message, matchedRestaurants, timeMessage);
         return res.status(200).json({
             response: fallbackResponse,
             restaurants: matchedRestaurants.slice(0, 6), // 최대 6개 카드
+            timeMessage: timeMessage,
+            currentTime: koreaTime,
+            mealType: timeBasedRec.mealType,
             success: true,
             source: 'fallback',
             error: error.message
@@ -93,7 +112,7 @@ export default async function handler(req, res) {
     }
 }
 
-async function callClaudeAPI(message, matchedRestaurants = [], retryCount = 0) {
+async function callClaudeAPI(message, matchedRestaurants = [], currentHour = new Date().getHours(), timeMessage = '', retryCount = 0) {
     const apiKey = process.env.CLAUDE_API_KEY;
     
     if (!apiKey) {
@@ -124,7 +143,12 @@ async function callClaudeAPI(message, matchedRestaurants = [], retryCount = 0) {
 - ~~ 아이가?, 있다이가 ~~, ~~ 해봐라 같은 문장을 써줘
 - ~~노, ~~카이 같은 문장은 쓰지마
 
+현재 상황:
+- 현재 시간: ${currentHour}시
+- 시간대 메시지: ${timeMessage}
+
 대화 방식:
+- 현재 시간대에 맞는 음식을 우선 추천해
 - 자연스러운 대화를 통해 사용자의 취향과 상황을 파악해
 - 맛집을 추천할 때는 대화 흐름에 맞춰서 적절한 시점에 추천해
 - 사용자가 지역이나 음식 종류를 언급하면 그에 맞는 맛집을 자연스럽게 추천해
@@ -132,7 +156,7 @@ async function callClaudeAPI(message, matchedRestaurants = [], retryCount = 0) {
 응답 규칙:
 - 항상 한국어로 답변하세요
 - 말을 시작할 때 마! 라고 시작하고 항상 반말로 대화해
-- 자연스러운 대화 흐름 속에서 맛집을 소개하세요${restaurantContext}
+- 현재 시간대를 고려한 맛집을 소개하세요${restaurantContext}
 
 사용자 질문: ${message}`
         }]
@@ -215,8 +239,12 @@ async function callClaudeAPI(message, matchedRestaurants = [], retryCount = 0) {
     });
 }
 
-function generateSimpleResponse(message, matchedRestaurants = []) {
+function generateSimpleResponse(message, matchedRestaurants = [], timeMessage = '') {
     const lowerMessage = message.toLowerCase();
+    const currentHour = new Date().getHours();
+    
+    // 시간대 인사말 먼저
+    let greeting = timeMessage || `마! 뚜기다이가! 🐧`;
     
     // 맛집 데이터가 있으면 사용
     if (matchedRestaurants.length > 0) {
@@ -224,7 +252,7 @@ function generateSimpleResponse(message, matchedRestaurants = []) {
         const ratingText = restaurant.rating > 0 ? `⭐ ${restaurant.rating}점` : '';
         const menuText = restaurant.menu ? `🍽️ ${restaurant.menu}` : '';
         
-        return `마! 뚜기다이가! 🐧
+        return `${greeting}
 
 ${restaurant.area}에서 ${restaurant.category} 맛집 찾았다!
 
