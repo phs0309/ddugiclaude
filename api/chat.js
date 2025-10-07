@@ -66,6 +66,24 @@ export default async function handler(req, res) {
 
     // 맛집 검색 및 분석 (현재 시간 포함)
     const searchCriteria = visitBusanService.analyzeUserQuery(message, currentHour);
+    
+    // 위치 정보 없는 일반적인 음식 질문인 경우 위치를 먼저 물어봄
+    if (searchCriteria.needsLocationClarification) {
+        const timeBasedRec = visitBusanService.getTimeBasedRecommendations(currentHour);
+        const locationInquiryMessage = visitBusanService.getLocationInquiryMessage(timeBasedRec.mealType, currentHour);
+        
+        return res.status(200).json({
+            response: locationInquiryMessage,
+            restaurants: [], // 위치 선택 전이므로 빈 배열
+            timeMessage: timeBasedRec.message,
+            currentTime: koreaTime,
+            mealType: timeBasedRec.mealType,
+            needsLocation: true,
+            success: true,
+            source: 'location_inquiry'
+        });
+    }
+    
     const matchedRestaurants = visitBusanService.findRestaurants(searchCriteria);
     
     // 시간대별 추천 메시지 생성
@@ -98,13 +116,14 @@ export default async function handler(req, res) {
         }
         
         // 실패시 기본 응답 사용
-        const fallbackResponse = generateSimpleResponse(message, matchedRestaurants, timeMessage);
+        const fallbackResponse = generateSimpleResponse(message, matchedRestaurants, timeMessage, searchCriteria.needsLocationClarification);
         return res.status(200).json({
             response: fallbackResponse,
-            restaurants: matchedRestaurants.slice(0, 6), // 최대 6개 카드
+            restaurants: searchCriteria.needsLocationClarification ? [] : matchedRestaurants.slice(0, 6),
             timeMessage: timeMessage,
             currentTime: koreaTime,
             mealType: timeBasedRec.mealType,
+            needsLocation: searchCriteria.needsLocationClarification,
             success: true,
             source: 'fallback',
             error: error.message
@@ -239,9 +258,27 @@ async function callClaudeAPI(message, matchedRestaurants = [], currentHour = new
     });
 }
 
-function generateSimpleResponse(message, matchedRestaurants = [], timeMessage = '') {
+function generateSimpleResponse(message, matchedRestaurants = [], timeMessage = '', needsLocation = false) {
     const lowerMessage = message.toLowerCase();
     const currentHour = new Date().getHours();
+    
+    // 위치 정보가 필요한 경우  
+    if (needsLocation) {
+        return `마! 뚜기다이가! 🐧
+
+맛집을 찾고 있구나? 어느 동네에서 먹을 건지 말해봐라!
+
+🏖️ **해운대/센텀** - 바다 보면서 먹기 좋은 곳
+🏢 **서면** - 부산의 중심가, 다양한 맛집  
+🎭 **남포동/자갈치** - 전통시장과 문화거리
+🌉 **광안리** - 야경 맛집의 성지
+🏫 **부산대/장전동** - 젊은 분위기의 맛집들
+✈️ **강서구** - 공항 근처 숨은 맛집
+🏛️ **동래** - 전통과 역사가 있는 맛집들
+🏪 **기장** - 신선한 해산물과 자연
+
+또는 "근처 맛집" 이라고 하면 현재 위치 기준으로 추천해줄게! 📍`;
+    }
     
     // 시간대 인사말 먼저
     let greeting = timeMessage || `마! 뚜기다이가! 🐧`;

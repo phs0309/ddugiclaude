@@ -318,10 +318,105 @@ class VisitBusanService {
         return messages[mealType] || `맛있는 거 먹고 싶을 시간이다! 🍽️`;
     }
 
+    // 위치 질문 메시지 생성
+    getLocationInquiryMessage(mealType, currentHour) {
+        const timeMessages = {
+            '아침': `좋은 아침이다이가! ☀️ 아침 먹을 곳을 찾고 있구나?`,
+            '점심': `점심시간이다! 🍚 배고플 텐데 어느 동네에서 먹을 거야?`,
+            '간식': `간식시간이네~ ☕ 달콤한 걸 찾고 있나?`,
+            '저녁': `저녁시간이다! 🌆 맛있는 거 먹고 싶구나?`,
+            '야식': `야식시간이네! 🌙 밤늦게 뭔가 먹고 싶지?`
+        };
+
+        const baseMessage = timeMessages[mealType] || `마! 뚜기다이가! 🐧 맛집을 찾고 있구나?`;
+
+        const locationOptions = [
+            '🏖️ **해운대/센텀** - 바다 보면서 먹기 좋은 곳',
+            '🏢 **서면** - 부산의 중심가, 다양한 맛집',  
+            '🎭 **남포동/자갈치** - 전통시장과 문화거리',
+            '🌉 **광안리** - 야경 맛집의 성지',
+            '🏫 **부산대/장전동** - 젊은 분위기의 맛집들',
+            '✈️ **강서구** - 공항 근처 숨은 맛집',
+            '🏛️ **동래** - 전통과 역사가 있는 맛집들',
+            '🏪 **기장** - 신선한 해산물과 자연'
+        ];
+
+        return `${baseMessage}
+
+어느 동네에서 먹을 건지 말해봐라! 
+
+${locationOptions.join('\n')}
+
+또는 "근처 맛집" 이라고 하면 현재 위치 기준으로 추천해줄게! 📍`;
+    }
+
+    // 위치 정보 감지 여부 확인
+    hasLocationInfo(query) {
+        const lowerQuery = query.toLowerCase();
+        
+        // 지역 키워드들
+        const locationKeywords = [
+            '해운대', '센텀', '서면', '부산진', '남포동', '중구', '자갈치', 
+            '광안리', '수영구', '기장', '기장군', '동래', '온천장', '동래구',
+            '부산대', '장전동', '금정구', '태종대', '영도', '영도구', 
+            '하단', '사하구', '연산동', '연제구', '사직', '덕천', '북구', 
+            '강서구', '김해공항', '범일동', '국제시장'
+        ];
+        
+        // 위치 관련 표현들
+        const locationExpressions = [
+            '근처', '주변', '앞', '뒤', '옆', '가까운', '인근', '주위', 
+            '동네', '지역', '구', '시', '동', '번지', '로', '길'
+        ];
+        
+        // 명확한 지역명이 있는지 확인
+        const hasExplicitLocation = locationKeywords.some(keyword => 
+            lowerQuery.includes(keyword)
+        );
+        
+        // 위치 관련 표현이 있는지 확인  
+        const hasLocationExpression = locationExpressions.some(expr => 
+            lowerQuery.includes(expr)
+        );
+        
+        return hasExplicitLocation || hasLocationExpression;
+    }
+
+    // 일반적인 음식 요청인지 확인 (위치 없이)
+    isGeneralFoodQuery(query) {
+        const lowerQuery = query.toLowerCase();
+        
+        const foodKeywords = [
+            '맛집', '음식', '먹을', '식당', '요리', '메뉴', '추천', 
+            '돼지국밥', '밀면', '회', '갈비', '치킨', '족발', '곱창',
+            '국밥', '면', '파스타', '피자', '초밥', '삼겹살', '냉면',
+            '아침', '점심', '저녁', '야식', '간식', '디저트', '커피'
+        ];
+        
+        const generalQuestions = [
+            '뭐', '어디', '어떤', '추천', '좋은', '맛있는', '유명한'
+        ];
+        
+        const hasFoodKeyword = foodKeywords.some(keyword => 
+            lowerQuery.includes(keyword)
+        );
+        
+        const hasGeneralQuestion = generalQuestions.some(question => 
+            lowerQuery.includes(question)
+        );
+        
+        return hasFoodKeyword || hasGeneralQuestion;
+    }
+
     // 사용자 질문 분석하여 검색 조건 추출
     analyzeUserQuery(query, currentHour = new Date().getHours()) {
         const criteria = {};
         const lowerQuery = query.toLowerCase();
+        
+        // 위치 정보 검사 추가
+        criteria.hasLocation = this.hasLocationInfo(query);
+        criteria.isGeneralFoodQuery = this.isGeneralFoodQuery(query);
+        criteria.needsLocationClarification = !criteria.hasLocation && criteria.isGeneralFoodQuery;
 
         // 시간대 키워드 분석 추가
         if (lowerQuery.includes('아침') || lowerQuery.includes('모닝')) {
