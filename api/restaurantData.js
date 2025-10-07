@@ -9,7 +9,8 @@ const restaurants = [
         priceRange: "30,000-50,000원",
         category: "한식",
         area: "해운대",
-        specialties: ["한우갈비", "갈비탕", "냉면"]
+        specialties: ["한우갈비", "갈비탕", "냉면"],
+        image: "https://images.unsplash.com/photo-1529042410759-befb1204b468?w=400&h=300&fit=crop"
     },
     {
         id: 2,
