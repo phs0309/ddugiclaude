@@ -396,30 +396,89 @@ ${locationOptions.join('\n')}
         return hasExplicitLocation || hasLocationExpression;
     }
 
-    // 일반적인 음식 요청인지 확인 (위치 없이)
-    isGeneralFoodQuery(query) {
+    // 맛집 추천을 명확히 요청하는지 확인
+    isRestaurantRecommendationRequest(query) {
         const lowerQuery = query.toLowerCase();
         
-        const foodKeywords = [
-            '맛집', '음식', '먹을', '식당', '요리', '메뉴', '추천', 
+        // 명확한 맛집 추천 요청 키워드
+        const recommendationKeywords = [
+            '맛집', '식당', '먹을', '추천', '알려줘', '소개', '찾아줘',
+            '어디', '가자', '가고싶어', '먹고싶어', '먹을까', '어떨까'
+        ];
+        
+        // 구체적인 음식명
+        const specificFoods = [
             '돼지국밥', '밀면', '회', '갈비', '치킨', '족발', '곱창',
             '국밥', '면', '파스타', '피자', '초밥', '삼겹살', '냉면',
-            '아침', '점심', '저녁', '야식', '간식', '디저트', '커피'
+            '삼계탕', '파전', '떡볶이', '김밥', '라면', '우동', '짬뽕',
+            '짜장면', '탕수육', '마라탕', '곰장어', '멸치', '전복'
         ];
         
-        const generalQuestions = [
-            '뭐', '어디', '어떤', '추천', '좋은', '맛있는', '유명한'
+        // 식사 시간대 언급
+        const mealTimes = [
+            '아침', '점심', '저녁', '야식', '간식', '브런치'
         ];
         
-        const hasFoodKeyword = foodKeywords.some(keyword => 
+        // 맛집 추천을 명시적으로 요청하는 패턴
+        const requestPatterns = [
+            '추천해', '알려줘', '소개해', '찾아줘', '가르쳐줘',
+            '어디가', '어디서', '뭐 먹', '어떤 곳', '좋은 곳'
+        ];
+        
+        const hasRecommendationKeyword = recommendationKeywords.some(keyword => 
             lowerQuery.includes(keyword)
         );
         
-        const hasGeneralQuestion = generalQuestions.some(question => 
-            lowerQuery.includes(question)
+        const hasSpecificFood = specificFoods.some(food => 
+            lowerQuery.includes(food)
         );
         
-        return hasFoodKeyword || hasGeneralQuestion;
+        const hasMealTime = mealTimes.some(time => 
+            lowerQuery.includes(time)
+        );
+        
+        const hasRequestPattern = requestPatterns.some(pattern => 
+            lowerQuery.includes(pattern)
+        );
+        
+        // 맛집 관련 요청이면서 추천을 명시적으로 요청하는 경우
+        return (hasRecommendationKeyword || hasSpecificFood || hasMealTime) && hasRequestPattern;
+    }
+
+    // 일반적인 대화인지 확인
+    isCasualConversation(query) {
+        const lowerQuery = query.toLowerCase();
+        
+        // 인사 및 일상 대화 키워드
+        const casualKeywords = [
+            '안녕', '하이', '반가', '어떻게', '뭐해', '뭐하고', '어때',
+            '좋은', '나쁜', '기분', '날씨', '오늘', '어제', '내일',
+            '감사', '고마', '미안', '죄송', '실례', '부탁',
+            '이름', '나이', '생일', '취미', '직업', '사는', '출신',
+            '좋아해', '싫어해', '취향', '관심', '생각'
+        ];
+        
+        // 질문이나 감정 표현
+        const conversationPatterns = [
+            '어떻게 생각해', '어떤 것 같아', '괜찮아', '좋아',
+            '싫어', '재미있어', '지루해', '피곤해', '힘들어'
+        ];
+        
+        const hasCasualKeyword = casualKeywords.some(keyword => 
+            lowerQuery.includes(keyword)
+        );
+        
+        const hasConversationPattern = conversationPatterns.some(pattern => 
+            lowerQuery.includes(pattern)
+        );
+        
+        return hasCasualKeyword || hasConversationPattern;
+    }
+
+    // 일반적인 음식 요청인지 확인 (위치 없이) - 기존 로직 유지하되 더 제한적으로
+    isGeneralFoodQuery(query) {
+        // 명확한 맛집 추천 요청이거나 일상 대화가 아닌 경우만
+        return this.isRestaurantRecommendationRequest(query) && !this.isCasualConversation(query);
     }
 
     // 사용자 질문 분석하여 검색 조건 추출

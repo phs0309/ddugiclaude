@@ -67,7 +67,37 @@ export default async function handler(req, res) {
     
     console.log(`현재 한국 시간: ${currentHour}시 (${koreaTime})`);
 
-    // 맛집 검색 및 분석 (현재 시간 포함)
+    // 의도 분석: 일상 대화 vs 맛집 추천
+    const isCasualChat = visitBusanService.isCasualConversation(message);
+    const isRestaurantRequest = visitBusanService.isRestaurantRecommendationRequest(message);
+    
+    // 일상 대화인 경우 맛집 검색하지 않고 자연스러운 대화
+    if (isCasualChat && !isRestaurantRequest) {
+        try {
+            const casualResponse = await callClaudeAPI(message, [], currentHour, '', 'casual');
+            return res.status(200).json({
+                response: casualResponse,
+                restaurants: [], // 일상 대화이므로 맛집 카드 없음
+                conversationType: 'casual',
+                currentTime: koreaTime,
+                success: true,
+                source: 'claude_casual'
+            });
+        } catch (error) {
+            // 일상 대화 fallback
+            const casualFallback = generateCasualResponse(message);
+            return res.status(200).json({
+                response: casualFallback,
+                restaurants: [],
+                conversationType: 'casual',
+                currentTime: koreaTime,
+                success: true,
+                source: 'casual_fallback'
+            });
+        }
+    }
+    
+    // 맛집 추천 요청인 경우에만 기존 로직 실행
     const searchCriteria = visitBusanService.analyzeUserQuery(message, currentHour);
     
     // 위치 정보 없는 일반적인 음식 질문인 경우 위치를 먼저 물어봄
@@ -82,6 +112,7 @@ export default async function handler(req, res) {
             currentTime: koreaTime,
             mealType: timeBasedRec.mealType,
             needsLocation: true,
+            conversationType: 'restaurant',
             success: true,
             source: 'location_inquiry'
         });
@@ -134,7 +165,7 @@ export default async function handler(req, res) {
     }
 }
 
-async function callClaudeAPI(message, matchedRestaurants = [], currentHour = new Date().getHours(), timeMessage = '', retryCount = 0) {
+async function callClaudeAPI(message, matchedRestaurants = [], currentHour = new Date().getHours(), timeMessage = '', conversationType = 'restaurant', retryCount = 0) {
     const apiKey = process.env.CLAUDE_API_KEY;
     
     if (!apiKey) {
@@ -151,12 +182,34 @@ async function callClaudeAPI(message, matchedRestaurants = [], currentHour = new
         ).join('\n');
     }
     
-    const postData = JSON.stringify({
-        model: 'claude-3-5-sonnet-20241022',
-        max_tokens: 1000,
-        messages: [{
-            role: 'user',
-            content: `너 이름은 뚜기야, 부산 현지인이야.
+    let promptContent = '';
+    
+    if (conversationType === 'casual') {
+        // 일상 대화 프롬프트
+        promptContent = `너 이름은 뚜기야, 부산 현지인이야.
+
+특징:
+- 부산 사투리를 조금 써 
+- 상남자 스타일이야
+- ~~ 아이가?, 있다이가 ~~, ~~ 해봐라 같은 문장을 써줘
+- ~~노, ~~카이 같은 문장은 쓰지마
+- 친근하고 재미있는 부산 사람
+
+대화 방식:
+- 자연스러운 일상 대화를 나눠
+- 상대방에게 관심을 보이고 친근하게 대화해
+- 맛집이나 음식 관련 질문이 아니면 맛집을 추천하지 말고 일반 대화를 해
+- 핵심을 잘 파악하고 간결하게 대답해
+
+응답 규칙:
+- 항상 한국어로 답변하세요
+- 말을 시작할 때 마! 라고 시작하고 항상 반말로 대화해
+- 일상적인 주제로 자연스럽게 대화해
+
+사용자 질문: ${message}`;
+    } else {
+        // 맛집 추천 프롬프트
+        promptContent = `너 이름은 뚜기야, 부산 현지인이야.
 
 특징:
 - 부산의 로컬 맛집과 숨은 맛집들을 잘 알고 있어
@@ -181,7 +234,15 @@ async function callClaudeAPI(message, matchedRestaurants = [], currentHour = new
 - 말을 시작할 때 마! 라고 시작하고 항상 반말로 대화해
 - 현재 시간대를 고려한 맛집을 소개하세요${restaurantContext}
 
-사용자 질문: ${message}`
+사용자 질문: ${message}`;
+    }
+    
+    const postData = JSON.stringify({
+        model: 'claude-3-5-sonnet-20241022',
+        max_tokens: 1000,
+        messages: [{
+            role: 'user',
+            content: promptContent
         }]
     });
 
@@ -339,4 +400,53 @@ ${ratingText}
 • "남포동 회집 어디가 좋아?"
 
 뭘 먹고 싶은지 말해봐~ 😊`;
+}
+
+function generateCasualResponse(message) {
+    const lowerMessage = message.toLowerCase();
+    
+    // 인사 응답
+    if (lowerMessage.includes('안녕') || lowerMessage.includes('하이')) {
+        return `마! 뚜기다이가! 🐧
+
+반갑다! 부산 어딘지 궁금하네~
+오늘 하루는 어땠어?`;
+    }
+    
+    // 이름 관련
+    if (lowerMessage.includes('이름') || lowerMessage.includes('누구')) {
+        return `마! 내 이름은 뚜기다! 🐧
+
+부산 토박이고 이 동네 구석구석 다 안다이가!
+맛집 얘기하면 나한테 물어봐라~`;
+    }
+    
+    // 날씨 관련
+    if (lowerMessage.includes('날씨') || lowerMessage.includes('비') || lowerMessage.includes('더워') || lowerMessage.includes('추워')) {
+        return `마! 부산 날씨 얘기하네? 🌤️
+
+부산은 바다가 있어서 그런지 날씨가 변덕스러워!
+그래도 다른 데보다는 살 만하다 아이가?`;
+    }
+    
+    // 감정 표현
+    if (lowerMessage.includes('고마') || lowerMessage.includes('감사')) {
+        return `마! 뭘 고마워하노! 😊
+
+부산 사람은 원래 정이 많다카이~
+또 궁금한 거 있으면 언제든 말해라!`;
+    }
+    
+    if (lowerMessage.includes('미안') || lowerMessage.includes('죄송')) {
+        return `마! 뭘 미안해하노! 🤗
+
+부산 사람끼리 그런 거 없다!
+편하게 얘기해라~`;
+    }
+    
+    // 기본 일상 대화
+    return `마! 뚜기다이가! 🐧
+
+부산 살이는 어때? 재미있지?
+뭔가 궁금한 거 있으면 말해봐라! 😄`;
 }
