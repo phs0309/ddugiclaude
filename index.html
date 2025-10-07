@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>뚜기 - 부산 맛집 가이드</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="public/style.css">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
@@ -100,16 +100,22 @@
                 </div>
             </div>
         </div>
-        <div class="suggestion-buttons" id="suggestionButtons">
-            <button class="suggestion-btn" data-message="주변 맛집 추천해줘">주변 맛집</button>
-            <button class="suggestion-btn" data-message="가성비 좋은 맛집 알려줘" id="budgetBtn">가성비!</button>
-            <button class="suggestion-btn" data-message="돼지국밥 맛있는 곳 추천해줘" id="randomFoodBtn">돼지국밥</button>
-        </div>
         <div class="chat-input-container">
+            <div class="mode-selector">
+                <button id="modeButton" class="mode-button">
+                    <span id="modeText">찐 맛집</span>
+                    <span class="mode-arrow">▼</span>
+                </button>
+                <div class="mode-dropdown" id="modeDropdown">
+                    <div class="mode-option" data-mode="authentic">🔥 찐 맛집</div>
+                    <div class="mode-option" data-mode="budget">💰 가성비</div>
+                    <div class="mode-option" data-mode="date">💕 데이트 맛집</div>
+                </div>
+            </div>
             <input type="text" id="userInput" placeholder="뚜기에게 부산 맛집을 물어보세요..." maxlength="500">
             <button id="sendButton">전송</button>
         </div>
     </div>
-    <script src="script.js"></script>
+    <script src="public/script.js"></script>
 </body>
 </html>

@@ -1,4 +1,4 @@
-const restaurants = require('./restaurantData');
+import restaurants from './restaurantData.js';
 
 class RestaurantService {
     // 모든 맛집 가져오기
@@ -167,4 +167,4 @@ class RestaurantService {
     }
 }
 
-module.exports = new RestaurantService();
+export default new RestaurantService();
