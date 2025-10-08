@@ -3,19 +3,14 @@
   "version": "1.0.0",
   "description": "부산 맛집 추천 챗봇",
   "scripts": {
-    "start": "echo 'Static site - use Vercel for deployment'",
-    "dev": "node --experimental-modules server.cjs",
-    "build": "echo 'Build completed'",
-    "vercel-build": "echo 'Vercel build completed'"
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "build": "echo 'Build completed'"
   },
   "dependencies": {
-    "axios": "^1.12.2",
     "cors": "^2.8.5",
-    "csv-parser": "^3.2.0",
     "dotenv": "^16.4.7",
-    "express": "^4.21.2",
-    "open-graph-scraper": "^6.10.0",
-    "sqlite3": "^5.1.7"
+    "express": "^4.21.2"
   },
   "devDependencies": {
     "nodemon": "^3.1.7"
