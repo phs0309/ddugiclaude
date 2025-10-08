@@ -151,10 +151,10 @@ app.post('/api/chat', async (req, res) => {
             const restaurantData = findRestaurantsForAI(initialResponse.searchQuery);
             console.log(`📍 찾은 맛집 수: ${restaurantData.length}개`);
             
-            // 맛집 데이터와 함께 AI가 최종 응답 생성
+            // 동일한 세션에서 맛집 데이터와 함께 AI가 최종 응답 생성
             const finalResponse = await aiManager.handleConversation(
-                message, 
-                sessionId + '_final',
+                `맛집 추천: ${message}`,
+                sessionId,
                 restaurantData
             );
             
