@@ -119,11 +119,7 @@ app.get('/api/tag-analyzer', async (req, res) => {
     }
 });
 
-// 새로운 AI 대화 관리자 import
-const AIConversationManager = require('./api/aiConversationManagerServer.cjs');
-const aiManager = new AIConversationManager();
-
-// Claude API endpoint  
+// 키워드 기반 맛집 추천 시스템
 app.post('/api/chat', async (req, res) => {
     const { message, mode, sessionId = 'default_' + Date.now() } = req.body;
 
@@ -134,50 +130,44 @@ app.post('/api/chat', async (req, res) => {
     console.log(`💬 로컬 서버 메시지: "${message}" (세션: ${sessionId})`);
 
     try {
-        // 1단계: AI가 먼저 대화를 처리하고 맛집 데이터가 필요한지 판단
-        let initialResponse = await aiManager.handleConversation(message, sessionId, []);
-        
-        console.log('🤖 AI 1차 응답:', {
-            conversationType: initialResponse.conversationType,
-            needsRestaurantData: initialResponse.needsRestaurantData,
-            searchQuery: initialResponse.searchQuery
-        });
+        // 키워드 기반 분석으로 맛집 요청 처리
+        const restaurantService = require('./restaurantService');
+        const criteria = restaurantService.analyzeUserQuery(message);
+        console.log('🔍 분석된 조건:', criteria);
 
-        // 2단계: AI가 맛집 데이터를 요청했다면 검색해서 다시 처리
-        if (initialResponse.needsRestaurantData && initialResponse.searchQuery) {
-            console.log('🔍 맛집 검색 시작:', initialResponse.searchQuery);
-            
-            // 검색 조건에 맞는 맛집 데이터 가져오기
-            const restaurantData = findRestaurantsForAI(initialResponse.searchQuery);
-            console.log(`📍 찾은 맛집 수: ${restaurantData.length}개`);
-            
-            // 동일한 세션에서 맛집 데이터와 함께 AI가 최종 응답 생성
-            const finalResponse = await aiManager.handleConversation(
-                `맛집 추천: ${message}`,
-                sessionId,
-                restaurantData
-            );
+        // 맛집 관련 요청인지 확인
+        const isRestaurantRequest = isRestaurantQuery(message);
+        
+        if (isRestaurantRequest) {
+            // 맛집 검색 실행
+            const restaurants = restaurantService.findRestaurants(criteria);
+            console.log(`📍 찾은 맛집 수: ${restaurants.length}개`);
+
+            // 간단한 응답 생성
+            const response = generateSimpleResponse(restaurants, criteria);
+
+            return res.json({
+                response: response,
+                restaurants: restaurants.slice(0, 6),
+                conversationType: 'restaurant_recommendation',
+                currentTime: getCurrentKoreaTime(),
+                isRecommendation: true
+            });
+        } else {
+            // 일반 대화 처리
+            const casualResponse = generateCasualResponse(message);
             
             return res.json({
-                response: finalResponse.response,
-                restaurants: finalResponse.restaurants || restaurantData.slice(0, 6),
-                conversationType: finalResponse.conversationType,
-                currentTime: finalResponse.currentTime,
-                isRecommendation: true
+                response: casualResponse,
+                restaurants: [],
+                conversationType: 'casual',
+                currentTime: getCurrentKoreaTime(),
+                isRecommendation: false
             });
         }
 
-        // 3단계: 일반 대화인 경우 그대로 반환
-        return res.json({
-            response: initialResponse.response,
-            restaurants: [],
-            conversationType: initialResponse.conversationType,
-            currentTime: initialResponse.currentTime,
-            isRecommendation: false
-        });
-
     } catch (error) {
-        console.error('AI 대화 처리 오류:', error);
+        console.error('대화 처리 오류:', error);
         
         return res.json({
             response: `마! 미안하다... 😅\n\n잠깐 머리가 하얘졌네. 다시 말해봐라!`,
@@ -188,40 +178,75 @@ app.post('/api/chat', async (req, res) => {
     }
 });
 
-// AI 검색 쿼리를 실제 맛집 검색으로 변환 (로컬 서버용)
-function findRestaurantsForAI(searchQuery) {
-    try {
-        // 맛집 서비스 로드
-        const restaurantService = require('./restaurantService');
-        
-        const criteria = {
-            timeHour: new Date().getHours()
-        };
-        
-        if (searchQuery.area) {
-            criteria.area = searchQuery.area;
-        }
-        
-        if (searchQuery.category) {
-            criteria.category = searchQuery.category;
-        }
-        
-        if (searchQuery.keyword) {
-            criteria.keyword = searchQuery.keyword;
-        }
-        
-        // 기본적으로 평점 있는 맛집만
-        criteria.minRating = 3.5;
-        
-        console.log('🔍 실제 검색 조건:', criteria);
-        
-        const results = restaurantService.findRestaurants(criteria);
-        return results.slice(0, 20); // 최대 20개
-        
-    } catch (error) {
-        console.error('맛집 검색 오류:', error);
-        return [];
+// 맛집 요청인지 키워드로 판단
+function isRestaurantQuery(message) {
+    const lowerMessage = message.toLowerCase();
+    
+    // 맛집 관련 키워드
+    const restaurantKeywords = [
+        '맛집', '식당', '먹을', '추천', '알려줘', '소개', '찾아줘',
+        '어디', '가자', '가고싶어', '먹고싶어', '먹을까', '어떨까',
+        '점심', '저녁', '아침', '간식', '야식', '브런치'
+    ];
+    
+    // 음식 키워드
+    const foodKeywords = [
+        '돼지국밥', '밀면', '회', '갈비', '치킨', '족발', '곱창',
+        '국밥', '면', '파스타', '피자', '초밥', '삼겹살', '냉면',
+        '커피', '카페', '디저트', '케이크', '떡볶이', '김밥'
+    ];
+    
+    // 지역 키워드
+    const areaKeywords = [
+        '해운대', '센텀', '서면', '남포동', '광안리', '기장',
+        '동래', '부산대', '장전동', '사직', '덕천'
+    ];
+    
+    return restaurantKeywords.some(keyword => lowerMessage.includes(keyword)) ||
+           foodKeywords.some(keyword => lowerMessage.includes(keyword)) ||
+           (areaKeywords.some(keyword => lowerMessage.includes(keyword)) && 
+            (lowerMessage.includes('먹') || lowerMessage.includes('맛')));
+}
+
+// 간단한 맛집 응답 생성
+function generateSimpleResponse(restaurants, criteria) {
+    if (restaurants.length === 0) {
+        return `마! 그 조건으론 맛집을 못 찾겠네... 😅\n\n다른 지역이나 음식으로 다시 말해봐라!`;
     }
+    
+    const area = criteria.area || '부산';
+    const keyword = criteria.keyword || criteria.category || '맛집';
+    
+    return `마! ${area}에서 ${keyword} 맛집들 찾았다이가! 🐧\n\n아래 카드들 확인해봐라~ 다 맛있는 곳들이야!`;
+}
+
+// 일반 대화 응답
+function generateCasualResponse(message) {
+    const lowerMessage = message.toLowerCase();
+    
+    if (lowerMessage.includes('안녕') || lowerMessage.includes('하이')) {
+        return `마! 뚜기다이가! 🐧 반갑다!`;
+    }
+    
+    if (lowerMessage.includes('고마') || lowerMessage.includes('감사')) {
+        return `마! 뭘 고마워하노! 😊`;
+    }
+    
+    if (lowerMessage.includes('어떻게') || lowerMessage.includes('어때')) {
+        return `마! 좋다이가! 😄 또 뭔 얘기할까?`;
+    }
+    
+    return `마! 뚜기다이가! 🐧 뭔 얘기할까?`;
+}
+
+// 한국 시간 가져오기
+function getCurrentKoreaTime() {
+    const now = new Date();
+    return new Intl.DateTimeFormat('ko-KR', { 
+        timeZone: 'Asia/Seoul', 
+        hour: '2-digit', 
+        minute: '2-digit' 
+    }).format(now);
 }
 
 // Instagram Only Scraper API (인스타그램 전용)
