@@ -1,5 +1,5 @@
-import visitBusanService from './visitBusanService.js';
-import AIConversationManager from './aiConversationManager.js';
+const visitBusanService = require('./visitBusanService.cjs');
+const AIConversationManager = require('./aiConversationManager.cjs');
 
 // Rate limiting
 const requestCounts = new Map();
@@ -29,7 +29,7 @@ function checkRateLimit(ip) {
     return true;
 }
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
     // CORS 설정
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
