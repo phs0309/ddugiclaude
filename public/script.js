@@ -414,11 +414,11 @@ class BusanChatBot {
         } catch (error) {
             console.error('API Error:', error);
             
-            // Fallback responses when API is not available
+            // Fallback responses when API is not available - NO FAKE RESTAURANTS
             const fallbackResponses = [
-                `안녕하세요! 뚜기입니다 🐧\n\n죄송하지만 지금 API 연결에 문제가 있어서 제대로 된 맛집 추천을 드리지 못하고 있어요.\n\n대신 부산의 대표 맛집 몇 곳을 추천드릴게요:\n\n🍜 **돼지국밥골목** (서면)\n- 부산의 대표 음식인 돼지국밥을 맛볼 수 있어요\n- 가격: 8,000원~10,000원\n\n🐟 **자갈치시장**\n- 신선한 횟감과 구이를 즐길 수 있어요\n- 부산 여행 필수 코스!\n\n🥘 **광안리 먹자골목**\n- 다양한 해산물 요리와 야경을 함께 즐겨보세요\n\nAPI 키를 설정하시면 더 자세한 맛집 정보를 드릴 수 있어요! 😊`,
+                `마! 뚜기다이가! 🐧\n\n지금 시스템에 문제가 있어서 제대로 된 맛집 추천을 못 해주고 있어...\n\n구체적인 맛집 추천을 받으려면:\n- 어느 동네인지 말해봐라 (해운대, 서면, 남포동 등)\n- 뭘 먹고 싶은지 말해봐라 (돼지국밥, 회, 갈비 등)\n\n시스템이 정상화되면 실제 데이터로 정확한 맛집을 알려줄게!`,
                 
-                `뚜기가 잠깐 바빠서 답변이 늦었어요! 🐧\n\nAPI 설정이 필요하지만, 그래도 부산 맛집 하나 추천드릴게요:\n\n🍲 **밀면**\n- 부산의 대표 면요리예요\n- 시원하고 깔끔한 맛이 일품!\n- 여름에 특히 인기가 많아요\n\n더 많은 맛집 정보를 원하시면 Claude API 키를 설정해주세요! 😋`
+                `마! 잠깐 시스템이 꼬였네... 😅\n\n뚜기가 지금 제대로 된 맛집 데이터를 못 가져오고 있어.\n\n정확한 맛집 추천을 받으려면 다시 한 번 말해봐라!\n- 지역이랑 음식 종류를 구체적으로!\n\n가짜 정보는 안 알려줄 거니까 조금만 기다려봐라! 🐧`
             ];
             
             return fallbackResponses[Math.floor(Math.random() * fallbackResponses.length)];
