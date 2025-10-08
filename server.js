@@ -131,8 +131,8 @@ app.post('/api/chat', async (req, res) => {
 
     try {
         // 키워드 기반 분석으로 맛집 요청 처리
-        const restaurantService = require('./restaurantService');
-        const criteria = restaurantService.analyzeUserQuery(message);
+        const visitBusanService = require('./api/visitBusanService.cjs');
+        const criteria = visitBusanService.analyzeUserQuery(message);
         console.log('🔍 분석된 조건:', criteria);
 
         // 맛집 관련 요청인지 확인
@@ -140,7 +140,7 @@ app.post('/api/chat', async (req, res) => {
         
         if (isRestaurantRequest) {
             // 맛집 검색 실행
-            const restaurants = restaurantService.findRestaurants(criteria);
+            const restaurants = visitBusanService.findRestaurants(criteria);
             console.log(`📍 찾은 맛집 수: ${restaurants.length}개`);
 
             // 간단한 응답 생성
