@@ -391,6 +391,9 @@ ${restaurant.description}`;
         this.totalSlides = displayRestaurants.length;
         this.updateSliderPosition();
         
+        // 지도 초기화
+        this.initializeMap(displayRestaurants);
+        
         // 모달 표시
         overlay.style.display = 'flex';
         setTimeout(() => {
@@ -411,9 +414,15 @@ ${restaurant.description}`;
         
         const emoji = categoryEmojis[restaurant.category] || '🍽️';
         
+        // 이미지 URL이 있으면 실제 이미지 사용, 없으면 이모지 사용
+        const imageContent = restaurant.image && restaurant.image.startsWith('http') 
+            ? `<img src="${restaurant.image}" alt="${restaurant.name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+               <div class="emoji-fallback" style="display: none;">${emoji}</div>`
+            : `<div class="emoji-fallback">${emoji}</div>`;
+        
         card.innerHTML = `
             <div class="artifacts-card-image">
-                ${emoji}
+                ${imageContent}
             </div>
             <div class="artifacts-card-content">
                 <h3>${restaurant.name}</h3>
@@ -430,6 +439,14 @@ ${restaurant.description}`;
                     <span>(${restaurant.reviewCount}개)</span>
                 </div>
                 <div class="artifacts-card-price">₩${restaurant.priceRange}</div>
+                <div class="artifacts-card-address">
+                    <i class="fas fa-location-dot"></i>
+                    ${restaurant.address}
+                </div>
+                <div class="artifacts-card-phone">
+                    <i class="fas fa-phone"></i>
+                    ${restaurant.phone}
+                </div>
             </div>
         `;
         
@@ -440,6 +457,7 @@ ${restaurant.description}`;
         this.currentSlide = slideIndex;
         this.updateSliderPosition();
         this.updateSliderDots();
+        this.highlightMapMarker(slideIndex);
     }
 
     updateSliderPosition() {
@@ -509,6 +527,84 @@ ${restaurant.description}`;
         
         this.scrollToBottom();
     }
+
+    initializeMap(restaurants) {
+        const mapContainer = document.getElementById('artifactsMap');
+        if (!mapContainer) return;
+        
+        // 지도 컨테이너 초기화
+        mapContainer.innerHTML = '';
+        
+        // 좌표 정보가 있는 레스토랑들만 필터링
+        const validRestaurants = restaurants.filter(r => 
+            r.coordinates && r.coordinates.lat && r.coordinates.lng
+        );
+        
+        if (validRestaurants.length === 0) {
+            mapContainer.innerHTML = `
+                <div class="map-placeholder">
+                    <i class="fas fa-map-marked-alt"></i>
+                    <p>좌표 정보 없음</p>
+                </div>
+            `;
+            return;
+        }
+        
+        // 간단한 지도 시뮬레이션 (실제 지도 라이브러리 없이)
+        const mapSimulation = document.createElement('div');
+        mapSimulation.className = 'map-simulation';
+        
+        // 중심 좌표 계산
+        const centerLat = validRestaurants.reduce((sum, r) => sum + r.coordinates.lat, 0) / validRestaurants.length;
+        const centerLng = validRestaurants.reduce((sum, r) => sum + r.coordinates.lng, 0) / validRestaurants.length;
+        
+        mapSimulation.innerHTML = `
+            <div class="map-header">
+                <i class="fas fa-map"></i>
+                <span>부산 맛집 위치</span>
+                <div class="map-coords">${centerLat.toFixed(4)}, ${centerLng.toFixed(4)}</div>
+            </div>
+            <div class="map-markers">
+                ${validRestaurants.map((restaurant, index) => `
+                    <div class="map-marker" data-index="${index}">
+                        <div class="marker-pin">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                        <div class="marker-info">
+                            <div class="marker-name">${restaurant.name}</div>
+                            <div class="marker-area">${restaurant.area}</div>
+                            <div class="marker-coords">
+                                ${restaurant.coordinates.lat.toFixed(4)}, ${restaurant.coordinates.lng.toFixed(4)}
+                            </div>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+            <div class="map-actions">
+                <button class="map-action-btn" onclick="openGoogleMaps('${centerLat}', '${centerLng}')">
+                    <i class="fas fa-external-link-alt"></i>
+                    Google Maps에서 보기
+                </button>
+            </div>
+        `;
+        
+        mapContainer.appendChild(mapSimulation);
+        
+        // 마커 클릭 이벤트
+        mapSimulation.querySelectorAll('.map-marker').forEach((marker, index) => {
+            marker.addEventListener('click', () => {
+                this.goToSlide(index);
+                this.highlightMapMarker(index);
+            });
+        });
+    }
+
+    highlightMapMarker(index) {
+        const markers = document.querySelectorAll('.map-marker');
+        markers.forEach((marker, i) => {
+            marker.classList.toggle('active', i === index);
+        });
+    }
 }
 
 // 빠른 메시지 전송 (전역 함수)
@@ -538,6 +634,7 @@ function nextSlide() {
         chatBot.currentSlide = (chatBot.currentSlide + 1) % chatBot.totalSlides;
         chatBot.updateSliderPosition();
         chatBot.updateSliderDots();
+        chatBot.highlightMapMarker(chatBot.currentSlide);
     }
 }
 
@@ -547,7 +644,14 @@ function prevSlide() {
         chatBot.currentSlide = (chatBot.currentSlide - 1 + chatBot.totalSlides) % chatBot.totalSlides;
         chatBot.updateSliderPosition();
         chatBot.updateSliderDots();
+        chatBot.highlightMapMarker(chatBot.currentSlide);
     }
+}
+
+// Google Maps 열기 (전역 함수)
+function openGoogleMaps(lat, lng) {
+    const url = `https://www.google.com/maps/@${lat},${lng},15z`;
+    window.open(url, '_blank');
 }
 
 // 카테고리별 검색
