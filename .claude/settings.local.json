@@ -22,7 +22,8 @@
       "Bash(cmd /c:*)",
       "Bash(set PORT=3012)",
       "Bash(git add:*)",
-      "Bash(copy server.js server.cjs)"
+      "Bash(copy server.js server.cjs)",
+      "Bash(timeout 5s npm start)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"

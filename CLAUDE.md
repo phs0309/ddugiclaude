@@ -1,48 +1,77 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code when working with code in this repository.
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## 프로젝트 개요
+## Project Overview
 
-부산 맛집 추천 챗봇 "뚜기"
-- `R_data/비짓부산_cleaned_reviews.csv` 데이터만 사용
-- Claude API를 통한 자연스러운 대화
-- 실제 존재하는 부산 맛집만 추천
+부산 맛집 추천 AI - JSON 데이터 기반 Claude AI 맛집 추천 시스템
+- `restaurants.json` 파일의 실제 맛집 데이터만 사용
+- Claude API 연동으로 자연스러운 부산 사투리 응답
+- Vercel 서버리스 배포 환경
 
-## 명령어
+## Commands
 
-- `npm start` - 서버 시작
-- `npm run dev` - 개발 서버 (nodemon)
+### Local Development
+- `npm start` - Start local Express server on port 3000
+- `npm run dev` - Start development server with nodemon
 
-## 중요 사항
+### Deployment
+- Vercel 배포용 serverless function: `api/chat.js`
+- 환경변수: `claude_api_key` (기존 Vercel 설정에 맞춤)
 
-⚠️ **절대 가짜 맛집 정보를 생성하지 마라**
-- 오직 `비짓부산_cleaned_reviews.csv` 데이터만 사용
-- 데이터에 없는 맛집은 절대 추천하지 않음
-- 실제 주소, 평점, 리뷰만 제공
+## Architecture
 
-## 파일 구조
+### Data Source
+- **restaurants.json**: 10개 부산 맛집 데이터 (절대 변경 금지)
+- 해운대 돼지국밥, 광안리 회센터, 서면 밀면골목 등 실제 맛집만 포함
+
+### AI Engine
+- **RestaurantAI Class**: JSON 데이터 기반 검색 및 필터링
+- **Claude API Integration**: 부산 사투리 자연어 응답 생성
+- **Fallback System**: API 실패 시 기본 응답 제공
+
+### Deployment Structure
+- **Local**: `server.js` - Express 서버
+- **Production**: `api/chat.js` - Vercel serverless function
+- **Frontend**: `public/` - 정적 파일들
+
+## Key Features
+
+### Smart Filtering
+- 지역별: 해운대, 서면, 광안리, 남포동 등
+- 카테고리별: 한식, 해산물, 간식, 카페
+- 음식별: 돼지국밥, 밀면, 회, 아구찜 등
+- 가격대: 저렴/고급 필터링
+- 평점: 4.0 이상 고평점 맛집
+
+### Claude AI Response
+- 부산 사투리 응답 ("~다이가", "~아이가", "~해봐라")
+- 자연스러운 맛집 소개
+- 실제 데이터 기반 정확한 정보
+
+## Critical Rules
+
+⚠️ **NEVER generate fake restaurant data**
+- Only use restaurants from `restaurants.json`
+- Return empty results rather than inventing restaurants
+- All information must be from actual JSON data
+
+⚠️ **Environment Variables**
+- Use `claude_api_key` (not CLAUDE_API_KEY)
+- Matches existing Vercel configuration
+
+## File Structure
 
 ```
 /
-├── .env                     # API 키 (보존됨)
-├── R_data/                  # 맛집 데이터 (보존됨)
-│   └── 비짓부산_cleaned_reviews.csv
-├── package.json
-├── vercel.json
-├── index.html              # 메인 페이지
-├── server.js               # 로컬 개발 서버
-├── public/                 # 정적 파일
-│   ├── index.html
-│   ├── style.css
-│   └── script.js
-└── api/                    # Vercel 서버리스 함수
-    └── chat.js
+├── restaurants.json          # 맛집 데이터 (10개)
+├── restaurantAI.js          # AI 엔진 (로컬용)
+├── server.js                # 로컬 Express 서버
+├── api/
+│   └── chat.js             # Vercel 서버리스 함수
+├── public/
+│   ├── index.html          # 메인 페이지
+│   ├── style.css           # 스타일
+│   └── script.js           # 프론트엔드 로직
+└── vercel.json             # Vercel 배포 설정
 ```
-
-## 개발 원칙
-
-1. **단순함 유지** - 복잡한 AI 대화 관리 시스템 금지
-2. **데이터 신뢰성** - 실제 데이터만 사용
-3. **빠른 응답** - 키워드 기반 빠른 매칭
-4. **Vercel 호환** - 서버리스 환경 고려

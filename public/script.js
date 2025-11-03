@@ -1,4 +1,4 @@
-class BusanChatBot {
+class BusanRestaurantAI {
     constructor() {
         this.chatMessages = document.getElementById('chatMessages');
         this.userInput = document.getElementById('userInput');
@@ -6,6 +6,7 @@ class BusanChatBot {
         this.typingIndicator = document.getElementById('typingIndicator');
         
         this.initEventListeners();
+        this.loadInitialRecommendations();
     }
 
     initEventListeners() {
@@ -24,6 +25,19 @@ class BusanChatBot {
         this.userInput.focus();
     }
 
+    async loadInitialRecommendations() {
+        try {
+            const response = await fetch('/api/random/3');
+            const data = await response.json();
+            
+            if (data.restaurants && data.restaurants.length > 0) {
+                this.displayRestaurantCards(data.restaurants, true);
+            }
+        } catch (error) {
+            console.log('초기 추천 로드 실패:', error);
+        }
+    }
+
     async sendMessage() {
         const message = this.userInput.value.trim();
         if (!message) return;
@@ -40,18 +54,30 @@ class BusanChatBot {
             const response = await this.callChatAPI(message);
             this.hideTypingIndicator();
             
-            // 봇 응답 표시
-            this.addMessage(response.response, 'bot');
+            // AI 응답 표시
+            this.addMessage(response.message, 'bot');
             
-            // 맛집 카드 표시 (맛집 추천인 경우)
-            if (response.type === 'restaurant' && response.restaurants && response.restaurants.length > 0) {
+            // 맛집 카드 표시
+            if (response.restaurants && response.restaurants.length > 0) {
                 this.displayRestaurantCards(response.restaurants);
+            }
+            
+            // 분석 결과 로그
+            if (response.analysis) {
+                console.log('🔍 분석 결과:', response.analysis);
+            }
+
+            // Claude AI 응답 여부 표시
+            if (response.aiGenerated) {
+                console.log('🤖 Claude AI 응답 생성됨');
+            } else {
+                console.log('🔧 기본 응답 사용됨');
             }
             
         } catch (error) {
             this.hideTypingIndicator();
             console.error('API Error:', error);
-            this.addMessage('죄송합니다. 잠시 문제가 발생했어요. 다시 시도해주세요! 🙏', 'bot');
+            this.addMessage('죄송합니다. 오류가 발생했어요. 다시 시도해주세요! 🙏', 'bot');
         }
 
         this.sendButton.disabled = false;
@@ -67,7 +93,7 @@ class BusanChatBot {
         if (sender === 'bot') {
             const avatar = document.createElement('div');
             avatar.className = 'bot-avatar';
-            avatar.textContent = '🐧';
+            avatar.textContent = '🤖';
             messageContent.appendChild(avatar);
         }
         
@@ -81,26 +107,36 @@ class BusanChatBot {
         
         // 스크롤을 맨 아래로
         this.scrollToBottom();
+
+        return textContent; // 카드 추가를 위해 반환
     }
 
-    displayRestaurantCards(restaurants) {
+    displayRestaurantCards(restaurants, isInitial = false) {
         const cardsContainer = document.createElement('div');
         cardsContainer.className = 'restaurant-cards-container';
         
         const cardsWrapper = document.createElement('div');
         cardsWrapper.className = 'restaurant-cards-wrapper';
         
-        restaurants.slice(0, 6).forEach(restaurant => {
+        restaurants.forEach(restaurant => {
             const card = this.createRestaurantCard(restaurant);
             cardsWrapper.appendChild(card);
         });
         
         cardsContainer.appendChild(cardsWrapper);
         
-        // 마지막 봇 메시지에 카드 추가
-        const lastBotMessage = this.chatMessages.querySelector('.bot-message:last-child .text-content');
-        if (lastBotMessage) {
-            lastBotMessage.appendChild(cardsContainer);
+        if (isInitial) {
+            // 초기 추천은 첫 번째 봇 메시지에 추가
+            const firstBotMessage = this.chatMessages.querySelector('.bot-message .text-content');
+            if (firstBotMessage) {
+                firstBotMessage.appendChild(cardsContainer);
+            }
+        } else {
+            // 마지막 봇 메시지에 카드 추가
+            const lastBotMessage = this.chatMessages.querySelector('.bot-message:last-child .text-content');
+            if (lastBotMessage) {
+                lastBotMessage.appendChild(cardsContainer);
+            }
         }
         
         this.scrollToBottom();
@@ -110,45 +146,64 @@ class BusanChatBot {
         const card = document.createElement('div');
         card.className = 'restaurant-card';
         
+        // 카테고리에 따른 이모지
+        const categoryEmojis = {
+            '한식': '🍲',
+            '해산물': '🦐',
+            '간식': '🍡',
+            '카페': '☕'
+        };
+        
+        const emoji = categoryEmojis[restaurant.category] || '🍽️';
+        
         card.innerHTML = `
             <div class="restaurant-card-image">
-                🍽️
+                ${emoji}
             </div>
             <div class="restaurant-card-content">
                 <h3 class="restaurant-name">${restaurant.name}</h3>
                 <p class="restaurant-area">
                     <i class="fas fa-map-marker-alt"></i>
-                    ${restaurant.area}
+                    ${restaurant.area} · ${restaurant.category}
                 </p>
                 <p class="restaurant-description">${restaurant.description}</p>
                 ${restaurant.specialties && restaurant.specialties.length > 0 ? `
                     <div class="restaurant-specialties">
-                        ${restaurant.specialties.map(specialty => 
+                        ${restaurant.specialties.slice(0, 3).map(specialty => 
                             `<span class="specialty-tag">${specialty}</span>`
                         ).join('')}
                     </div>
                 ` : ''}
                 <div class="restaurant-rating">
                     <i class="fas fa-star"></i>
-                    <span>${restaurant.rating > 0 ? restaurant.rating.toFixed(1) : 'N/A'}</span>
-                    <span>(${restaurant.reviewCount || 0}개 리뷰)</span>
+                    <span>${restaurant.rating}</span>
+                    <span>(${restaurant.reviewCount}개 리뷰)</span>
+                    <span style="margin-left: 10px; color: #4caf50;">₩${restaurant.priceRange}</span>
                 </div>
             </div>
         `;
         
-        // 카드 클릭 시 지도 열기
+        // 카드 클릭 시 상세 정보 표시
         card.addEventListener('click', () => {
-            if (restaurant.coordinates && restaurant.coordinates.lat && restaurant.coordinates.lng) {
-                const url = `https://map.kakao.com/link/to/${restaurant.name},${restaurant.coordinates.lat},${restaurant.coordinates.lng}`;
-                window.open(url, '_blank');
-            } else {
-                // 좌표가 없으면 검색으로 대체
-                const searchUrl = `https://map.kakao.com/link/search/${restaurant.name} ${restaurant.area}`;
-                window.open(searchUrl, '_blank');
-            }
+            this.showRestaurantDetail(restaurant);
         });
         
         return card;
+    }
+
+    showRestaurantDetail(restaurant) {
+        const detail = `
+            🏪 ${restaurant.name}
+            📍 ${restaurant.address}
+            📞 ${restaurant.phone}
+            ⏰ ${restaurant.hours}
+            💰 ${restaurant.priceRange}원
+            ⭐ ${restaurant.rating}/5 (${restaurant.reviewCount}개 리뷰)
+            
+            ${restaurant.description}
+        `;
+        
+        this.addMessage(detail, 'bot');
     }
 
     async callChatAPI(message) {
@@ -168,7 +223,7 @@ class BusanChatBot {
     }
 
     showTypingIndicator() {
-        this.typingIndicator.style.display = 'block';
+        this.typingIndicator.style.display = 'flex';
         this.scrollToBottom();
     }
 
@@ -185,23 +240,46 @@ class BusanChatBot {
 
 // 빠른 메시지 전송
 function sendQuickMessage(message) {
-    const chatBot = window.chatBot;
-    chatBot.userInput.value = message;
-    chatBot.sendMessage();
+    const ai = window.restaurantAI;
+    ai.userInput.value = message;
+    ai.sendMessage();
 }
 
-// 채팅 기록 지우기
-function clearChat() {
-    const chatMessages = document.getElementById('chatMessages');
-    // 첫 번째 환영 메시지만 남기고 모두 삭제
-    const welcomeMessage = chatMessages.querySelector('.message.bot-message');
-    chatMessages.innerHTML = '';
-    if (welcomeMessage) {
-        chatMessages.appendChild(welcomeMessage);
+// 카테고리별 검색
+async function searchByCategory(category) {
+    try {
+        const response = await fetch(`/api/category/${category}`);
+        const data = await response.json();
+        
+        const ai = window.restaurantAI;
+        ai.addMessage(`${category} 맛집 ${data.count}곳을 찾았어요! 🍽️`, 'bot');
+        
+        if (data.restaurants.length > 0) {
+            ai.displayRestaurantCards(data.restaurants);
+        }
+    } catch (error) {
+        console.error('카테고리 검색 실패:', error);
+    }
+}
+
+// 지역별 검색
+async function searchByArea(area) {
+    try {
+        const response = await fetch(`/api/area/${area}`);
+        const data = await response.json();
+        
+        const ai = window.restaurantAI;
+        ai.addMessage(`${area} 지역 맛집 ${data.count}곳을 찾았어요! 📍`, 'bot');
+        
+        if (data.restaurants.length > 0) {
+            ai.displayRestaurantCards(data.restaurants);
+        }
+    } catch (error) {
+        console.error('지역 검색 실패:', error);
     }
 }
 
 // 페이지 로드 시 초기화
 document.addEventListener('DOMContentLoaded', () => {
-    window.chatBot = new BusanChatBot();
+    window.restaurantAI = new BusanRestaurantAI();
 });

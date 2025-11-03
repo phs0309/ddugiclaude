@@ -3,74 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>뚜기 - 부산 맛집 추천 AI</title>
+    <title>부산 맛집 추천 AI</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
-    <div class="chat-container">
-        <!-- 헤더 -->
-        <div class="chat-header">
-            <div class="header-content">
-                <div class="bot-info">
-                    <div class="bot-avatar">🐧</div>
-                    <div class="bot-details">
-                        <h1>뚜기</h1>
-                        <p>부산 맛집 전문가</p>
+    <div class="container">
+        <header class="header">
+            <h1><i class="fas fa-utensils"></i> 부산 맛집 AI</h1>
+            <p>JSON 데이터 + Claude AI 기반 맛집 추천</p>
+        </header>
+
+        <div class="chat-container">
+            <div class="chat-messages" id="chatMessages">
+                <div class="message bot-message">
+                    <div class="message-content">
+                        <div class="bot-avatar">🤖</div>
+                        <div class="text-content">
+                            안녕하세요! 부산 맛집 추천 AI입니다 🍽️<br>
+                            JSON 데이터 기반으로 정확한 맛집만 추천해드려요!<br>
+                            어떤 맛집을 찾고 계신가요?
+                        </div>
                     </div>
                 </div>
-                <div class="header-actions">
-                    <button class="header-btn" onclick="clearChat()">
-                        <i class="fas fa-trash-alt"></i>
+            </div>
+
+            <div class="quick-buttons">
+                <button onclick="sendQuickMessage('해운대 맛집 추천해줘')">해운대 맛집</button>
+                <button onclick="sendQuickMessage('돼지국밥 맛집 알려줘')">돼지국밥</button>
+                <button onclick="sendQuickMessage('회 먹을 만한 곳')">회 맛집</button>
+                <button onclick="sendQuickMessage('서면 저렴한 맛집')">서면 저렴한 곳</button>
+                <button onclick="sendQuickMessage('카페 추천해줘')">카페 추천</button>
+            </div>
+
+            <div class="typing-indicator" id="typingIndicator" style="display: none;">
+                <div class="typing-dots">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+                <span>Claude AI가 분석하는 중...</span>
+            </div>
+
+            <div class="input-container">
+                <div class="input-wrapper">
+                    <input type="text" id="userInput" placeholder="맛집을 찾아보세요... (예: 해운대 돼지국밥)" />
+                    <button id="sendButton">
+                        <i class="fas fa-paper-plane"></i>
                     </button>
                 </div>
             </div>
         </div>
 
-        <!-- 채팅 메시지 영역 -->
-        <div class="chat-messages" id="chatMessages">
-            <div class="message bot-message">
-                <div class="message-content">
-                    <div class="bot-avatar">🐧</div>
-                    <div class="text-content">
-                        안녕하세요! 뚜기입니다! 🐧<br><br>
-                        부산의 맛있는 맛집을 찾아드릴게요!<br>
-                        <strong>"해운대 맛집 추천해줘"</strong> 같이 말해보세요~
-                    </div>
-                </div>
+        <div class="stats">
+            <div class="stat-item">
+                <i class="fas fa-database"></i>
+                <span>JSON 데이터</span>
             </div>
-        </div>
-
-        <!-- 타이핑 인디케이터 -->
-        <div class="typing-indicator" id="typingIndicator" style="display: none;">
-            <div class="typing-content">
-                <div class="bot-avatar">🐧</div>
-                <div class="typing-dots">
-                    <div class="typing-dot"></div>
-                    <div class="typing-dot"></div>
-                    <div class="typing-dot"></div>
-                </div>
+            <div class="stat-item">
+                <i class="fas fa-robot"></i>
+                <span>Claude AI</span>
             </div>
-        </div>
-
-        <!-- 입력 영역 -->
-        <div class="chat-input">
-            <div class="input-container">
-                <input 
-                    type="text" 
-                    id="userInput" 
-                    placeholder="맛집을 찾고 있나요? 지역이나 음식을 말해보세요!"
-                    maxlength="200"
-                >
-                <button id="sendButton">
-                    <i class="fas fa-paper-plane"></i>
-                </button>
+            <div class="stat-item">
+                <i class="fas fa-map-marker-alt"></i>
+                <span>부산 전 지역</span>
             </div>
-            <div class="quick-suggestions">
-                <button class="suggestion-btn" onclick="sendQuickMessage('해운대 맛집 추천해줘')">해운대 맛집</button>
-                <button class="suggestion-btn" onclick="sendQuickMessage('서면 돼지국밥 맛집')">서면 돼지국밥</button>
-                <button class="suggestion-btn" onclick="sendQuickMessage('광안리 회 맛집')">광안리 회</button>
-                <button class="suggestion-btn" onclick="sendQuickMessage('남포동 맛집 소개해줘')">남포동 맛집</button>
+            <div class="stat-item">
+                <i class="fas fa-star"></i>
+                <span>실제 리뷰</span>
             </div>
         </div>
     </div>

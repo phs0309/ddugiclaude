@@ -5,140 +5,99 @@
 }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    padding: 20px;
 }
 
-.chat-container {
-    width: 100%;
+.container {
     max-width: 800px;
-    height: 90vh;
+    margin: 0 auto;
     background: white;
     border-radius: 20px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
-    display: flex;
-    flex-direction: column;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
     overflow: hidden;
 }
 
-/* 헤더 */
-.chat-header {
-    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+.header {
+    background: linear-gradient(135deg, #ff6b6b, #ffa726);
+    padding: 30px;
+    text-align: center;
     color: white;
-    padding: 20px;
 }
 
-.header-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.bot-info {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
-.bot-avatar {
-    width: 50px;
-    height: 50px;
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 24px;
-}
-
-.bot-details h1 {
-    font-size: 24px;
+.header h1 {
+    font-size: 2.5em;
+    margin-bottom: 10px;
     font-weight: 700;
-    margin-bottom: 5px;
 }
 
-.bot-details p {
-    font-size: 14px;
+.header p {
+    font-size: 1.1em;
     opacity: 0.9;
 }
 
-.header-btn {
-    background: rgba(255, 255, 255, 0.2);
-    border: none;
-    color: white;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    cursor: pointer;
-    font-size: 16px;
-    transition: background 0.3s;
-}
-
-.header-btn:hover {
-    background: rgba(255, 255, 255, 0.3);
-}
-
-/* 메시지 영역 */
-.chat-messages {
-    flex: 1;
-    overflow-y: auto;
-    padding: 20px;
+.chat-container {
+    height: 600px;
     display: flex;
     flex-direction: column;
-    gap: 20px;
+}
+
+.chat-messages {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    background: #f8f9fa;
 }
 
 .message {
-    display: flex;
-    animation: fadeInUp 0.4s ease-out;
+    margin-bottom: 20px;
+    animation: fadeInUp 0.3s ease;
 }
 
 .message-content {
     display: flex;
-    gap: 12px;
-    max-width: 70%;
+    align-items: flex-start;
+    gap: 15px;
 }
 
-.user-message {
-    justify-content: flex-end;
-}
-
-.user-message .message-content {
-    flex-direction: row-reverse;
-}
-
-.bot-message .bot-avatar {
+.bot-avatar {
     width: 40px;
     height: 40px;
-    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
     border-radius: 50%;
+    background: linear-gradient(135deg, #667eea, #764ba2);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 18px;
+    font-size: 1.2em;
     flex-shrink: 0;
 }
 
+.user-message {
+    margin-left: auto;
+}
+
+.user-message .message-content {
+    justify-content: flex-end;
+    flex-direction: row-reverse;
+}
+
 .text-content {
-    background: #f8f9fa;
+    background: white;
     padding: 15px 20px;
     border-radius: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    max-width: 70%;
     line-height: 1.5;
-    word-wrap: break-word;
 }
 
 .user-message .text-content {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #667eea, #764ba2);
     color: white;
 }
 
-/* 맛집 카드 */
 .restaurant-cards-container {
-    position: relative;
     margin-top: 15px;
 }
 
@@ -147,180 +106,176 @@ body {
     gap: 15px;
     overflow-x: auto;
     padding: 10px 0;
-    scroll-behavior: smooth;
-}
-
-.restaurant-cards-wrapper::-webkit-scrollbar {
-    height: 6px;
-}
-
-.restaurant-cards-wrapper::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 3px;
-}
-
-.restaurant-cards-wrapper::-webkit-scrollbar-thumb {
-    background: #c1c1c1;
-    border-radius: 3px;
 }
 
 .restaurant-card {
     min-width: 280px;
     background: white;
     border-radius: 15px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
     overflow: hidden;
-    transition: transform 0.3s;
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .restaurant-card:hover {
     transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
 }
 
 .restaurant-card-image {
-    position: relative;
-    height: 150px;
-    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    height: 120px;
+    background: linear-gradient(135deg, #ffa726, #ff6b6b);
     display: flex;
     align-items: center;
     justify-content: center;
+    font-size: 3em;
     color: white;
-    font-size: 48px;
 }
 
 .restaurant-card-content {
-    padding: 15px;
+    padding: 20px;
 }
 
 .restaurant-name {
-    font-size: 18px;
+    font-size: 1.3em;
     font-weight: 700;
     margin-bottom: 8px;
     color: #333;
 }
 
 .restaurant-area {
+    color: #666;
+    margin-bottom: 10px;
     display: flex;
     align-items: center;
     gap: 5px;
-    color: #666;
-    font-size: 14px;
-    margin-bottom: 10px;
 }
 
 .restaurant-description {
-    color: #555;
-    font-size: 14px;
+    color: #777;
+    font-size: 0.95em;
     line-height: 1.4;
-    margin-bottom: 10px;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+    margin-bottom: 12px;
 }
 
 .restaurant-specialties {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 5px;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
 }
 
 .specialty-tag {
+    display: inline-block;
     background: #e3f2fd;
     color: #1976d2;
     padding: 4px 8px;
     border-radius: 12px;
-    font-size: 12px;
-    font-weight: 500;
+    font-size: 0.85em;
+    margin-right: 5px;
+    margin-bottom: 5px;
 }
 
 .restaurant-rating {
     display: flex;
     align-items: center;
     gap: 5px;
-    color: #ff6b35;
+    color: #ff9800;
     font-weight: 600;
-    font-size: 14px;
 }
 
-/* 타이핑 인디케이터 */
-.typing-indicator {
-    padding: 0 20px;
-    animation: fadeInUp 0.4s ease-out;
+.restaurant-rating i {
+    color: #ffb400;
 }
 
-.typing-content {
+.quick-buttons {
+    padding: 15px 20px;
     display: flex;
-    gap: 12px;
+    gap: 10px;
+    flex-wrap: wrap;
+    background: white;
+    border-top: 1px solid #eee;
+}
+
+.quick-buttons button {
+    padding: 8px 15px;
+    border: 2px solid #667eea;
+    background: white;
+    color: #667eea;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: all 0.3s ease;
+}
+
+.quick-buttons button:hover {
+    background: #667eea;
+    color: white;
+}
+
+.typing-indicator {
+    padding: 15px 20px;
+    background: #f8f9fa;
+    display: flex;
     align-items: center;
+    gap: 10px;
+    color: #666;
 }
 
 .typing-dots {
     display: flex;
-    gap: 4px;
-    background: #f8f9fa;
-    padding: 15px 20px;
-    border-radius: 20px;
+    gap: 3px;
 }
 
-.typing-dot {
+.typing-dots span {
     width: 8px;
     height: 8px;
-    background: #999;
     border-radius: 50%;
-    animation: typingDots 1.4s infinite ease-in-out;
+    background: #667eea;
+    animation: typing 1.4s infinite ease-in-out;
 }
 
-.typing-dot:nth-child(2) {
-    animation-delay: 0.2s;
-}
-
-.typing-dot:nth-child(3) {
-    animation-delay: 0.4s;
-}
-
-/* 입력 영역 */
-.chat-input {
-    background: white;
-    border-top: 1px solid #e9ecef;
-    padding: 20px;
-}
+.typing-dots span:nth-child(1) { animation-delay: -0.32s; }
+.typing-dots span:nth-child(2) { animation-delay: -0.16s; }
 
 .input-container {
+    padding: 20px;
+    background: white;
+    border-top: 1px solid #eee;
+}
+
+.input-wrapper {
     display: flex;
     gap: 10px;
-    margin-bottom: 15px;
+    align-items: center;
 }
 
 #userInput {
     flex: 1;
-    border: 2px solid #e9ecef;
+    padding: 15px 20px;
+    border: 2px solid #e0e0e0;
     border-radius: 25px;
-    padding: 12px 20px;
-    font-size: 16px;
+    font-size: 1em;
     outline: none;
-    transition: border-color 0.3s;
+    transition: border-color 0.3s ease;
 }
 
 #userInput:focus {
-    border-color: #4facfe;
+    border-color: #667eea;
 }
 
 #sendButton {
     width: 50px;
     height: 50px;
-    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
     border: none;
-    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea, #764ba2);
     color: white;
+    border-radius: 50%;
     cursor: pointer;
-    font-size: 16px;
-    transition: transform 0.2s;
+    font-size: 1.2em;
+    transition: transform 0.3s ease;
 }
 
 #sendButton:hover {
-    transform: scale(1.05);
+    transform: scale(1.1);
 }
 
 #sendButton:disabled {
@@ -329,29 +284,27 @@ body {
     transform: none;
 }
 
-/* 빠른 제안 */
-.quick-suggestions {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-}
-
-.suggestion-btn {
+.stats {
+    padding: 20px;
     background: #f8f9fa;
-    border: 1px solid #e9ecef;
-    border-radius: 20px;
-    padding: 8px 15px;
-    font-size: 14px;
-    cursor: pointer;
-    transition: all 0.3s;
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    border-top: 1px solid #eee;
 }
 
-.suggestion-btn:hover {
-    background: #e9ecef;
-    transform: translateY(-1px);
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #666;
+    font-size: 0.9em;
 }
 
-/* 애니메이션 */
+.stat-item i {
+    color: #667eea;
+}
+
 @keyframes fadeInUp {
     from {
         opacity: 0;
@@ -363,42 +316,46 @@ body {
     }
 }
 
-@keyframes typingDots {
-    0%, 60%, 100% {
-        transform: scale(1);
-        opacity: 0.4;
+@keyframes typing {
+    0%, 80%, 100% {
+        transform: scale(0.8);
+        opacity: 0.5;
     }
-    30% {
-        transform: scale(1.3);
+    40% {
+        transform: scale(1);
         opacity: 1;
     }
 }
 
-/* 반응형 */
+/* 반응형 디자인 */
 @media (max-width: 768px) {
     body {
         padding: 10px;
     }
     
+    .header h1 {
+        font-size: 2em;
+    }
+    
     .chat-container {
-        height: 100vh;
-        border-radius: 10px;
+        height: 500px;
     }
     
     .restaurant-card {
         min-width: 250px;
     }
     
-    .message-content {
-        max-width: 85%;
+    .quick-buttons {
+        gap: 8px;
     }
     
-    .quick-suggestions {
-        overflow-x: auto;
-        padding-bottom: 5px;
+    .quick-buttons button {
+        font-size: 0.8em;
+        padding: 6px 12px;
     }
     
-    .suggestion-btn {
-        white-space: nowrap;
+    .stats {
+        gap: 20px;
+        flex-wrap: wrap;
     }
 }

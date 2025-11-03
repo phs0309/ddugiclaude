@@ -1,0 +1,204 @@
+{
+  "restaurants": [
+    {
+      "id": "busan_001",
+      "name": "해운대 돼지국밥",
+      "category": "한식",
+      "area": "해운대구",
+      "address": "부산 해운대구 해운대해변로 123",
+      "phone": "051-123-4567",
+      "description": "40년 전통의 진짜 부산 돼지국밥 맛집. 진한 육수와 푸짐한 고기가 자랑",
+      "specialties": ["돼지국밥", "순대국", "내장국"],
+      "rating": 4.5,
+      "reviewCount": 1234,
+      "priceRange": "8000-12000",
+      "hours": "06:00-22:00",
+      "coordinates": {
+        "lat": 35.1588,
+        "lng": 129.1603
+      },
+      "tags": ["전통", "국밥", "현지맛집", "24시간"],
+      "image": "https://example.com/busan_001.jpg"
+    },
+    {
+      "id": "busan_002", 
+      "name": "광안리 회센터",
+      "category": "해산물",
+      "area": "수영구",
+      "address": "부산 수영구 광안해변로 456",
+      "phone": "051-234-5678",
+      "description": "신선한 활어회와 매운탕으로 유명한 광안리 대표 횟집",
+      "specialties": ["활어회", "매운탕", "해물찜"],
+      "rating": 4.3,
+      "reviewCount": 892,
+      "priceRange": "25000-50000",
+      "hours": "11:00-01:00",
+      "coordinates": {
+        "lat": 35.1532,
+        "lng": 129.1186
+      },
+      "tags": ["신선", "해산물", "광안대교뷰", "회"],
+      "image": "https://example.com/busan_002.jpg"
+    },
+    {
+      "id": "busan_003",
+      "name": "서면 밀면골목",
+      "category": "한식",
+      "area": "부산진구",
+      "address": "부산 부산진구 서면문화로 789",
+      "phone": "051-345-6789",
+      "description": "부산의 대표 음식 밀면 전문점. 시원하고 담백한 맛이 일품",
+      "specialties": ["물밀면", "비빔밀면", "만두"],
+      "rating": 4.4,
+      "reviewCount": 756,
+      "priceRange": "7000-10000",
+      "hours": "10:30-21:00",
+      "coordinates": {
+        "lat": 35.1579,
+        "lng": 129.0597
+      },
+      "tags": ["밀면", "부산특산", "서면", "시원한"],
+      "image": "https://example.com/busan_003.jpg"
+    },
+    {
+      "id": "busan_004",
+      "name": "자갈치 아구찜",
+      "category": "해산물",
+      "area": "중구",
+      "address": "부산 중구 자갈치해안로 321",
+      "phone": "051-456-7890",
+      "description": "자갈치시장 안의 숨은 맛집. 매콤하고 진한 아구찜이 유명",
+      "specialties": ["아구찜", "해물찜", "아구수육"],
+      "rating": 4.2,
+      "reviewCount": 643,
+      "priceRange": "30000-60000",
+      "hours": "10:00-22:00",
+      "coordinates": {
+        "lat": 35.0966,
+        "lng": 129.0306
+      },
+      "tags": ["자갈치", "아구찜", "매콤한", "시장맛집"],
+      "image": "https://example.com/busan_004.jpg"
+    },
+    {
+      "id": "busan_005",
+      "name": "태종대 곰장어구이",
+      "category": "해산물", 
+      "area": "영도구",
+      "address": "부산 영도구 태종로 654",
+      "phone": "051-567-8901",
+      "description": "태종대 근처 곰장어 전문점. 고소하고 쫄깃한 곰장어가 인기",
+      "specialties": ["곰장어구이", "곰장어탕", "생선구이"],
+      "rating": 4.1,
+      "reviewCount": 432,
+      "priceRange": "20000-35000", 
+      "hours": "16:00-24:00",
+      "coordinates": {
+        "lat": 35.0515,
+        "lng": 129.0661
+      },
+      "tags": ["곰장어", "태종대", "구이", "저녁맛집"],
+      "image": "https://example.com/busan_005.jpg"
+    },
+    {
+      "id": "busan_006",
+      "name": "동래 파전골목",
+      "category": "한식",
+      "area": "동래구", 
+      "address": "부산 동래구 온천천로 987",
+      "phone": "051-678-9012",
+      "description": "동래온천 근처 파전 맛집. 바삭하고 푸짐한 파전으로 유명",
+      "specialties": ["동래파전", "해물파전", "막걸리"],
+      "rating": 4.3,
+      "reviewCount": 567,
+      "priceRange": "12000-20000",
+      "hours": "15:00-02:00",
+      "coordinates": {
+        "lat": 35.2038,
+        "lng": 129.0789
+      },
+      "tags": ["파전", "동래", "막걸리", "전통"],
+      "image": "https://example.com/busan_006.jpg"
+    },
+    {
+      "id": "busan_007",
+      "name": "부산대 족발보쌈",
+      "category": "한식",
+      "area": "금정구",
+      "address": "부산 금정구 부산대학로 246",
+      "phone": "051-789-0123",
+      "description": "부산대 앞 족발보쌈 전문점. 학생들과 직장인들이 사랑하는 맛집",
+      "specialties": ["족발", "보쌈", "막국수"],
+      "rating": 4.0,
+      "reviewCount": 789,
+      "priceRange": "15000-25000",
+      "hours": "17:00-01:00",
+      "coordinates": {
+        "lat": 35.2314,
+        "lng": 129.0841
+      },
+      "tags": ["족발", "보쌈", "부산대", "저렴한"],
+      "image": "https://example.com/busan_007.jpg"
+    },
+    {
+      "id": "busan_008",
+      "name": "기장 멸치국수",
+      "category": "한식",
+      "area": "기장군",
+      "address": "부산 기장군 기장읍 기장대로 135",
+      "phone": "051-890-1234",
+      "description": "기장 앞바다에서 잡은 싱싱한 멸치로 우린 국수. 담백하고 시원한 맛",
+      "specialties": ["멸치국수", "멸치회", "김치"],
+      "rating": 4.4,
+      "reviewCount": 321,
+      "priceRange": "6000-9000",
+      "hours": "06:00-20:00",
+      "coordinates": {
+        "lat": 35.2442,
+        "lng": 129.2224
+      },
+      "tags": ["멸치", "국수", "기장", "바다"],
+      "image": "https://example.com/busan_008.jpg"
+    },
+    {
+      "id": "busan_009",
+      "name": "남포동 씨앗호떡",
+      "category": "간식",
+      "area": "중구",
+      "address": "부산 중구 남포대로 789",
+      "phone": "051-901-2345",
+      "description": "부산 대표 길거리 음식 씨앗호떡. 달콤하고 고소한 맛의 원조",
+      "specialties": ["씨앗호떡", "견과류호떡", "단팥호떡"],
+      "rating": 4.5,
+      "reviewCount": 2134,
+      "priceRange": "1500-3000",
+      "hours": "10:00-22:00",
+      "coordinates": {
+        "lat": 35.0982,
+        "lng": 129.0289
+      },
+      "tags": ["호떡", "길거리음식", "남포동", "달콤한"],
+      "image": "https://example.com/busan_009.jpg"
+    },
+    {
+      "id": "busan_010",
+      "name": "감천문화마을 카페",
+      "category": "카페",
+      "area": "사하구",
+      "address": "부산 사하구 감내2로 469",
+      "phone": "051-012-3456",
+      "description": "감천문화마을 뷰가 아름다운 카페. 수제 디저트와 원두커피가 맛있음",
+      "specialties": ["아메리카노", "레몬케이크", "티라미수"],
+      "rating": 4.2,
+      "reviewCount": 456,
+      "priceRange": "5000-12000",
+      "hours": "09:00-21:00",
+      "coordinates": {
+        "lat": 35.0974,
+        "lng": 129.0102
+      },
+      "tags": ["카페", "뷰맛집", "감천문화마을", "디저트"],
+      "image": "https://example.com/busan_010.jpg"
+    }
+  ]
+}
