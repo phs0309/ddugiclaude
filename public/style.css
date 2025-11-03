@@ -1235,3 +1235,88 @@ body {
 .map-action-btn i {
     font-size: 11px;
 }
+
+/* 지도 로딩 스타일 */
+.map-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: #888;
+    text-align: center;
+}
+
+.map-loading i {
+    font-size: 32px;
+    color: #0095f6;
+    margin-bottom: 12px;
+}
+
+.map-loading p {
+    margin: 8px 0;
+    font-size: 14px;
+}
+
+.loading-spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #3c3c3c;
+    border-top: 2px solid #0095f6;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-top: 12px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Fallback 지도 스타일 */
+.map-fallback {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    padding: 20px;
+    text-align: center;
+    background: #2c2c2c;
+    border-radius: 12px;
+}
+
+.map-fallback .map-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.map-fallback .map-header i {
+    color: #0095f6;
+    font-size: 24px;
+    margin-right: 8px;
+}
+
+.map-fallback .map-header span {
+    color: #fff;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.map-center {
+    margin: 16px 0;
+    color: #ccc;
+}
+
+.map-center p {
+    margin: 4px 0;
+    font-size: 12px;
+}
+
+/* Google Maps 컨테이너 스타일 */
+#googleMap {
+    border-radius: 12px;
+    border: 1px solid #3c3c3c;
+    overflow: hidden;
+}

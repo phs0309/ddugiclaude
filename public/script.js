@@ -550,56 +550,172 @@ ${restaurant.description}`;
             return;
         }
         
-        // 간단한 지도 시뮬레이션 (실제 지도 라이브러리 없이)
-        const mapSimulation = document.createElement('div');
-        mapSimulation.className = 'map-simulation';
+        // Google Maps 컨테이너 생성
+        const googleMapDiv = document.createElement('div');
+        googleMapDiv.id = 'googleMap';
+        googleMapDiv.style.width = '100%';
+        googleMapDiv.style.height = '200px';
+        googleMapDiv.style.borderRadius = '12px';
+        mapContainer.appendChild(googleMapDiv);
+        
+        // 현재 레스토랑 데이터를 전역에 저장
+        window.currentRestaurants = validRestaurants;
+        window.currentChatBot = this;
+        
+        // Google Maps 초기화
+        this.createGoogleMap(validRestaurants, googleMapDiv);
+    }
+
+    createGoogleMap(restaurants, container) {
+        // Google Maps API가 로드되었는지 확인
+        if (typeof google === 'undefined' || !google.maps) {
+            // API가 아직 로드되지 않은 경우 대체 지도 표시
+            container.innerHTML = `
+                <div class="map-loading">
+                    <i class="fas fa-map"></i>
+                    <p>지도를 불러오는 중...</p>
+                    <div class="loading-spinner"></div>
+                </div>
+            `;
+            
+            // 3초 후 재시도
+            setTimeout(() => {
+                if (typeof google !== 'undefined' && google.maps) {
+                    this.createGoogleMap(restaurants, container);
+                } else {
+                    // Google Maps API 로드 실패 시 fallback
+                    this.createFallbackMap(restaurants, container);
+                }
+            }, 3000);
+            return;
+        }
         
         // 중심 좌표 계산
-        const centerLat = validRestaurants.reduce((sum, r) => sum + r.coordinates.lat, 0) / validRestaurants.length;
-        const centerLng = validRestaurants.reduce((sum, r) => sum + r.coordinates.lng, 0) / validRestaurants.length;
+        const centerLat = restaurants.reduce((sum, r) => sum + r.coordinates.lat, 0) / restaurants.length;
+        const centerLng = restaurants.reduce((sum, r) => sum + r.coordinates.lng, 0) / restaurants.length;
         
-        mapSimulation.innerHTML = `
-            <div class="map-header">
-                <i class="fas fa-map"></i>
-                <span>부산 맛집 위치</span>
-                <div class="map-coords">${centerLat.toFixed(4)}, ${centerLng.toFixed(4)}</div>
-            </div>
-            <div class="map-markers">
-                ${validRestaurants.map((restaurant, index) => `
-                    <div class="map-marker" data-index="${index}">
-                        <div class="marker-pin">
-                            <i class="fas fa-map-marker-alt"></i>
-                        </div>
-                        <div class="marker-info">
-                            <div class="marker-name">${restaurant.name}</div>
-                            <div class="marker-area">${restaurant.area}</div>
-                            <div class="marker-coords">
-                                ${restaurant.coordinates.lat.toFixed(4)}, ${restaurant.coordinates.lng.toFixed(4)}
-                            </div>
+        // 지도 생성
+        const map = new google.maps.Map(container, {
+            zoom: 12,
+            center: { lat: centerLat, lng: centerLng },
+            styles: [
+                {
+                    "featureType": "all",
+                    "elementType": "geometry",
+                    "stylers": [{"color": "#2c2c2c"}]
+                },
+                {
+                    "featureType": "all",
+                    "elementType": "labels.text.fill",
+                    "stylers": [{"color": "#ffffff"}]
+                },
+                {
+                    "featureType": "water",
+                    "elementType": "geometry",
+                    "stylers": [{"color": "#0095f6"}]
+                }
+            ]
+        });
+        
+        // 마커 생성
+        const markers = [];
+        restaurants.forEach((restaurant, index) => {
+            const marker = new google.maps.Marker({
+                position: { lat: restaurant.coordinates.lat, lng: restaurant.coordinates.lng },
+                map: map,
+                title: restaurant.name,
+                icon: {
+                    url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
+                        <svg width="30" height="30" viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="15" cy="15" r="12" fill="#0095f6" stroke="#ffffff" stroke-width="2"/>
+                            <text x="15" y="20" text-anchor="middle" fill="white" font-size="12" font-weight="bold">${index + 1}</text>
+                        </svg>
+                    `)}`,
+                    scaledSize: new google.maps.Size(30, 30),
+                    anchor: new google.maps.Point(15, 15)
+                }
+            });
+            
+            // 정보창 생성
+            const infoWindow = new google.maps.InfoWindow({
+                content: `
+                    <div style="color: #000; padding: 8px; max-width: 200px;">
+                        <h4 style="margin: 0 0 8px 0; color: #0095f6;">${restaurant.name}</h4>
+                        <p style="margin: 4px 0; font-size: 12px;">${restaurant.area} · ${restaurant.category}</p>
+                        <p style="margin: 4px 0; font-size: 11px; color: #666;">${restaurant.address}</p>
+                        <div style="margin-top: 8px;">
+                            <button onclick="window.currentChatBot.goToSlide(${index})" 
+                                    style="background: #0095f6; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; cursor: pointer;">
+                                카드 보기
+                            </button>
                         </div>
                     </div>
-                `).join('')}
-            </div>
-            <div class="map-actions">
+                `
+            });
+            
+            // 마커 클릭 이벤트
+            marker.addListener('click', () => {
+                // 모든 정보창 닫기
+                markers.forEach(m => m.infoWindow && m.infoWindow.close());
+                // 현재 정보창 열기
+                infoWindow.open(map, marker);
+                // 슬라이더와 연동
+                this.goToSlide(index);
+            });
+            
+            marker.infoWindow = infoWindow;
+            markers.push(marker);
+        });
+        
+        // 전역에 마커 저장
+        window.currentMarkers = markers;
+        window.currentMap = map;
+    }
+
+    createFallbackMap(restaurants, container) {
+        // Google Maps API 실패 시 대체 지도
+        const centerLat = restaurants.reduce((sum, r) => sum + r.coordinates.lat, 0) / restaurants.length;
+        const centerLng = restaurants.reduce((sum, r) => sum + r.coordinates.lng, 0) / restaurants.length;
+        
+        container.innerHTML = `
+            <div class="map-fallback">
+                <div class="map-header">
+                    <i class="fas fa-map"></i>
+                    <span>부산 맛집 위치</span>
+                </div>
+                <div class="map-center">
+                    <p>중심 좌표: ${centerLat.toFixed(4)}, ${centerLng.toFixed(4)}</p>
+                    <p>${restaurants.length}개 맛집 위치</p>
+                </div>
                 <button class="map-action-btn" onclick="openGoogleMaps('${centerLat}', '${centerLng}')">
                     <i class="fas fa-external-link-alt"></i>
                     Google Maps에서 보기
                 </button>
             </div>
         `;
-        
-        mapContainer.appendChild(mapSimulation);
-        
-        // 마커 클릭 이벤트
-        mapSimulation.querySelectorAll('.map-marker').forEach((marker, index) => {
-            marker.addEventListener('click', () => {
-                this.goToSlide(index);
-                this.highlightMapMarker(index);
-            });
-        });
     }
 
     highlightMapMarker(index) {
+        // Google Maps 마커가 있는 경우
+        if (window.currentMarkers && window.currentMarkers[index]) {
+            // 모든 정보창 닫기
+            window.currentMarkers.forEach(marker => {
+                if (marker.infoWindow) {
+                    marker.infoWindow.close();
+                }
+            });
+            
+            // 현재 마커의 정보창 열기
+            const currentMarker = window.currentMarkers[index];
+            if (currentMarker && currentMarker.infoWindow && window.currentMap) {
+                currentMarker.infoWindow.open(window.currentMap, currentMarker);
+                
+                // 지도 중심을 해당 마커로 이동
+                window.currentMap.panTo(currentMarker.getPosition());
+            }
+        }
+        
+        // Fallback 지도의 경우
         const markers = document.querySelectorAll('.map-marker');
         markers.forEach((marker, i) => {
             marker.classList.toggle('active', i === index);
@@ -711,6 +827,12 @@ function smoothScrollToBottom() {
         top: messagesContainer.scrollHeight,
         behavior: 'smooth'
     });
+}
+
+// Google Maps 초기화 콜백
+function initGoogleMaps() {
+    console.log('Google Maps API 로드 완료');
+    window.googleMapsLoaded = true;
 }
 
 // 페이지 로드 시 초기화
