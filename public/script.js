@@ -51,9 +51,9 @@ class InstagramStyleChatBot {
             const data = await response.json();
             
             if (data.restaurants && data.restaurants.length > 0) {
-                // 초기 메시지에 레스토랑 카드 추가
+                // 초기 메시지에 모달 버튼 추가
                 setTimeout(() => {
-                    this.displayRestaurantCards(data.restaurants, true);
+                    this.addModalButton(data.restaurants, '오늘의 추천 맛집');
                 }, 1000);
             }
         } catch (error) {
@@ -83,16 +83,15 @@ class InstagramStyleChatBot {
             // 뚜기 응답 표시
             this.addMessage(response.message, 'bot');
             
-            // 맛집 카드 표시
+            // 맛집 데이터가 있으면 모달 버튼과 모달 표시
             if (response.restaurants && response.restaurants.length > 0) {
-                // 채팅창에 카드 표시
+                // 모달 버튼 추가
                 setTimeout(() => {
-                    this.displayRestaurantCards(response.restaurants);
+                    this.addModalButton(response.restaurants, response.analysis?.location || '맛집 추천');
                 }, 300);
                 
-                // 위치 키워드가 포함된 경우 추가로 Artifacts 모달 표시
+                // 위치 키워드가 포함된 경우 자동으로 모달 표시
                 if (this.detectLocationRequest(message)) {
-                    // 사용자가 채팅을 읽을 시간을 주고 자연스럽게 모달 표시
                     this.delayedShowArtifacts(response.restaurants, response.analysis?.location || '맛집 추천');
                 }
             }
@@ -482,6 +481,33 @@ ${restaurant.description}`;
         const container = this.messagesContainer;
         const threshold = 100; // 하단에서 100px 이내
         return container.scrollTop + container.clientHeight >= container.scrollHeight - threshold;
+    }
+
+    addModalButton(restaurants, location) {
+        const buttonContainer = document.createElement('div');
+        buttonContainer.className = 'modal-button-container';
+        
+        const button = document.createElement('button');
+        button.className = 'modal-open-button';
+        button.innerHTML = `
+            <i class="fas fa-map-marker-alt"></i>
+            <span>맛집 지도 보기 (${restaurants.length}곳)</span>
+            <i class="fas fa-arrow-right"></i>
+        `;
+        
+        button.addEventListener('click', () => {
+            this.showArtifacts(restaurants, location);
+        });
+        
+        buttonContainer.appendChild(button);
+        
+        // 마지막 봇 메시지에 버튼 추가
+        const lastBotMessage = this.messagesContainer.querySelector('.bot-group:last-child .message-content');
+        if (lastBotMessage) {
+            lastBotMessage.appendChild(buttonContainer);
+        }
+        
+        this.scrollToBottom();
     }
 }
 
