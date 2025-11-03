@@ -93,7 +93,7 @@ class BusanRestaurantAI {
         if (sender === 'bot') {
             const avatar = document.createElement('div');
             avatar.className = 'bot-avatar';
-            avatar.textContent = '🤖';
+            avatar.textContent = '🐧';
             messageContent.appendChild(avatar);
         }
         

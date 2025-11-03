@@ -194,33 +194,76 @@ async function callClaudeAPI(prompt) {
     }
 }
 
-// AI 응답 생성
+// AI 응답 생성 (뚜기 캐릭터)
 function generateAIResponse(userMessage, recommendations) {
     const { analysis, restaurants, total } = recommendations;
     
+    const dduggiResponses = {
+        noResults: [
+            "마! 아쉽다이가... 조건에 딱 맞는 맛집을 못 찾겠네 😅 다른 지역이나 음식으로 다시 말해봐라!",
+            "이런, 내가 아는 맛집 중에는 없네... 🤔 혹시 다른 음식이나 지역으로 물어봐라!",
+            "앗, 그 조건으로는 추천할 곳이 없다이가 😓 조금 다르게 말해보면 좋은 곳 알려줄게!"
+        ],
+        greetings: [
+            "마! 뚜기다이가! 🐧 부산 맛집은 나한테 맡겨라! 뭔 맛있는 거 찾고 있노?",
+            "안녕하세요! 부산 토박이 뚜기입니다 😊 어떤 맛집 찾고 계신가요? 내가 다 아는데!",
+            "어서와라! 🙌 뚜기가 부산 맛집 다 알려줄게! 어디 가고 싶은지 말해봐라!"
+        ],
+        casual: [
+            "뚜기가 도와줄게! 🐧 뭔 얘기할까?",
+            "마! 좋다이가 😄 또 뭔 궁금한 거 있나?",
+            "부산 살이 어때? 🌊 맛집 얘기면 언제든 말해라!"
+        ]
+    };
+
     if (restaurants.length === 0) {
-        return "아이고, 조건에 맞는 맛집을 못 찾겠네요 😅 다른 지역이나 음식으로 다시 물어보세요!";
+        const randomResponse = dduggiResponses.noResults[Math.floor(Math.random() * dduggiResponses.noResults.length)];
+        return randomResponse;
     }
 
-    let responseMessage = "부산 맛집 추천해드릴게요! 🍽️\n\n";
+    // 뚜기 스타일 응답 생성
+    let responseMessage = "";
     
+    // 시작 인사
+    const starters = [
+        "마! 좋은 곳들 찾았다이가! 🍽️",
+        "어이구, 맛있는 곳들이 있네! 😋",
+        "완전 좋은 맛집들 추천해줄게! 👌"
+    ];
+    responseMessage += starters[Math.floor(Math.random() * starters.length)] + "\n\n";
+    
+    // 지역/음식 언급
     if (analysis.area) {
-        responseMessage += `${analysis.area} 지역에서 `;
+        responseMessage += `${analysis.area}에서 `;
     }
     if (analysis.food) {
-        responseMessage += `${analysis.food} 맛집으로 `;
+        responseMessage += `${analysis.food} 맛집 `;
     } else if (analysis.category) {
-        responseMessage += `${analysis.category} 맛집으로 `;
+        responseMessage += `${analysis.category} 맛집 `;
     }
     
-    responseMessage += `${restaurants.length}곳을 추천드려요!\n\n`;
+    responseMessage += `${restaurants.length}곳 골라줬어! `;
     
-    // 추천 맛집 간단 소개
+    // 뚜기만의 코멘트
+    const comments = [
+        "내가 다 먹어봤는데 진짜 맛있어!",
+        "여기들 완전 개꿀이야!",
+        "부산 사람들이 진짜 많이 가는 곳들이다이가!",
+        "관광객들한테는 비밀인데... 진짜 맛집들이야!"
+    ];
+    responseMessage += comments[Math.floor(Math.random() * comments.length)] + "\n\n";
+    
+    // 맛집 간단 소개
     if (restaurants.length > 0) {
         const topRestaurant = restaurants[0];
-        responseMessage += `특히 "${topRestaurant.name}"이 평점 ${topRestaurant.rating}점으로 인기가 높아요. `;
-        responseMessage += `${topRestaurant.description.substring(0, 50)}... `;
-        responseMessage += `아래 카드에서 더 자세한 정보를 확인해보세요! 👇`;
+        const praises = [
+            "특히 여기가 평점도 높고 진짜 유명해!",
+            "이 집은 내가 자주 가는 곳인데 완전 추천!",
+            "여기 사장님도 완전 친절하고 맛도 끝내줘!",
+            "이 집은 부산 사람들 사이에서 완전 핫플이야!"
+        ];
+        responseMessage += praises[Math.floor(Math.random() * praises.length)];
+        responseMessage += " 아래 카드 눌러서 자세히 봐라! 🔽";
     }
 
     return responseMessage;
@@ -232,16 +275,26 @@ function generateClaudePrompt(userMessage, restaurants) {
         `${idx + 1}. ${r.name} (${r.area})\n   📍 ${r.address}\n   ⭐ ${r.rating}/5 (${r.reviewCount}개 리뷰)\n   🍽️ ${r.description}`
     ).join('\n\n');
 
-    return `너는 부산 현지인이고 맛집 전문가야. 부산 사투리를 조금 써서 친근하게 대답해줘.
+    return `너는 "뚜기"라는 이름의 부산 토박이 맛집 가이드야. 다음과 같은 캐릭터로 대답해줘:
 
-사용자 요청: "${userMessage}"
+🐧 캐릭터 설정:
+- 이름: 뚜기 (부산의 상징 갈매기에서 따온 애칭)
+- 나이: 30대 중반, 부산에서 태어나고 자란 토박이
+- 성격: 털털하고 친근하며, 맛집에 대한 열정이 넘침
+- 말투: 부산 사투리를 자연스럽게 사용하되 너무 과하지 않게
+- 특징: 항상 이모지를 적절히 사용하고, 개인적인 경험담을 섞어서 설명
 
-실제 부산 맛집 데이터:
+💬 말투 특징:
+- "~다이가", "~아이가", "~해봐라", "마!" 자주 사용
+- "진짜", "완전", "개꿀" 등의 강조 표현
+- "내가 먹어봤는데", "여기 진짜 맛있어" 등 개인 경험 언급
+
+🍽️ 사용자 요청: "${userMessage}"
+
+🏪 추천 맛집 데이터:
 ${restaurantInfo}
 
-위 맛집들을 바탕으로 2-3문장 정도로 간단하고 친근하게 추천해줘.
-맛집 카드는 따로 보여주니까 구체적인 이름이나 주소는 반복하지 말고, 전체적인 소개만 해줘.
-부산 사투리 ("~다이가", "~아이가", "~해봐라")를 자연스럽게 써서 친근하게 말해줘.`;
+위 맛집들을 뚜기의 캐릭터로 2-3문장 정도 추천해줘. 구체적인 이름이나 주소는 카드에 나오니까 반복하지 말고, 뚜기만의 개성있는 소개로 말해줘. 반드시 이모지도 포함해서 친근하게!`;
 }
 
 // Vercel 서버리스 함수
@@ -274,14 +327,57 @@ module.exports = async function handler(req, res) {
 
         // 인사말이나 일반 대화 체크
         const lowerMessage = message.toLowerCase();
-        const greetings = ['안녕', '하이', '반갑', '처음'];
+        const greetings = ['안녕', '하이', '반갑', '처음', '누구', '이름'];
+        const thanks = ['고마', '감사', '땡큐'];
+        const casual = ['어떻게', '뭐해', '어때', '좋은', '나쁜'];
+
+        // 뚜기 캐릭터 응답들
+        const dduggiResponses = {
+            greetings: [
+                "마! 뚜기다이가! 🐧 부산 토박이 맛집 가이드야! 어떤 맛있는 거 찾고 있노?",
+                "안녕하세요! 부산 맛집은 나한테 맡겨라! 😊 뚜기가 다 알려줄게!",
+                "어서와라! 🙌 뚜기가 부산 최고 맛집들 소개해줄게! 뭔 음식 좋아하노?"
+            ],
+            thanks: [
+                "마! 뭘 고마워하노! 😄 뚜기한테는 당연한 일이다이가!",
+                "고맙긴! 맛있게 드시고 또 놀러와라! 🍽️",
+                "아이고, 고마워! 다음에도 맛집 찾으면 뚜기한테 말해라! 😊"
+            ],
+            casual: [
+                "마! 뚜기는 맛집 찾는 거 도와주고 있어! 🐧 너는 뭔 맛있는 거 먹고 싶노?",
+                "좋다이가! 😄 오늘도 맛집 탐방하는 중이야! 어디 가고 싶은지 말해봐라!",
+                "부산 바다 바람 맞으면서 맛집 찾고 있어! 🌊 어떤 음식 땡기노?"
+            ]
+        };
+
         const isGreeting = greetings.some(greeting => lowerMessage.includes(greeting));
+        const isThank = thanks.some(thank => lowerMessage.includes(thank));
+        const isCasual = casual.some(c => lowerMessage.includes(c));
 
         if (isGreeting) {
+            const randomGreeting = dduggiResponses.greetings[Math.floor(Math.random() * dduggiResponses.greetings.length)];
             return res.json({
-                message: "안녕하세요! 부산 맛집 추천 AI입니다 🍽️\n\nJSON 데이터 기반으로 정확한 맛집만 추천해드려요! 어떤 맛집을 찾고 계신가요?",
+                message: randomGreeting,
                 restaurants: restaurantAI.getRandomRecommendations(3),
                 type: 'greeting'
+            });
+        }
+
+        if (isThank) {
+            const randomThanks = dduggiResponses.thanks[Math.floor(Math.random() * dduggiResponses.thanks.length)];
+            return res.json({
+                message: randomThanks,
+                restaurants: [],
+                type: 'casual'
+            });
+        }
+
+        if (isCasual) {
+            const randomCasual = dduggiResponses.casual[Math.floor(Math.random() * dduggiResponses.casual.length)];
+            return res.json({
+                message: randomCasual,
+                restaurants: restaurantAI.getRandomRecommendations(2),
+                type: 'casual'
             });
         }
 
