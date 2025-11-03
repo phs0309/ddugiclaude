@@ -1,3 +1,5 @@
+/* Instagram DM Style - 부산 맛집 뚜기 */
+
 * {
     margin: 0;
     padding: 0;
@@ -5,316 +7,284 @@
 }
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    min-height: 100vh;
-    padding: 20px;
-}
-
-.container {
-    max-width: 800px;
-    margin: 0 auto;
-    background: white;
-    border-radius: 20px;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background: #000;
+    color: #fff;
     overflow: hidden;
+    height: 100vh;
 }
 
-.header {
-    background: linear-gradient(135deg, #ff6b6b, #ffa726);
-    padding: 30px;
-    text-align: center;
-    color: white;
-}
-
-.header h1 {
-    font-size: 2.5em;
-    margin-bottom: 10px;
-    font-weight: 700;
-}
-
-.header p {
-    font-size: 1.1em;
-    opacity: 0.9;
-}
-
-.chat-container {
-    height: 600px;
+/* Main Instagram DM Container */
+.instagram-dm-container {
     display: flex;
     flex-direction: column;
+    height: 100vh;
+    max-width: 935px;
+    margin: 0 auto;
+    background: #000;
+    border-left: 1px solid #262626;
+    border-right: 1px solid #262626;
 }
 
-.chat-messages {
+/* Header - Instagram DM Style */
+.dm-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: #000;
+    border-bottom: 1px solid #262626;
+    position: relative;
+    z-index: 100;
+}
+
+.dm-header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.back-btn {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    transition: background-color 0.2s ease;
+}
+
+.back-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.profile-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.profile-avatar {
+    position: relative;
+}
+
+.avatar-image {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+}
+
+.online-indicator {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 12px;
+    height: 12px;
+    background: #00d856;
+    border: 2px solid #000;
+    border-radius: 50%;
+}
+
+.profile-details h2 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #fff;
+    margin: 0;
+}
+
+.profile-status {
+    font-size: 14px;
+    color: #a8a8a8;
+    margin: 0;
+}
+
+.dm-header-right {
+    display: flex;
+    gap: 8px;
+}
+
+.header-action-btn {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    transition: background-color 0.2s ease;
+}
+
+.header-action-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Chat Area */
+.dm-chat-area {
     flex: 1;
-    padding: 20px;
     overflow-y: auto;
-    background: #f8f9fa;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    background: #000;
 }
 
-.message {
-    margin-bottom: 20px;
-    animation: fadeInUp 0.3s ease;
+.dm-messages {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* Message Groups */
+.message-group {
+    display: flex;
+    gap: 8px;
+    align-items: flex-end;
+}
+
+.message-group.user-group {
+    flex-direction: row-reverse;
+}
+
+.message-avatar {
+    flex-shrink: 0;
+}
+
+.message-avatar .avatar-image {
+    width: 28px;
+    height: 28px;
+    font-size: 14px;
 }
 
 .message-content {
     display: flex;
-    align-items: flex-start;
-    gap: 15px;
+    flex-direction: column;
+    gap: 4px;
+    max-width: 70%;
 }
 
-.bot-avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #667eea, #764ba2);
+.user-group .message-content {
+    align-items: flex-end;
+}
+
+/* Message Bubbles - Instagram Style */
+.message-bubble {
+    padding: 12px 16px;
+    border-radius: 18px;
+    font-size: 14px;
+    line-height: 1.4;
+    word-wrap: break-word;
+    position: relative;
+}
+
+.bot-bubble {
+    background: #262626;
+    color: #fff;
+    margin-left: 4px;
+}
+
+.user-bubble {
+    background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+    color: #fff;
+    margin-right: 4px;
+}
+
+.message-time {
+    font-size: 11px;
+    color: #a8a8a8;
+    margin-top: 4px;
+    margin-left: 16px;
+}
+
+.user-group .message-time {
+    margin-left: 0;
+    margin-right: 16px;
+    text-align: right;
+}
+
+/* Quick Suggestions */
+.quick-suggestions {
+    margin-top: auto;
+    padding: 16px 0;
+}
+
+.suggestions-container {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 0 4px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.suggestions-container::-webkit-scrollbar {
+    display: none;
+}
+
+.suggestion-pill {
     display: flex;
     align-items: center;
-    justify-content: center;
-    font-size: 1.2em;
+    gap: 6px;
+    padding: 8px 12px;
+    background: #262626;
+    border: 1px solid #3c3c3c;
+    border-radius: 20px;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 400;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
     flex-shrink: 0;
 }
 
-.user-message {
-    margin-left: auto;
+.suggestion-pill:hover {
+    background: #3c3c3c;
+    border-color: #555;
+    transform: translateY(-1px);
 }
 
-.user-message .message-content {
-    justify-content: flex-end;
-    flex-direction: row-reverse;
+.suggestion-pill i {
+    font-size: 12px;
+    opacity: 0.8;
 }
 
-.text-content {
-    background: white;
-    padding: 15px 20px;
-    border-radius: 20px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    max-width: 70%;
-    line-height: 1.5;
-}
-
-.user-message .text-content {
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    color: white;
-}
-
-.restaurant-cards-container {
-    margin-top: 15px;
-}
-
-.restaurant-cards-wrapper {
-    display: flex;
-    gap: 15px;
-    overflow-x: auto;
-    padding: 10px 0;
-}
-
-.restaurant-card {
-    min-width: 280px;
-    background: white;
-    border-radius: 15px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-    overflow: hidden;
-    cursor: pointer;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.restaurant-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-}
-
-.restaurant-card-image {
-    height: 120px;
-    background: linear-gradient(135deg, #ffa726, #ff6b6b);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 3em;
-    color: white;
-}
-
-.restaurant-card-content {
-    padding: 20px;
-}
-
-.restaurant-name {
-    font-size: 1.3em;
-    font-weight: 700;
-    margin-bottom: 8px;
-    color: #333;
-}
-
-.restaurant-area {
-    color: #666;
-    margin-bottom: 10px;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.restaurant-description {
-    color: #777;
-    font-size: 0.95em;
-    line-height: 1.4;
-    margin-bottom: 12px;
-}
-
-.restaurant-specialties {
-    margin-bottom: 12px;
-}
-
-.specialty-tag {
-    display: inline-block;
-    background: #e3f2fd;
-    color: #1976d2;
-    padding: 4px 8px;
-    border-radius: 12px;
-    font-size: 0.85em;
-    margin-right: 5px;
-    margin-bottom: 5px;
-}
-
-.restaurant-rating {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    color: #ff9800;
-    font-weight: 600;
-}
-
-.restaurant-rating i {
-    color: #ffb400;
-}
-
-.quick-buttons {
-    padding: 15px 20px;
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    background: white;
-    border-top: 1px solid #eee;
-}
-
-.quick-buttons button {
-    padding: 8px 15px;
-    border: 2px solid #667eea;
-    background: white;
-    color: #667eea;
-    border-radius: 20px;
-    cursor: pointer;
-    font-size: 0.9em;
-    transition: all 0.3s ease;
-}
-
-.quick-buttons button:hover {
-    background: #667eea;
-    color: white;
-}
-
+/* Typing Indicator */
 .typing-indicator {
-    padding: 15px 20px;
-    background: #f8f9fa;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    color: #666;
+    margin-bottom: 8px;
+}
+
+.typing-bubble {
+    background: #262626;
+    padding: 12px 16px;
+    border-radius: 18px;
+    margin-left: 4px;
 }
 
 .typing-dots {
     display: flex;
-    gap: 3px;
+    gap: 4px;
+    align-items: center;
 }
 
 .typing-dots span {
-    width: 8px;
-    height: 8px;
+    width: 6px;
+    height: 6px;
     border-radius: 50%;
-    background: #667eea;
+    background: #a8a8a8;
     animation: typing 1.4s infinite ease-in-out;
 }
 
 .typing-dots span:nth-child(1) { animation-delay: -0.32s; }
 .typing-dots span:nth-child(2) { animation-delay: -0.16s; }
-
-.input-container {
-    padding: 20px;
-    background: white;
-    border-top: 1px solid #eee;
-}
-
-.input-wrapper {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-}
-
-#userInput {
-    flex: 1;
-    padding: 15px 20px;
-    border: 2px solid #e0e0e0;
-    border-radius: 25px;
-    font-size: 1em;
-    outline: none;
-    transition: border-color 0.3s ease;
-}
-
-#userInput:focus {
-    border-color: #667eea;
-}
-
-#sendButton {
-    width: 50px;
-    height: 50px;
-    border: none;
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    color: white;
-    border-radius: 50%;
-    cursor: pointer;
-    font-size: 1.2em;
-    transition: transform 0.3s ease;
-}
-
-#sendButton:hover {
-    transform: scale(1.1);
-}
-
-#sendButton:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none;
-}
-
-.stats {
-    padding: 20px;
-    background: #f8f9fa;
-    display: flex;
-    justify-content: center;
-    gap: 40px;
-    border-top: 1px solid #eee;
-}
-
-.stat-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: #666;
-    font-size: 0.9em;
-}
-
-.stat-item i {
-    color: #667eea;
-}
-
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
 
 @keyframes typing {
     0%, 80%, 100% {
@@ -327,35 +297,279 @@ body {
     }
 }
 
-/* 반응형 디자인 */
+/* Input Area - Instagram Style */
+.dm-input-area {
+    padding: 12px 16px 16px;
+    background: #000;
+    border-top: 1px solid #262626;
+}
+
+.input-container {
+    position: relative;
+}
+
+.input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #262626;
+    border-radius: 22px;
+    padding: 8px 12px;
+    border: 1px solid #3c3c3c;
+    transition: border-color 0.2s ease;
+}
+
+.input-wrapper:focus-within {
+    border-color: #0095f6;
+}
+
+.input-action-btn {
+    background: none;
+    border: none;
+    color: #a8a8a8;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 50%;
+    transition: color 0.2s ease;
+}
+
+.input-action-btn:hover {
+    color: #fff;
+}
+
+.text-input-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#userInput {
+    flex: 1;
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 14px;
+    outline: none;
+    padding: 8px 0;
+    font-family: inherit;
+}
+
+#userInput::placeholder {
+    color: #a8a8a8;
+}
+
+.emoji-btn {
+    background: none;
+    border: none;
+    color: #a8a8a8;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 50%;
+    transition: color 0.2s ease;
+}
+
+.emoji-btn:hover {
+    color: #fff;
+}
+
+.send-btn {
+    background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+    border: none;
+    color: #fff;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.send-btn:hover {
+    transform: scale(1.05);
+}
+
+.send-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Restaurant Cards - Instagram Story Style */
+.restaurant-cards-container {
+    margin-top: 12px;
+    padding: 0 4px;
+}
+
+.restaurant-cards-wrapper {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    padding: 8px 0;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.restaurant-cards-wrapper::-webkit-scrollbar {
+    display: none;
+}
+
+.restaurant-card {
+    min-width: 280px;
+    background: linear-gradient(135deg, #262626 0%, #1a1a1a 100%);
+    border-radius: 16px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 1px solid #3c3c3c;
+    flex-shrink: 0;
+}
+
+.restaurant-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+    border-color: #555;
+}
+
+.restaurant-card-image {
+    height: 120px;
+    background: linear-gradient(135deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 40px;
+    position: relative;
+}
+
+.restaurant-card-content {
+    padding: 16px;
+}
+
+.restaurant-name {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #fff;
+}
+
+.restaurant-area {
+    color: #a8a8a8;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 13px;
+}
+
+.restaurant-description {
+    color: #d4d4d4;
+    font-size: 13px;
+    line-height: 1.4;
+    margin-bottom: 12px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.restaurant-specialties {
+    margin-bottom: 12px;
+}
+
+.specialty-tag {
+    display: inline-block;
+    background: rgba(240, 148, 51, 0.2);
+    color: #f09433;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    margin-right: 4px;
+    margin-bottom: 4px;
+    border: 1px solid rgba(240, 148, 51, 0.3);
+}
+
+.restaurant-rating {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: #ffd700;
+    font-weight: 500;
+    font-size: 13px;
+}
+
+.restaurant-rating i {
+    color: #ffd700;
+    font-size: 12px;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.message-group {
+    animation: fadeInUp 0.3s ease;
+}
+
+/* Responsive Design */
 @media (max-width: 768px) {
-    body {
-        padding: 10px;
+    .instagram-dm-container {
+        border-left: none;
+        border-right: none;
     }
     
-    .header h1 {
-        font-size: 2em;
+    .dm-header {
+        padding: 8px 12px;
     }
     
-    .chat-container {
-        height: 500px;
+    .dm-chat-area {
+        padding: 12px;
     }
     
     .restaurant-card {
         min-width: 250px;
     }
     
-    .quick-buttons {
-        gap: 8px;
+    .message-content {
+        max-width: 85%;
     }
     
-    .quick-buttons button {
-        font-size: 0.8em;
-        padding: 6px 12px;
+    .suggestion-pill {
+        font-size: 12px;
+        padding: 6px 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .restaurant-card {
+        min-width: 220px;
     }
     
-    .stats {
-        gap: 20px;
-        flex-wrap: wrap;
+    .message-content {
+        max-width: 90%;
+    }
+    
+    .dm-header {
+        padding: 6px 8px;
+    }
+    
+    .profile-details h2 {
+        font-size: 14px;
+    }
+    
+    .profile-status {
+        font-size: 12px;
     }
 }

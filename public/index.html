@@ -3,74 +3,117 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>부산 맛집 추천 AI</title>
+    <title>뚜기의 부산 맛집</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="container">
-        <header class="header">
-            <h1><i class="fas fa-utensils"></i> 뚜기의 부산 맛집</h1>
-            <p>🐧 부산 토박이 뚜기가 추천하는 진짜 맛집</p>
-        </header>
+    <div class="instagram-dm-container">
+        <!-- Instagram-style header -->
+        <div class="dm-header">
+            <div class="dm-header-left">
+                <button class="back-btn" aria-label="뒤로가기">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <div class="profile-info">
+                    <div class="profile-avatar">
+                        <div class="avatar-image">🐧</div>
+                        <div class="online-indicator"></div>
+                    </div>
+                    <div class="profile-details">
+                        <h2 class="profile-name">뚜기</h2>
+                        <p class="profile-status">부산 맛집 가이드 • 활성</p>
+                    </div>
+                </div>
+            </div>
+            <div class="dm-header-right">
+                <button class="header-action-btn" aria-label="정보">
+                    <i class="fas fa-info-circle"></i>
+                </button>
+            </div>
+        </div>
 
-        <div class="chat-container">
-            <div class="chat-messages" id="chatMessages">
-                <div class="message bot-message">
+        <!-- Chat messages area -->
+        <div class="dm-chat-area">
+            <div class="dm-messages" id="chatMessages">
+                <div class="message-group bot-group">
+                    <div class="message-avatar">
+                        <div class="avatar-image">🐧</div>
+                    </div>
                     <div class="message-content">
-                        <div class="bot-avatar">🐧</div>
-                        <div class="text-content">
-                            마! 뚜기다이가! 🐧<br>
-                            부산 토박이 맛집 가이드 뚜기입니다!<br>
-                            어떤 맛있는 거 찾고 있노? 😊
+                        <div class="message-bubble bot-bubble">
+                            <p>마! 뚜기다이가! 🐧</p>
+                            <p>부산 토박이 맛집 가이드 뚜기입니다!</p>
+                            <p>어떤 맛있는 거 찾고 있노? 😊</p>
                         </div>
+                        <div class="message-time">방금 전</div>
                     </div>
                 </div>
             </div>
 
-            <div class="quick-buttons">
-                <button onclick="sendQuickMessage('해운대 맛집 추천해줘')">해운대 맛집</button>
-                <button onclick="sendQuickMessage('돼지국밥 맛집 알려줘')">돼지국밥</button>
-                <button onclick="sendQuickMessage('회 먹을 만한 곳')">회 맛집</button>
-                <button onclick="sendQuickMessage('서면 저렴한 맛집')">서면 저렴한 곳</button>
-                <button onclick="sendQuickMessage('카페 추천해줘')">카페 추천</button>
-            </div>
-
-            <div class="typing-indicator" id="typingIndicator" style="display: none;">
-                <div class="typing-dots">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </div>
-                <span>뚜기가 맛집 찾는 중...</span>
-            </div>
-
-            <div class="input-container">
-                <div class="input-wrapper">
-                    <input type="text" id="userInput" placeholder="맛집을 찾아보세요... (예: 해운대 돼지국밥)" />
-                    <button id="sendButton">
-                        <i class="fas fa-paper-plane"></i>
+            <!-- Quick suggestions -->
+            <div class="quick-suggestions" id="quickSuggestions">
+                <div class="suggestions-container">
+                    <button class="suggestion-pill" onclick="sendQuickMessage('해운대 맛집 추천해줘')">
+                        <i class="fas fa-map-marker-alt"></i>
+                        해운대 맛집
                     </button>
+                    <button class="suggestion-pill" onclick="sendQuickMessage('돼지국밥 맛집 알려줘')">
+                        <i class="fas fa-bowl-hot"></i>
+                        돼지국밥
+                    </button>
+                    <button class="suggestion-pill" onclick="sendQuickMessage('회 먹을 만한 곳')">
+                        <i class="fas fa-fish"></i>
+                        회 맛집
+                    </button>
+                    <button class="suggestion-pill" onclick="sendQuickMessage('서면 저렴한 맛집')">
+                        <i class="fas fa-won-sign"></i>
+                        서면 저렴한 곳
+                    </button>
+                    <button class="suggestion-pill" onclick="sendQuickMessage('카페 추천해줘')">
+                        <i class="fas fa-coffee"></i>
+                        카페 추천
+                    </button>
+                </div>
+            </div>
+
+            <!-- Typing indicator -->
+            <div class="typing-indicator" id="typingIndicator" style="display: none;">
+                <div class="message-group bot-group">
+                    <div class="message-avatar">
+                        <div class="avatar-image">🐧</div>
+                    </div>
+                    <div class="message-content">
+                        <div class="typing-bubble">
+                            <div class="typing-dots">
+                                <span></span>
+                                <span></span>
+                                <span></span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="stats">
-            <div class="stat-item">
-                <i class="fas fa-database"></i>
-                <span>JSON 데이터</span>
-            </div>
-            <div class="stat-item">
-                <i class="fas fa-heart"></i>
-                <span>뚜기 추천</span>
-            </div>
-            <div class="stat-item">
-                <i class="fas fa-map-marker-alt"></i>
-                <span>부산 전 지역</span>
-            </div>
-            <div class="stat-item">
-                <i class="fas fa-star"></i>
-                <span>실제 리뷰</span>
+        <!-- Input area -->
+        <div class="dm-input-area">
+            <div class="input-container">
+                <div class="input-wrapper">
+                    <button class="input-action-btn" aria-label="사진 추가">
+                        <i class="fas fa-camera"></i>
+                    </button>
+                    <div class="text-input-container">
+                        <input type="text" id="userInput" placeholder="메시지 보내기..." />
+                        <button class="emoji-btn" aria-label="이모지">
+                            <i class="far fa-smile"></i>
+                        </button>
+                    </div>
+                    <button id="sendButton" class="send-btn" aria-label="보내기">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
