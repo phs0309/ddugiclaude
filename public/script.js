@@ -566,10 +566,10 @@ ${restaurant.description}`;
         this.createNaverMap(validRestaurants, naverMapDiv);
     }
 
-    createNaverMap(restaurants, container) {
+    async createNaverMap(restaurants, container) {
         // 네이버 지도 API가 로드되었는지 확인
         if (typeof naver === 'undefined' || !naver.maps) {
-            // API가 아직 로드되지 않은 경우 대체 지도 표시
+            // API가 아직 로드되지 않은 경우 로딩 표시
             container.innerHTML = `
                 <div class="map-loading">
                     <i class="fas fa-map"></i>
@@ -578,17 +578,59 @@ ${restaurant.description}`;
                 </div>
             `;
             
-            // 3초 후 재시도
-            setTimeout(() => {
-                if (typeof naver !== 'undefined' && naver.maps) {
-                    this.createNaverMap(restaurants, container);
+            // Vercel 함수에서 네이버 지도 API 설정 가져오기
+            try {
+                const response = await fetch('/api/naver_map_api');
+                const config = await response.json();
+                
+                if (config.success && config.scriptUrl) {
+                    // 네이버 지도 스크립트 동적 로드
+                    await this.loadNaverMapsScript(config.scriptUrl);
+                    // 로드 완료 후 지도 생성
+                    if (typeof naver !== 'undefined' && naver.maps) {
+                        this.createNaverMapInstance(restaurants, container);
+                    } else {
+                        throw new Error('Failed to load Naver Maps API');
+                    }
                 } else {
-                    // 네이버 지도 API 로드 실패 시 fallback
-                    this.createFallbackMap(restaurants, container);
+                    throw new Error('Invalid API configuration');
                 }
-            }, 3000);
+            } catch (error) {
+                console.error('네이버 지도 API 로드 실패:', error);
+                this.createFallbackMap(restaurants, container);
+            }
             return;
         }
+        
+        // API가 이미 로드된 경우 바로 지도 생성
+        this.createNaverMapInstance(restaurants, container);
+    }
+
+    loadNaverMapsScript(scriptUrl) {
+        return new Promise((resolve, reject) => {
+            if (typeof naver !== 'undefined' && naver.maps) {
+                resolve();
+                return;
+            }
+            
+            const script = document.createElement('script');
+            script.type = 'text/javascript';
+            script.src = scriptUrl;
+            script.onload = () => {
+                console.log('네이버 지도 API 로드 완료');
+                resolve();
+            };
+            script.onerror = () => {
+                console.error('네이버 지도 API 로드 실패');
+                reject(new Error('Failed to load Naver Maps script'));
+            };
+            document.head.appendChild(script);
+        });
+    }
+
+    createNaverMapInstance(restaurants, container) {
+        // 로딩 화면 제거
+        container.innerHTML = '';
         
         // 중심 좌표 계산 (부산 중심으로)
         const centerLat = restaurants.reduce((sum, r) => sum + r.coordinates.lat, 0) / restaurants.length;

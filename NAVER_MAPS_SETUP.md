@@ -17,12 +17,19 @@
 
 ### 2. API 키 적용
 
-`public/index.html` 파일에서 YOUR_CLIENT_ID를 실제 Client ID로 교체:
+#### Vercel 배포 환경
+Vercel Dashboard에서 환경변수 설정:
+- Variable Name: `NAVER_MAP_CLIENT_ID`
+- Value: 발급받은 Client ID
 
-```html
-<!-- 네이버 지도 API -->
-<script type="text/javascript" src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpClientId=YOUR_CLIENT_ID"></script>
+#### 로컬 개발 환경
+`.env.local` 파일 생성하여 환경변수 설정:
+```bash
+# .env.local
+NAVER_MAP_CLIENT_ID=your_actual_client_id_here
 ```
+
+**참고**: `.env.example` 파일을 복사하여 `.env.local`로 만들고 실제 값으로 교체하세요.
 
 ### 3. 도메인 설정 (보안)
 
