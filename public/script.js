@@ -578,25 +578,51 @@ ${restaurant.description}`;
                 </div>
             `;
             
-            // Vercel 함수에서 네이버 지도 API 설정 가져오기
+            // 테스트용으로 직접 네이버 지도 스크립트 로드 (임시)
             try {
-                const response = await fetch('/api/naver_map_api');
-                const config = await response.json();
+                console.log('네이버 지도 로드 시작...');
                 
-                if (config.success && config.scriptUrl) {
-                    // 네이버 지도 스크립트 동적 로드
-                    await this.loadNaverMapsScript(config.scriptUrl);
-                    // 로드 완료 후 지도 생성
-                    if (typeof naver !== 'undefined' && naver.maps) {
-                        this.createNaverMapInstance(restaurants, container);
+                // 임시로 직접 스크립트 로드 (YOUR_CLIENT_ID는 실제 값으로 교체 필요)
+                const testScriptUrl = 'https://oapi.map.naver.com/openapi/v3/maps.js?ncpClientId=YOUR_CLIENT_ID';
+                
+                container.innerHTML = `
+                    <div class="map-loading">
+                        <i class="fas fa-map"></i>
+                        <p>네이버 지도를 불러오는 중...</p>
+                        <div class="loading-spinner"></div>
+                        <p style="font-size: 11px; color: #666; margin-top: 8px;">
+                            API 키가 설정되지 않은 경우 테스트 모드로 실행됩니다.
+                        </p>
+                    </div>
+                `;
+                
+                // Vercel 함수 시도
+                try {
+                    const response = await fetch('/api/naver_map_api');
+                    const config = await response.json();
+                    
+                    if (config.success && config.scriptUrl) {
+                        console.log('Vercel 함수에서 API 설정 로드 성공');
+                        await this.loadNaverMapsScript(config.scriptUrl);
                     } else {
-                        throw new Error('Failed to load Naver Maps API');
+                        throw new Error('Vercel 함수 응답 오류');
                     }
-                } else {
-                    throw new Error('Invalid API configuration');
+                } catch (vercelError) {
+                    console.log('Vercel 함수 실패, 테스트 모드로 전환:', vercelError.message);
+                    // Fallback: 테스트용 직접 로드 시도
+                    await this.loadNaverMapsScript(testScriptUrl);
                 }
+                
+                // 지도 생성
+                if (typeof naver !== 'undefined' && naver.maps) {
+                    console.log('네이버 지도 API 로드 성공, 지도 생성 중...');
+                    this.createNaverMapInstance(restaurants, container);
+                } else {
+                    throw new Error('네이버 지도 API 로드 실패');
+                }
+                
             } catch (error) {
-                console.error('네이버 지도 API 로드 실패:', error);
+                console.error('네이버 지도 로드 전체 실패:', error);
                 this.createFallbackMap(restaurants, container);
             }
             return;
@@ -731,7 +757,8 @@ ${restaurant.description}`;
     }
 
     createFallbackMap(restaurants, container) {
-        // Google Maps API 실패 시 대체 지도
+        console.log('Fallback 지도 표시 중...');
+        
         const centerLat = restaurants.reduce((sum, r) => sum + r.coordinates.lat, 0) / restaurants.length;
         const centerLng = restaurants.reduce((sum, r) => sum + r.coordinates.lng, 0) / restaurants.length;
         
@@ -739,18 +766,89 @@ ${restaurant.description}`;
             <div class="map-fallback">
                 <div class="map-header">
                     <i class="fas fa-map"></i>
-                    <span>부산 맛집 위치</span>
+                    <span>부산 맛집 위치 (${restaurants.length}곳)</span>
                 </div>
                 <div class="map-center">
-                    <p>중심 좌표: ${centerLat.toFixed(4)}, ${centerLng.toFixed(4)}</p>
-                    <p>${restaurants.length}개 맛집 위치</p>
+                    <p><strong>중심 좌표:</strong> ${centerLat.toFixed(4)}, ${centerLng.toFixed(4)}</p>
+                    <p><strong>표시 맛집:</strong> ${restaurants.length}개</p>
+                    <div style="margin: 12px 0; padding: 8px; background: #333; border-radius: 4px;">
+                        <p style="font-size: 11px; color: #ccc; margin: 0;">
+                            💡 네이버 지도 API 설정이 필요합니다.<br>
+                            Vercel 환경변수에 NAVER_MAP_CLIENT_ID를 설정하세요.
+                        </p>
+                    </div>
                 </div>
                 <button class="map-action-btn" onclick="openGoogleMaps('${centerLat}', '${centerLng}')">
                     <i class="fas fa-external-link-alt"></i>
-                    Google Maps에서 보기
+                    네이버 지도에서 보기
                 </button>
+                <div style="margin-top: 8px;">
+                    <button class="map-action-btn" style="background: #ff6b6b;" onclick="window.currentChatBot.showRestaurantList(window.currentRestaurants)">
+                        <i class="fas fa-list"></i>
+                        맛집 목록 보기
+                    </button>
+                </div>
             </div>
         `;
+    }
+
+    showRestaurantList(restaurants) {
+        const container = document.getElementById('artifactsMap');
+        if (!container || !restaurants) return;
+        
+        container.innerHTML = `
+            <div style="height: 200px; overflow-y: auto; padding: 8px;">
+                <div style="margin-bottom: 12px; text-align: center;">
+                    <h4 style="color: #0095f6; margin: 0;">📍 맛집 목록 (${restaurants.length}곳)</h4>
+                </div>
+                ${restaurants.map((restaurant, index) => `
+                    <div class="restaurant-list-item" style="
+                        background: #2c2c2c; 
+                        border: 1px solid #3c3c3c; 
+                        border-radius: 8px; 
+                        padding: 8px; 
+                        margin: 4px 0; 
+                        cursor: pointer;
+                        transition: all 0.2s ease;
+                    " onclick="window.currentChatBot.goToSlide(${index})">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span style="
+                                background: #0095f6; 
+                                color: white; 
+                                width: 20px; 
+                                height: 20px; 
+                                border-radius: 50%; 
+                                display: flex; 
+                                align-items: center; 
+                                justify-content: center; 
+                                font-size: 10px; 
+                                font-weight: bold;
+                            ">${index + 1}</span>
+                            <div style="flex: 1;">
+                                <div style="color: #fff; font-weight: 600; font-size: 12px;">${restaurant.name}</div>
+                                <div style="color: #888; font-size: 10px;">${restaurant.area} · ${restaurant.category}</div>
+                            </div>
+                            <div style="color: #0095f6; font-size: 10px;">
+                                ${restaurant.coordinates.lat.toFixed(3)}, ${restaurant.coordinates.lng.toFixed(3)}
+                            </div>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+        
+        // 호버 효과 추가
+        const items = container.querySelectorAll('.restaurant-list-item');
+        items.forEach(item => {
+            item.addEventListener('mouseenter', () => {
+                item.style.borderColor = '#0095f6';
+                item.style.transform = 'translateX(2px)';
+            });
+            item.addEventListener('mouseleave', () => {
+                item.style.borderColor = '#3c3c3c';
+                item.style.transform = 'translateX(0)';
+            });
+        });
     }
 
     highlightMapMarker(index) {
