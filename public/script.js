@@ -83,18 +83,17 @@ class InstagramStyleChatBot {
             // 뚜기 응답 표시
             this.addMessage(response.message, 'bot');
             
-            // 위치 정보 감지 및 Artifacts 모달 표시
+            // 맛집 카드 표시
             if (response.restaurants && response.restaurants.length > 0) {
+                // 채팅창에 카드 표시
+                setTimeout(() => {
+                    this.displayRestaurantCards(response.restaurants);
+                }, 300);
+                
+                // 위치 키워드가 포함된 경우 추가로 Artifacts 모달 표시
                 if (this.detectLocationRequest(message)) {
-                    // Artifacts 스타일 모달 표시
-                    setTimeout(() => {
-                        this.showArtifacts(response.restaurants, response.analysis?.location || '맛집 추천');
-                    }, 500);
-                } else {
-                    // 기존 카드 표시 방식
-                    setTimeout(() => {
-                        this.displayRestaurantCards(response.restaurants);
-                    }, 300);
+                    // 사용자가 채팅을 읽을 시간을 주고 자연스럽게 모달 표시
+                    this.delayedShowArtifacts(response.restaurants, response.analysis?.location || '맛집 추천');
                 }
             }
             
@@ -457,6 +456,32 @@ ${restaurant.description}`;
         dots.forEach((dot, index) => {
             dot.classList.toggle('active', index === this.currentSlide);
         });
+    }
+
+    delayedShowArtifacts(restaurants, location) {
+        // 카드가 표시된 후 사용자가 읽을 시간을 주고 모달 표시
+        let delay = 1500; // 기본 1.5초
+        
+        // 응답 메시지 길이에 따라 읽기 시간 조정
+        const lastMessage = this.messagesContainer.querySelector('.bot-group:last-child .message-bubble');
+        if (lastMessage) {
+            const messageLength = lastMessage.textContent.length;
+            // 글자 수에 따라 읽기 시간 조정 (1초당 약 10글자 읽기 가정)
+            delay = Math.max(1500, Math.min(3000, messageLength * 100));
+        }
+        
+        setTimeout(() => {
+            // 사용자가 여전히 페이지에 있고 스크롤이 하단 근처에 있는 경우에만 모달 표시
+            if (document.hasFocus() && this.isScrollNearBottom()) {
+                this.showArtifacts(restaurants, location);
+            }
+        }, delay);
+    }
+
+    isScrollNearBottom() {
+        const container = this.messagesContainer;
+        const threshold = 100; // 하단에서 100px 이내
+        return container.scrollTop + container.clientHeight >= container.scrollHeight - threshold;
     }
 }
 
