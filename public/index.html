@@ -118,6 +118,45 @@
         </div>
     </div>
 
+    <!-- Claude AI Artifacts 스타일 동적 콘텐츠 창 -->
+    <div class="artifacts-overlay" id="artifactsOverlay" style="display: none;">
+        <div class="artifacts-container">
+            <div class="artifacts-header">
+                <div class="artifacts-title">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span id="artifactsLocation">맛집 추천</span>
+                </div>
+                <button class="artifacts-close" onclick="closeArtifacts()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="artifacts-content">
+                <!-- 상단: 맛집 카드 슬라이더 -->
+                <div class="artifacts-cards-section">
+                    <h3>추천 맛집</h3>
+                    <div class="artifacts-cards-slider" id="artifactsCardsSlider">
+                        <!-- 맛집 카드들이 동적으로 추가됩니다 -->
+                    </div>
+                    <div class="artifacts-slider-dots" id="artifactsSliderDots">
+                        <!-- 슬라이더 점들이 동적으로 추가됩니다 -->
+                    </div>
+                </div>
+                
+                <!-- 하단: 지도 -->
+                <div class="artifacts-map-section">
+                    <h3>지도</h3>
+                    <div class="artifacts-map" id="artifactsMap">
+                        <div class="map-placeholder">
+                            <i class="fas fa-map-marked-alt"></i>
+                            <p>맛집 위치</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="script.js"></script>
 </body>
 </html>

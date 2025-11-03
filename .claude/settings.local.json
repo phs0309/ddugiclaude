@@ -23,7 +23,9 @@
       "Bash(set PORT=3012)",
       "Bash(git add:*)",
       "Bash(copy server.js server.cjs)",
-      "Bash(timeout 5s npm start)"
+      "Bash(timeout 5s npm start)",
+      "Bash(git clean:*)",
+      "Bash(git pull:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"

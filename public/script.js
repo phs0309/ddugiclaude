@@ -83,11 +83,19 @@ class InstagramStyleChatBot {
             // 뚜기 응답 표시
             this.addMessage(response.message, 'bot');
             
-            // 맛집 카드 표시
+            // 위치 정보 감지 및 Artifacts 모달 표시
             if (response.restaurants && response.restaurants.length > 0) {
-                setTimeout(() => {
-                    this.displayRestaurantCards(response.restaurants);
-                }, 300);
+                if (this.detectLocationRequest(message)) {
+                    // Artifacts 스타일 모달 표시
+                    setTimeout(() => {
+                        this.showArtifacts(response.restaurants, response.analysis?.location || '맛집 추천');
+                    }, 500);
+                } else {
+                    // 기존 카드 표시 방식
+                    setTimeout(() => {
+                        this.displayRestaurantCards(response.restaurants);
+                    }, 300);
+                }
             }
             
             // 분석 결과 로그
@@ -339,6 +347,117 @@ ${restaurant.description}`;
             });
         }, 300000); // 5분
     }
+
+    detectLocationRequest(message) {
+        const locationKeywords = [
+            '해운대', '서면', '광안리', '남포동', '부산역', '송도', '태종대', '자갈치',
+            '맛집', '추천', '어디', '지도', '위치', '가볼만한', '먹을만한'
+        ];
+        
+        return locationKeywords.some(keyword => message.includes(keyword));
+    }
+
+    showArtifacts(restaurants, location) {
+        const overlay = document.getElementById('artifactsOverlay');
+        const locationTitle = document.getElementById('artifactsLocation');
+        const cardsSlider = document.getElementById('artifactsCardsSlider');
+        const sliderDots = document.getElementById('artifactsSliderDots');
+        
+        if (!overlay || !cardsSlider) return;
+        
+        // 제목 설정
+        if (locationTitle) {
+            locationTitle.textContent = location;
+        }
+        
+        // 기존 카드들 제거
+        cardsSlider.innerHTML = '';
+        sliderDots.innerHTML = '';
+        
+        // 최대 5개 레스토랑만 표시
+        const displayRestaurants = restaurants.slice(0, 5);
+        
+        displayRestaurants.forEach((restaurant, index) => {
+            const card = this.createArtifactsCard(restaurant, index);
+            cardsSlider.appendChild(card);
+            
+            // 슬라이더 점 생성
+            const dot = document.createElement('div');
+            dot.className = `artifacts-dot ${index === 0 ? 'active' : ''}`;
+            dot.addEventListener('click', () => this.goToSlide(index));
+            sliderDots.appendChild(dot);
+        });
+        
+        // 슬라이더 초기화
+        this.currentSlide = 0;
+        this.totalSlides = displayRestaurants.length;
+        this.updateSliderPosition();
+        
+        // 모달 표시
+        overlay.style.display = 'flex';
+        setTimeout(() => {
+            overlay.style.opacity = '1';
+        }, 10);
+    }
+
+    createArtifactsCard(restaurant, index) {
+        const card = document.createElement('div');
+        card.className = 'artifacts-card';
+        
+        const categoryEmojis = {
+            '한식': '🍲',
+            '해산물': '🦐',
+            '간식': '🍡',
+            '카페': '☕'
+        };
+        
+        const emoji = categoryEmojis[restaurant.category] || '🍽️';
+        
+        card.innerHTML = `
+            <div class="artifacts-card-image">
+                ${emoji}
+            </div>
+            <div class="artifacts-card-content">
+                <h3>${restaurant.name}</h3>
+                <p class="artifacts-card-location">
+                    <i class="fas fa-map-marker-alt"></i>
+                    ${restaurant.area} · ${restaurant.category}
+                </p>
+                <p class="artifacts-card-description">${restaurant.description}</p>
+                <div class="artifacts-card-rating">
+                    <div class="rating-stars">
+                        ${'★'.repeat(Math.floor(restaurant.rating))}${'☆'.repeat(5 - Math.floor(restaurant.rating))}
+                    </div>
+                    <span>${restaurant.rating}</span>
+                    <span>(${restaurant.reviewCount}개)</span>
+                </div>
+                <div class="artifacts-card-price">₩${restaurant.priceRange}</div>
+            </div>
+        `;
+        
+        return card;
+    }
+
+    goToSlide(slideIndex) {
+        this.currentSlide = slideIndex;
+        this.updateSliderPosition();
+        this.updateSliderDots();
+    }
+
+    updateSliderPosition() {
+        const cardsSlider = document.getElementById('artifactsCardsSlider');
+        if (cardsSlider) {
+            const translateX = -this.currentSlide * 100;
+            cardsSlider.style.transform = `translateX(${translateX}%)`;
+        }
+    }
+
+    updateSliderDots() {
+        const dots = document.querySelectorAll('.artifacts-dot');
+        dots.forEach((dot, index) => {
+            dot.classList.toggle('active', index === this.currentSlide);
+        });
+    }
 }
 
 // 빠른 메시지 전송 (전역 함수)
@@ -347,6 +466,36 @@ function sendQuickMessage(message) {
     if (chatBot) {
         chatBot.userInput.value = message;
         chatBot.sendMessage();
+    }
+}
+
+// Artifacts 모달 닫기 (전역 함수)
+function closeArtifacts() {
+    const overlay = document.getElementById('artifactsOverlay');
+    if (overlay) {
+        overlay.style.opacity = '0';
+        setTimeout(() => {
+            overlay.style.display = 'none';
+        }, 300);
+    }
+}
+
+// 슬라이더 내비게이션 (전역 함수)
+function nextSlide() {
+    const chatBot = window.instagramChatBot;
+    if (chatBot && chatBot.totalSlides) {
+        chatBot.currentSlide = (chatBot.currentSlide + 1) % chatBot.totalSlides;
+        chatBot.updateSliderPosition();
+        chatBot.updateSliderDots();
+    }
+}
+
+function prevSlide() {
+    const chatBot = window.instagramChatBot;
+    if (chatBot && chatBot.totalSlides) {
+        chatBot.currentSlide = (chatBot.currentSlide - 1 + chatBot.totalSlides) % chatBot.totalSlides;
+        chatBot.updateSliderPosition();
+        chatBot.updateSliderDots();
     }
 }
 

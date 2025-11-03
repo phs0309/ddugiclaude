@@ -573,3 +573,440 @@ body {
         font-size: 12px;
     }
 }
+
+/* === Claude AI Artifacts 스타일 동적 콘텐츠 창 === */
+.artifacts-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fadeInOverlay 0.3s ease;
+}
+
+@keyframes fadeInOverlay {
+    from {
+        opacity: 0;
+        backdrop-filter: blur(0px);
+    }
+    to {
+        opacity: 1;
+        backdrop-filter: blur(4px);
+    }
+}
+
+.artifacts-container {
+    width: 90vw;
+    max-width: 1000px;
+    height: 85vh;
+    background: #000;
+    border: 1px solid #333;
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: slideInArtifacts 0.4s ease;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+}
+
+@keyframes slideInArtifacts {
+    from {
+        transform: scale(0.9) translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1) translateY(0);
+        opacity: 1;
+    }
+}
+
+.artifacts-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    background: #111;
+    border-bottom: 1px solid #333;
+}
+
+.artifacts-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #fff;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.artifacts-title i {
+    color: #f09433;
+}
+
+.artifacts-close {
+    background: none;
+    border: none;
+    color: #888;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    transition: all 0.2s;
+}
+
+.artifacts-close:hover {
+    color: #fff;
+    background: #333;
+}
+
+.artifacts-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* 상단: 맛집 카드 섹션 */
+.artifacts-cards-section {
+    height: 50%;
+    background: #000;
+    border-bottom: 1px solid #333;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+}
+
+.artifacts-cards-section h3 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: #fff;
+}
+
+.artifacts-cards-slider {
+    flex: 1;
+    display: flex;
+    gap: 16px;
+    overflow-x: auto;
+    padding: 8px 0;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.artifacts-cards-slider::-webkit-scrollbar {
+    display: none;
+}
+
+.artifacts-restaurant-card {
+    min-width: 280px;
+    background: #111;
+    border: 1px solid #333;
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+
+.artifacts-restaurant-card:hover {
+    transform: translateY(-4px);
+    border-color: #f09433;
+    box-shadow: 0 8px 25px rgba(240, 148, 51, 0.2);
+}
+
+.artifacts-card-image {
+    height: 120px;
+    background: linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    color: #fff;
+}
+
+.artifacts-card-content {
+    padding: 16px;
+}
+
+.artifacts-card-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #fff;
+}
+
+.artifacts-card-location {
+    color: #888;
+    font-size: 12px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.artifacts-card-rating {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: #ffd700;
+    font-size: 12px;
+}
+
+.artifacts-slider-dots {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+.artifacts-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #333;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.artifacts-dot.active {
+    background: #f09433;
+    transform: scale(1.2);
+}
+
+/* 하단: 지도 섹션 */
+.artifacts-map-section {
+    height: 50%;
+    background: #111;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+}
+
+.artifacts-map-section h3 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: #fff;
+}
+
+.artifacts-map {
+    flex: 1;
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #666;
+}
+
+.artifacts-map .map-placeholder {
+    text-align: center;
+}
+
+.artifacts-map .map-placeholder i {
+    font-size: 48px;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.artifacts-map .map-placeholder p {
+    font-size: 16px;
+}
+
+/* 위치 카드 버튼 스타일 */
+.location-trigger-card {
+    background: linear-gradient(135deg, #f09433, #e6683c);
+    border: none;
+    border-radius: 12px;
+    padding: 12px 16px;
+    color: #fff;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    margin: 8px 0;
+}
+
+.location-trigger-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(240, 148, 51, 0.3);
+}
+
+.location-trigger-card i {
+    font-size: 16px;
+}
+
+/* 모바일 반응형 */
+@media (max-width: 768px) {
+    .artifacts-container {
+        width: 95vw;
+        height: 90vh;
+    }
+    
+    .artifacts-content {
+        flex-direction: column;
+    }
+    
+    .artifacts-cards-section {
+        height: 60%;
+        padding: 16px;
+    }
+    
+    .artifacts-map-section {
+        height: 40%;
+        padding: 16px;
+    }
+    
+    .artifacts-restaurant-card {
+        min-width: 240px;
+    }
+}
+
+@media (max-width: 480px) {
+    .artifacts-container {
+        width: 98vw;
+        height: 95vh;
+        border-radius: 8px;
+    }
+    
+    .artifacts-header {
+        padding: 12px 16px;
+    }
+    
+    .artifacts-title {
+        font-size: 14px;
+    }
+    
+    .artifacts-cards-section,
+    .artifacts-map-section {
+        padding: 12px;
+    }
+    
+    .artifacts-restaurant-card {
+        min-width: 200px;
+    }
+}
+
+/* Artifacts 카드 스타일 */
+.artifacts-card {
+    background: #1c1c1c;
+    border-radius: 16px;
+    padding: 24px;
+    min-width: 100%;
+    max-width: 100%;
+    border: 1px solid #3c3c3c;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.artifacts-card:hover {
+    transform: translateY(-4px);
+    border-color: #0095f6;
+    box-shadow: 0 12px 24px rgba(0, 149, 246, 0.15);
+}
+
+.artifacts-card-image {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 40px;
+    margin-bottom: 20px;
+    box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
+}
+
+.artifacts-card-content h3 {
+    color: #fff;
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0 0 12px 0;
+    line-height: 1.2;
+}
+
+.artifacts-card-location {
+    color: #999;
+    font-size: 14px;
+    margin: 0 0 16px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.artifacts-card-location i {
+    color: #0095f6;
+}
+
+.artifacts-card-description {
+    color: #ccc;
+    font-size: 14px;
+    line-height: 1.4;
+    margin: 0 0 16px 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.artifacts-card-rating {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    font-size: 14px;
+}
+
+.rating-stars {
+    color: #ffc107;
+    font-size: 16px;
+}
+
+.artifacts-card-rating span {
+    color: #ccc;
+}
+
+.artifacts-card-price {
+    background: #0095f6;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+/* 슬라이더 점 스타일 */
+.artifacts-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #666;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.artifacts-dot.active {
+    background: #0095f6;
+    transform: scale(1.2);
+}
+
+.artifacts-dot:hover {
+    background: #0095f6;
+    opacity: 0.7;
+}
