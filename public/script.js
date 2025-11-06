@@ -601,9 +601,11 @@ ${restaurant.description}`;
                     const response = await fetch('/api/naver_map_api');
                     const config = await response.json();
                     
-                    if (config.success && config.scriptUrl) {
-                        console.log('Vercel 함수에서 API 설정 로드 성공');
+                    if (config.clientId && config.scriptUrl) {
+                        console.log('Vercel 함수에서 API 설정 로드 성공:', config.clientId);
                         await this.loadNaverMapsScript(config.scriptUrl);
+                    } else if (config.error) {
+                        throw new Error(config.error);
                     } else {
                         throw new Error('Vercel 함수 응답 오류');
                     }

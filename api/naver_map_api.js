@@ -19,6 +19,8 @@ export default async function handler(req, res) {
         // 환경변수에서 네이버 Client ID 가져오기 (Vercel에 naver_client_id로 저장됨)
         const clientId = process.env.naver_client_id;
         
+        console.log('Naver Client ID 환경변수 확인:', clientId ? `설정됨 (${clientId.substring(0, 8)}...)` : '설정 안됨');
+        
         if (!clientId) {
             return res.status(500).json({ 
                 error: 'Naver Maps Client ID not configured',
@@ -28,7 +30,6 @@ export default async function handler(req, res) {
 
         // 네이버 지도 API 스크립트 URL 반환
         const naverMapsConfig = {
-            success: true,
             clientId: clientId,
             scriptUrl: `https://oapi.map.naver.com/openapi/v3/maps.js?ncpClientId=${clientId}`,
             mapOptions: {
