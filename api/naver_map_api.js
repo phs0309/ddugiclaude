@@ -16,8 +16,8 @@ export default async function handler(req, res) {
     }
 
     try {
-        // 환경변수에서 네이버 Client ID 가져오기
-        const clientId = process.env.NAVER_MAP_CLIENT_ID;
+        // 환경변수에서 네이버 Client ID 가져오기 (Vercel에 naver_client_id로 저장됨)
+        const clientId = process.env.naver_client_id;
         
         if (!clientId) {
             return res.status(500).json({ 
