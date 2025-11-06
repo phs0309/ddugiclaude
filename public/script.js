@@ -582,8 +582,8 @@ ${restaurant.description}`;
             try {
                 console.log('네이버 지도 로드 시작...');
                 
-                // 임시로 직접 스크립트 로드 (YOUR_CLIENT_ID는 실제 값으로 교체 필요)
-                const testScriptUrl = 'https://oapi.map.naver.com/openapi/v3/maps.js?ncpClientId=YOUR_CLIENT_ID';
+                // 테스트용 스크립트 URL (실제로는 사용하지 않음)
+                const testScriptUrl = null;
                 
                 container.innerHTML = `
                     <div class="map-loading">
@@ -602,7 +602,9 @@ ${restaurant.description}`;
                     const config = await response.json();
                     
                     if (config.clientId && config.scriptUrl) {
-                        console.log('Vercel 함수에서 API 설정 로드 성공:', config.clientId);
+                        console.log('Vercel 함수 응답:', config);
+                        console.log('Client ID 확인:', config.clientId.substring(0, 10) + '...');
+                        console.log('Script URL:', config.scriptUrl);
                         await this.loadNaverMapsScript(config.scriptUrl);
                     } else if (config.error) {
                         throw new Error(config.error);
@@ -610,9 +612,9 @@ ${restaurant.description}`;
                         throw new Error('Vercel 함수 응답 오류');
                     }
                 } catch (vercelError) {
-                    console.log('Vercel 함수 실패, 테스트 모드로 전환:', vercelError.message);
-                    // Fallback: 테스트용 직접 로드 시도
-                    await this.loadNaverMapsScript(testScriptUrl);
+                    console.error('Vercel 함수 오류:', vercelError);
+                    // API 키가 없으면 fallback 처리
+                    throw new Error('Naver Maps API 키가 설정되지 않았습니다');
                 }
                 
                 // 지도 생성
@@ -645,12 +647,20 @@ ${restaurant.description}`;
             script.type = 'text/javascript';
             script.src = scriptUrl;
             script.onload = () => {
-                console.log('네이버 지도 API 로드 완료');
-                resolve();
+                console.log('네이버 지도 API 스크립트 로드 성공');
+                // API 로드 확인
+                if (typeof naver !== 'undefined' && naver.maps) {
+                    console.log('네이버 지도 API 사용 준비 완료');
+                    resolve();
+                } else {
+                    console.error('네이버 지도 API 객체가 없습니다');
+                    reject(new Error('Naver Maps API object not found'));
+                }
             };
-            script.onerror = () => {
-                console.error('네이버 지도 API 로드 실패');
-                reject(new Error('Failed to load Naver Maps script'));
+            script.onerror = (error) => {
+                console.error('네이버 지도 API 스크립트 로드 실패:', error);
+                console.error('Script URL:', scriptUrl);
+                reject(new Error('Failed to load Naver Maps script - 인증 오류 또는 잘못된 Client ID'));
             };
             document.head.appendChild(script);
         });

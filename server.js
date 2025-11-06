@@ -15,6 +15,32 @@ app.use(express.static('public'));
 // Restaurant AI 초기화
 const restaurantAI = new RestaurantAI();
 
+// 네이버 지도 API 엔드포인트 (로컬 테스트용)
+app.get('/api/naver_map_api', (req, res) => {
+    const clientId = process.env.naver_client_id;
+    
+    console.log('로컬 서버: Naver Maps API 요청');
+    console.log('Client ID 상태:', clientId ? '설정됨' : '설정 안됨');
+    
+    if (!clientId) {
+        return res.status(500).json({ 
+            error: 'Naver Maps Client ID not configured',
+            fallback: true 
+        });
+    }
+    
+    res.json({
+        clientId: clientId,
+        scriptUrl: `https://oapi.map.naver.com/openapi/v3/maps.js?ncpClientId=${clientId}&submodules=geocoder`,
+        mapOptions: {
+            center: { lat: 35.1796, lng: 129.0756 },
+            zoom: 11,
+            mapTypeControl: true,
+            zoomControl: true
+        }
+    });
+});
+
 // 메인 페이지
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
