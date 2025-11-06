@@ -17,8 +17,10 @@ export default async function handler(req, res) {
     }
 
     try {
-        // 환경변수에서 네이버 Client ID 가져오기 (Vercel에 naver_client_id로 저장됨)
-        const clientId = process.env.naver_client_id;
+        // 환경변수에서 네이버 Maps Key ID 가져오기
+        // 신규 Maps API는 ncpKeyId를 사용 (기존 ncpClientId 대체)
+        // Vercel 환경변수: naver_client_id (기존 호환성 유지)
+        const clientId = process.env.naver_client_id || process.env.NAVER_MAPS_KEY_ID;
         
         // 디버깅용 로그
         console.log('Naver Maps API 요청 처리 중...');
@@ -32,11 +34,11 @@ export default async function handler(req, res) {
             });
         }
 
-        // 네이버 지도 API 스크립트 URL 반환
-        // submodules 파라미터 추가로 필요한 모듈 로드
+        // 네이버 지도 API 스크립트 URL 반환 (신규 API 형식)
+        // ncpKeyId 파라미터 사용 (기존 ncpClientId 대체)
         const naverMapsConfig = {
             clientId: clientId,
-            scriptUrl: `https://oapi.map.naver.com/openapi/v3/maps.js?ncpClientId=${clientId}&submodules=geocoder`,
+            scriptUrl: `https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${clientId}&submodules=geocoder`,
             mapOptions: {
                 center: {
                     lat: 35.1796,  // 부산 중심 좌표

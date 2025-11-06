@@ -25,7 +25,8 @@
       "Bash(copy server.js server.cjs)",
       "Bash(timeout 5s npm start)",
       "Bash(git clean:*)",
-      "Bash(git pull:*)"
+      "Bash(git pull:*)",
+      "WebFetch(domain:navermaps.github.io)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"

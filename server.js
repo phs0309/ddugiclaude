@@ -17,7 +17,8 @@ const restaurantAI = new RestaurantAI();
 
 // 네이버 지도 API 엔드포인트 (로컬 테스트용)
 app.get('/api/naver_map_api', (req, res) => {
-    const clientId = process.env.naver_client_id;
+    // 신규 Maps API Key ID (기존 환경변수명 호환)
+    const clientId = process.env.naver_client_id || process.env.NAVER_MAPS_KEY_ID;
     
     console.log('로컬 서버: Naver Maps API 요청');
     console.log('Client ID 상태:', clientId ? '설정됨' : '설정 안됨');
@@ -31,7 +32,7 @@ app.get('/api/naver_map_api', (req, res) => {
     
     res.json({
         clientId: clientId,
-        scriptUrl: `https://oapi.map.naver.com/openapi/v3/maps.js?ncpClientId=${clientId}&submodules=geocoder`,
+        scriptUrl: `https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${clientId}&submodules=geocoder`,
         mapOptions: {
             center: { lat: 35.1796, lng: 129.0756 },
             zoom: 11,

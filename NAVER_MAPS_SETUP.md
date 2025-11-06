@@ -1,112 +1,61 @@
 # 네이버 지도 API 설정 가이드
 
-## 🗺️ 네이버 지도 통합
+## 중요 공지
+네이버 클라우드 플랫폼의 AI NAVER API 상품에서 제공되던 지도 API 서비스가 점진적으로 종료됩니다.
+**신규 Maps API로 마이그레이션이 필요합니다.**
 
-뚜기의 부산 맛집 봇에서 실제 네이버 지도를 표시하려면 네이버 지도 API가 필요합니다.
+## 신규 Client ID 발급 방법
 
-## 설정 방법
+1. **네이버 클라우드 플랫폼 접속**
+   - https://www.ncloud.com 로그인
 
-### 1. 네이버 클라우드 플랫폼 API 키 발급
+2. **신규 Maps API 신청**
+   - 콘솔 > AI·NAVER API > Application 등록
+   - Maps > Web Dynamic Map v3 선택
+   - 서비스 환경 등록:
+     - 로컬 테스트: `http://localhost:3000`
+     - Vercel 배포: `https://ddugiclaude.vercel.app`
+     - Vercel Preview: `https://ddugiclaude-*.vercel.app`
 
-1. [네이버 클라우드 플랫폼](https://www.ncloud.com/) 접속 및 회원가입
-2. Console > Services > AI·Application Service > Maps 이동
-3. "Maps" 서비스 신청
-4. "Application 등록" 클릭
-5. 애플리케이션 이름 및 도메인 설정
-6. Client ID 발급 받기
+3. **Client Key ID 확인**
+   - Application 상세 페이지에서 "Client ID" 복사
+   - 이 값이 새로운 `ncpKeyId`입니다
 
-### 2. API 키 적용
+## 환경 변수 설정
 
-#### Vercel 배포 환경
-Vercel Dashboard에서 환경변수 설정:
-- Variable Name: `NAVER_MAP_CLIENT_ID`
-- Value: 발급받은 Client ID
-
-#### 로컬 개발 환경
-`.env.local` 파일 생성하여 환경변수 설정:
+### Vercel (프로덕션)
 ```bash
-# .env.local
-NAVER_MAP_CLIENT_ID=your_actual_client_id_here
+# Vercel 대시보드 또는 CLI에서 설정
+# Settings > Environment Variables
+naver_client_id = "발급받은_Client_ID"
 ```
 
-**참고**: `.env.example` 파일을 복사하여 `.env.local`로 만들고 실제 값으로 교체하세요.
+### 로컬 개발 (.env 파일)
+```bash
+# .env 파일에 추가
+naver_client_id=발급받은_Client_ID
+```
 
-### 3. 도메인 설정 (보안)
+## API 변경사항
 
-네이버 클라우드 플랫폼에서:
-- 허용 도메인 설정 (예: localhost:3000, your-domain.com)
-- API 사용량 모니터링
-- 서비스 환경 설정 (웹 서비스)
+### 기존 (구 API)
+```javascript
+https://oapi.map.naver.com/openapi/v3/maps.js?ncpClientId=YOUR_CLIENT_ID
+```
 
-## 현재 구현된 기능
+### 신규 (새 API) ✅
+```javascript
+https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=YOUR_KEY_ID
+```
 
-### 🗺️ 네이버 지도 표시
-- ✅ 부산 전체 지역 네이버 지도
-- ✅ 지도 컨트롤 (확대/축소, 지도 타입)
-- ✅ 반응형 디자인
-- ✅ Instagram 스타일 테마
+## 트러블슈팅
 
-### 📍 맛집 마커 (437개 전체)
-- ✅ 번호가 표시된 커스텀 마커
-- ✅ 클릭 시 상세 정보창 표시
-- ✅ 맛집 이름, 주소, 전화번호 표시
-- ✅ 카드 보기 버튼으로 슬라이더 연동
+### "Authentication Failed" 오류
+1. Client ID가 올바른지 확인
+2. 도메인이 Application에 등록되었는지 확인
+3. Vercel 환경변수가 제대로 설정되었는지 확인
 
-### 🔄 실시간 상호작용
-- ✅ 지도 마커 클릭 → 해당 카드로 슬라이더 이동
-- ✅ 카드 슬라이더 변경 → 지도 중심 이동 및 정보창 표시
-- ✅ 정보창에서 "카드 보기" 버튼 클릭 시 직접 이동
-
-### 🛡️ Fallback 시스템
-- ✅ API 로드 실패 시 대체 지도 표시
-- ✅ 로딩 스피너 및 재시도 로직
-- ✅ 네이버 지도 외부 링크 제공
-
-## 주요 개선사항
-
-### 📋 모든 맛집 마킹
-- 모달에 표시되는 5개 카드뿐만 아니라
-- **전체 437개 맛집이 모두 지도에 마킹됨**
-- 각 마커는 고유 번호로 구분
-- 모든 마커에 정보창과 상호작용 기능 포함
-
-### 🎨 향상된 UI/UX
-- 커스텀 마커 디자인 (파란색 원형 + 번호)
-- 정보창 스타일링 (Instagram 테마)
-- 부드러운 지도 이동 애니메이션
-- 마커 클릭 시 즉시 카드 연동
-
-## 비용
-
-네이버 지도 API는 사용량에 따라 과금:
-- **무료 할당량**: 월 10만 건
-- **지도 로드**: 1,000회당 300원
-- **소규모 프로젝트는 무료 범위 내 사용 가능**
-
-## 장점
-
-### Google Maps 대비 장점
-- 🇰🇷 **한국 지역 최적화** - 더 정확한 한국 지도 데이터
-- 💰 **저렴한 비용** - Google Maps 대비 1/20 수준
-- 🗺️ **상세한 부산 지역 정보** - 로컬 데이터 풍부
-- 🚀 **빠른 로딩 속도** - CDN 최적화
-
-## 테스트 방법
-
-1. Client ID 발급 및 적용
-2. 로컬 서버 실행: `npm start`
-3. 맛집 추천 요청 (예: "해운대 맛집")
-4. 모달에서 지도 확인
-5. 마커 클릭하여 카드 연동 테스트
-
-## 문제 해결
-
-### API 로드 실패 시
-- Console에서 네트워크 오류 확인
-- Client ID 유효성 검증
-- 도메인 설정 확인
-
-### 마커 표시 안됨
-- 좌표 데이터 유효성 확인
-- 지도 중심 좌표 확인
-- 브라우저 Console 오류 메시지 확인
+### 참고 링크
+- [공지사항](https://www.ncloud.com/support/notice/all/1930)
+- [마이그레이션 가이드](https://navermaps.github.io/maps.js.ncp/docs/tutorial-2-Getting-Started.html)
+- [네이버 지도 API 문서](https://navermaps.github.io/maps.js.ncp/docs/)
