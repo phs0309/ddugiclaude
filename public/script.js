@@ -587,14 +587,14 @@ ${restaurant.description}`;
 
     delayedShowArtifacts(restaurants, location) {
         // 카드가 표시된 후 사용자가 읽을 시간을 주고 모달 표시
-        let delay = 1500; // 기본 1.5초
+        let delay = 500; // 기본 0.5초로 단축
         
         // 응답 메시지 길이에 따라 읽기 시간 조정
         const lastMessage = this.messagesContainer.querySelector('.bot-group:last-child .message-bubble');
         if (lastMessage) {
             const messageLength = lastMessage.textContent.length;
-            // 글자 수에 따라 읽기 시간 조정 (1초당 약 10글자 읽기 가정)
-            delay = Math.max(1500, Math.min(3000, messageLength * 100));
+            // 글자 수에 따라 읽기 시간 조정 (더 짧게)
+            delay = Math.max(500, Math.min(1000, messageLength * 30));
         }
         
         setTimeout(() => {

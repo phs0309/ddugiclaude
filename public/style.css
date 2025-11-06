@@ -253,7 +253,7 @@ body {
     background: #F7F7F7;
     border: 1px solid #FFD166;
     border-radius: 20px;
-    color: #FFFFFF;
+    color: #2F2F2F;
     font-size: 13px;
     font-weight: 400;
     cursor: pointer;
@@ -353,7 +353,7 @@ body {
 }
 
 .input-action-btn:hover {
-    color: #FFFFFF;
+    color: #FF6B35;
 }
 
 .text-input-container {
@@ -367,7 +367,7 @@ body {
     flex: 1;
     background: none;
     border: none;
-    color: #FFFFFF;
+    color: #2F2F2F;
     font-size: 14px;
     outline: none;
     padding: 8px 0;
@@ -390,7 +390,7 @@ body {
 }
 
 .emoji-btn:hover {
-    color: #FFFFFF;
+    color: #FF6B35;
 }
 
 .send-btn {
