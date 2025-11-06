@@ -647,7 +647,7 @@ body {
     display: flex;
     align-items: center;
     gap: 8px;
-    color: #FFFFFF;
+    color: #2F2F2F;
     font-size: 16px;
     font-weight: 600;
 }
@@ -668,7 +668,7 @@ body {
 }
 
 .artifacts-close:hover {
-    color: #FFFFFF;
+    color: #2F2F2F;
     background: #FFD166;
 }
 
@@ -693,7 +693,7 @@ body {
     font-size: 18px;
     font-weight: 600;
     margin-bottom: 16px;
-    color: #FFFFFF;
+    color: #2F2F2F;
 }
 
 .artifacts-cards-wrapper {
@@ -747,7 +747,7 @@ body {
     font-size: 16px;
     font-weight: 600;
     margin-bottom: 8px;
-    color: #FFFFFF;
+    color: #2F2F2F;
 }
 
 .artifacts-card-location {
@@ -801,7 +801,7 @@ body {
     font-size: 18px;
     font-weight: 600;
     margin-bottom: 16px;
-    color: #FFFFFF;
+    color: #2F2F2F;
 }
 
 .artifacts-map {
@@ -960,7 +960,7 @@ body {
 }
 
 .artifacts-card-content h3 {
-    color: #FFFFFF;
+    color: #2F2F2F;
     font-size: 20px;
     font-weight: 600;
     margin: 0 0 12px 0;
@@ -1108,7 +1108,7 @@ body {
     gap: 8px;
     font-size: 16px;
     font-weight: 600;
-    color: #FFFFFF;
+    color: #2F2F2F;
     margin-bottom: 8px;
 }
 
@@ -1131,9 +1131,9 @@ body {
 }
 
 .preview-restaurant {
-    color: #FFFFFF;
+    color: #2F2F2F;
     font-size: 12px;
-    background: #F7F7F7;
+    background: #FFD166;
     padding: 4px 8px;
     border-radius: 4px;
 }
