@@ -12,6 +12,69 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 
+// 이미지 프록시 엔드포인트 (로컬 개발용)
+app.get('/api/image_proxy', async (req, res) => {
+    const { url } = req.query;
+    
+    if (!url) {
+        return res.status(400).json({ error: 'URL parameter is required' });
+    }
+    
+    // Security: Only allow specific domains
+    const allowedDomains = [
+        'www.visitbusan.net',
+        'visitbusan.net'
+    ];
+    
+    try {
+        const targetUrl = new URL(url);
+        if (!allowedDomains.includes(targetUrl.hostname)) {
+            return res.status(403).json({ error: 'Domain not allowed' });
+        }
+        
+        console.log('Proxying image:', url);
+        
+        // Fetch the image
+        const response = await fetch(url, {
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                'Accept': 'image/webp,image/apng,image/*,*/*;q=0.8',
+                'Accept-Language': 'ko-KR,ko;q=0.9,en;q=0.8',
+                'Cache-Control': 'max-age=0'
+            }
+        });
+        
+        if (!response.ok) {
+            console.error('Failed to fetch image:', response.status, response.statusText);
+            return res.status(response.status).json({ 
+                error: 'Failed to fetch image',
+                status: response.status,
+                statusText: response.statusText
+            });
+        }
+        
+        // Get content type
+        const contentType = response.headers.get('content-type') || 'image/jpeg';
+        
+        // Set appropriate headers
+        res.setHeader('Content-Type', contentType);
+        res.setHeader('Cache-Control', 'public, max-age=86400'); // Cache for 24 hours
+        
+        // Stream the image data
+        const imageBuffer = await response.arrayBuffer();
+        res.send(Buffer.from(imageBuffer));
+        
+        console.log('Image proxied successfully:', url);
+        
+    } catch (error) {
+        console.error('Error proxying image:', error);
+        res.status(500).json({ 
+            error: 'Internal server error',
+            message: error.message
+        });
+    }
+});
+
 // Restaurant AI 초기화
 const restaurantAI = new RestaurantAI();
 

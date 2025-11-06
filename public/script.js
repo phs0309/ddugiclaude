@@ -420,37 +420,69 @@ ${restaurant.description}`;
         
         const emoji = categoryEmojis[restaurant.category] || '🍽️';
         
-        // 이미지 URL 처리 - visitbusan.net 이미지를 직접 사용
+        // 이미지 URL 처리 - 다중 fallback 전략
         let imageUrl = '';
+        let fallbackUrls = [];
+        
         if (restaurant.image && restaurant.image.length > 0) {
-            // visitbusan.net 이미지는 CORS 문제가 있을 수 있으므로 프록시나 대체 이미지 사용
+            // visitbusan.net 이미지는 프록시를 통해 접근
             if (restaurant.image.includes('visitbusan.net')) {
-                // visitbusan.net 이미지는 직접 사용
-                imageUrl = restaurant.image;
+                imageUrl = `/api/image_proxy?url=${encodeURIComponent(restaurant.image)}`;
+                fallbackUrls = [
+                    restaurant.image, // 원본 URL도 시도
+                    `https://source.unsplash.com/400x300/?${encodeURIComponent(restaurant.category + ',korean,food')}`,
+                    `https://source.unsplash.com/400x300/?${encodeURIComponent('restaurant,busan,food')}`,
+                    `https://source.unsplash.com/400x300/?korean,food`
+                ];
             } else {
                 imageUrl = restaurant.image;
+                fallbackUrls = [
+                    `https://source.unsplash.com/400x300/?${encodeURIComponent(restaurant.category + ',korean,food')}`,
+                    `https://source.unsplash.com/400x300/?${encodeURIComponent('restaurant,busan,food')}`,
+                    `https://source.unsplash.com/400x300/?korean,food`
+                ];
             }
         } else {
-            // 이미지가 없으면 Unsplash에서 음식 관련 이미지 가져오기
-            imageUrl = `https://source.unsplash.com/400x400/?${encodeURIComponent(restaurant.category + ',korean,food,restaurant')}`;
+            // 기본 이미지 URL들
+            imageUrl = `https://source.unsplash.com/400x300/?${encodeURIComponent(restaurant.category + ',korean,food')}`;
+            fallbackUrls = [
+                `https://source.unsplash.com/400x300/?${encodeURIComponent('restaurant,busan,food')}`,
+                `https://source.unsplash.com/400x300/?korean,food`
+            ];
         }
         
         console.log(`카드 생성 - ${restaurant.name}: ${imageUrl}`);
         
         card.innerHTML = `
             <div class="artifacts-card-image">
-                <img src="${imageUrl}" 
-                     alt="${restaurant.name}" 
-                     crossorigin="anonymous"
-                     onerror="this.onerror=null; this.src='https://source.unsplash.com/400x400/?${encodeURIComponent(restaurant.category + ',korean,food')}'; console.log('대체 이미지 사용:', '${restaurant.name}');">
-                <div class="emoji-fallback" style="display: none;">${emoji}</div>
+                <div class="image-container">
+                    <img class="restaurant-image" 
+                         src="${imageUrl}" 
+                         alt="${restaurant.name}"
+                         data-fallback-urls='${JSON.stringify(fallbackUrls)}'
+                         data-restaurant-name="${restaurant.name}"
+                         style="display: none;">
+                    <div class="image-loading">
+                        <div class="loading-spinner"></div>
+                        <p>이미지 로딩 중...</p>
+                    </div>
+                    <div class="emoji-fallback" style="display: none;">
+                        <div class="emoji-icon">${emoji}</div>
+                        <h3>${restaurant.name}</h3>
+                        <p>${restaurant.area} · ${restaurant.category}</p>
+                    </div>
+                </div>
+                <div class="image-overlay">
+                    <div class="overlay-content">
+                        <h3>${restaurant.name}</h3>
+                        <p class="artifacts-card-location">
+                            <i class="fas fa-map-marker-alt"></i>
+                            ${restaurant.area} · ${restaurant.category}
+                        </p>
+                    </div>
+                </div>
             </div>
             <div class="artifacts-card-content">
-                <h3>${restaurant.name}</h3>
-                <p class="artifacts-card-location">
-                    <i class="fas fa-map-marker-alt"></i>
-                    ${restaurant.area} · ${restaurant.category}
-                </p>
                 <p class="artifacts-card-description">${restaurant.description}</p>
                 <div class="artifacts-card-rating">
                     <div class="rating-stars">
@@ -471,7 +503,64 @@ ${restaurant.description}`;
             </div>
         `;
         
+        // 이미지 로딩 로직 설정
+        this.setupImageLoading(card);
+        
         return card;
+    }
+
+    setupImageLoading(card) {
+        const img = card.querySelector('.restaurant-image');
+        const loading = card.querySelector('.image-loading');
+        const emojiFallback = card.querySelector('.emoji-fallback');
+        
+        if (!img || !loading || !emojiFallback) return;
+        
+        let currentFallbackIndex = 0;
+        const fallbackUrls = JSON.parse(img.dataset.fallbackUrls || '[]');
+        const restaurantName = img.dataset.restaurantName;
+        
+        const tryNextImage = () => {
+            if (currentFallbackIndex < fallbackUrls.length) {
+                console.log(`${restaurantName}: 대체 이미지 ${currentFallbackIndex + 1} 시도 중...`);
+                img.src = fallbackUrls[currentFallbackIndex];
+                currentFallbackIndex++;
+            } else {
+                // 모든 이미지 실패 시 이모지 fallback 표시
+                console.log(`${restaurantName}: 모든 이미지 로드 실패, 이모지 fallback 사용`);
+                loading.style.display = 'none';
+                emojiFallback.style.display = 'flex';
+            }
+        };
+        
+        const onImageLoad = () => {
+            console.log(`${restaurantName}: 이미지 로드 성공`);
+            loading.style.display = 'none';
+            img.style.display = 'block';
+            img.style.opacity = '0';
+            setTimeout(() => {
+                img.style.transition = 'opacity 0.3s ease';
+                img.style.opacity = '1';
+            }, 10);
+        };
+        
+        const onImageError = () => {
+            console.log(`${restaurantName}: 이미지 로드 실패, 다음 옵션 시도 중...`);
+            tryNextImage();
+        };
+        
+        // 이미지 로드 이벤트 설정
+        img.addEventListener('load', onImageLoad);
+        img.addEventListener('error', onImageError);
+        
+        // 5초 타임아웃 설정
+        setTimeout(() => {
+            if (img.style.display === 'none' && emojiFallback.style.display === 'none') {
+                console.log(`${restaurantName}: 이미지 로드 타임아웃, 이모지 fallback 사용`);
+                loading.style.display = 'none';
+                emojiFallback.style.display = 'flex';
+            }
+        }, 5000);
     }
 
     goToSlide(slideIndex) {
