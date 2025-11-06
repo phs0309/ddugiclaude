@@ -420,15 +420,30 @@ ${restaurant.description}`;
         
         const emoji = categoryEmojis[restaurant.category] || '🍽️';
         
-        // 이미지 URL이 있으면 실제 이미지 사용, 없으면 이모지 사용
-        const imageContent = restaurant.image && restaurant.image.startsWith('http') 
-            ? `<img src="${restaurant.image}" alt="${restaurant.name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-               <div class="emoji-fallback" style="display: none;">${emoji}</div>`
-            : `<div class="emoji-fallback">${emoji}</div>`;
+        // 이미지 URL 처리 - visitbusan.net 이미지를 직접 사용
+        let imageUrl = '';
+        if (restaurant.image && restaurant.image.length > 0) {
+            // visitbusan.net 이미지는 CORS 문제가 있을 수 있으므로 프록시나 대체 이미지 사용
+            if (restaurant.image.includes('visitbusan.net')) {
+                // visitbusan.net 이미지는 직접 사용
+                imageUrl = restaurant.image;
+            } else {
+                imageUrl = restaurant.image;
+            }
+        } else {
+            // 이미지가 없으면 Unsplash에서 음식 관련 이미지 가져오기
+            imageUrl = `https://source.unsplash.com/400x400/?${encodeURIComponent(restaurant.category + ',korean,food,restaurant')}`;
+        }
+        
+        console.log(`카드 생성 - ${restaurant.name}: ${imageUrl}`);
         
         card.innerHTML = `
             <div class="artifacts-card-image">
-                ${imageContent}
+                <img src="${imageUrl}" 
+                     alt="${restaurant.name}" 
+                     crossorigin="anonymous"
+                     onerror="this.onerror=null; this.src='https://source.unsplash.com/400x400/?${encodeURIComponent(restaurant.category + ',korean,food')}'; console.log('대체 이미지 사용:', '${restaurant.name}');">
+                <div class="emoji-fallback" style="display: none;">${emoji}</div>
             </div>
             <div class="artifacts-card-content">
                 <h3>${restaurant.name}</h3>
