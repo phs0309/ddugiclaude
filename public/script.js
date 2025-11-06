@@ -613,10 +613,8 @@ ${restaurant.description}`;
                     }
                 } catch (vercelError) {
                     console.error('Vercel 함수 오류:', vercelError);
-                    console.log('네이버 지도 API 로드 실패 - Fallback 모드 사용');
-                    // Fallback 처리 (지도 없이)
-                    this.createFallbackMap(restaurants, container);
-                    return;
+                    // API 키가 없으면 fallback 처리
+                    throw new Error('Naver Maps API 키가 설정되지 않았습니다');
                 }
                 
                 // 지도 생성
