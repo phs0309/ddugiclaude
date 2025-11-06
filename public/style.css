@@ -49,7 +49,7 @@ body {
 .back-btn {
     background: none;
     border: none;
-    color: #fff;
+    color: #FFFFFF;
     font-size: 18px;
     cursor: pointer;
     padding: 8px;
@@ -75,7 +75,7 @@ body {
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+    background: linear-gradient(135deg, #FF6B35 0%, #FFD166 100%);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -90,22 +90,24 @@ body {
     right: 0;
     width: 12px;
     height: 12px;
-    background: #00d856;
-    border: 2px solid #000;
+    background: #FFD166;
+    border: 2px solid #FFD166;
     border-radius: 50%;
 }
 
 .profile-details h2 {
     font-size: 16px;
     font-weight: 600;
-    color: #fff;
+    color: #FFFFFF;
     margin: 0;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .profile-status {
     font-size: 14px;
-    color: #a8a8a8;
+    color: #FFFFFF;
     margin: 0;
+    opacity: 0.9;
 }
 
 .dm-header-right {
@@ -204,7 +206,7 @@ body {
 
 .message-time {
     font-size: 11px;
-    color: #a8a8a8;
+    color: #999999;
     margin-top: 4px;
     margin-left: 16px;
 }
@@ -239,10 +241,10 @@ body {
     align-items: center;
     gap: 6px;
     padding: 8px 12px;
-    background: #262626;
-    border: 1px solid #3c3c3c;
+    background: #F7F7F7;
+    border: 1px solid #FFD166;
     border-radius: 20px;
-    color: #fff;
+    color: #FFFFFF;
     font-size: 13px;
     font-weight: 400;
     cursor: pointer;
@@ -252,8 +254,8 @@ body {
 }
 
 .suggestion-pill:hover {
-    background: #3c3c3c;
-    border-color: #555;
+    background: #FFD166;
+    border-color: #FF6B35;
     transform: translateY(-1px);
 }
 
@@ -268,7 +270,7 @@ body {
 }
 
 .typing-bubble {
-    background: #262626;
+    background: #F7F7F7;
     padding: 12px 16px;
     border-radius: 18px;
     margin-left: 4px;
@@ -284,7 +286,7 @@ body {
     width: 6px;
     height: 6px;
     border-radius: 50%;
-    background: #a8a8a8;
+    background: #999999;
     animation: typing 1.4s infinite ease-in-out;
 }
 
@@ -305,8 +307,8 @@ body {
 /* Input Area - Instagram Style */
 .dm-input-area {
     padding: 12px 16px 16px;
-    background: #000;
-    border-top: 1px solid #262626;
+    background: #F7F7F7;
+    border-top: 1px solid #F7F7F7;
 }
 
 .input-container {
@@ -317,10 +319,10 @@ body {
     display: flex;
     align-items: center;
     gap: 8px;
-    background: #262626;
+    background: #F7F7F7;
     border-radius: 22px;
     padding: 8px 12px;
-    border: 1px solid #3c3c3c;
+    border: 1px solid #FFD166;
     transition: border-color 0.2s ease;
 }
 
@@ -331,7 +333,7 @@ body {
 .input-action-btn {
     background: none;
     border: none;
-    color: #a8a8a8;
+    color: #999999;
     font-size: 16px;
     cursor: pointer;
     padding: 4px;
@@ -340,7 +342,7 @@ body {
 }
 
 .input-action-btn:hover {
-    color: #fff;
+    color: #FFFFFF;
 }
 
 .text-input-container {
@@ -354,7 +356,7 @@ body {
     flex: 1;
     background: none;
     border: none;
-    color: #fff;
+    color: #FFFFFF;
     font-size: 14px;
     outline: none;
     padding: 8px 0;
@@ -362,13 +364,13 @@ body {
 }
 
 #userInput::placeholder {
-    color: #a8a8a8;
+    color: #999999;
 }
 
 .emoji-btn {
     background: none;
     border: none;
-    color: #a8a8a8;
+    color: #999999;
     font-size: 16px;
     cursor: pointer;
     padding: 4px;
@@ -377,13 +379,13 @@ body {
 }
 
 .emoji-btn:hover {
-    color: #fff;
+    color: #FFFFFF;
 }
 
 .send-btn {
-    background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+    background: linear-gradient(135deg, #FF6B35 0%, #FFD166 100%);
     border: none;
-    color: #fff;
+    color: #FFFFFF;
     width: 32px;
     height: 32px;
     border-radius: 50%;
@@ -464,7 +466,7 @@ body {
 }
 
 .restaurant-area {
-    color: #a8a8a8;
+    color: #999999;
     margin-bottom: 10px;
     display: flex;
     align-items: center;
@@ -587,7 +589,7 @@ body {
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: rgba(0, 0, 0, 0.8);
+    background: rgba(247, 247, 247, 0.95);
     backdrop-filter: blur(4px);
     z-index: 1000;
     display: flex;
@@ -611,14 +613,14 @@ body {
     width: 90vw;
     max-width: 1000px;
     height: 85vh;
-    background: #000;
-    border: 1px solid #333;
+    background: #F7F7F7;
+    border: 1px solid #FFD166;
     border-radius: 16px;
     display: flex;
     flex-direction: column;
     overflow: hidden;
     animation: slideInArtifacts 0.4s ease;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+    box-shadow: 0 20px 40px rgba(255, 107, 53, 0.3);
 }
 
 @keyframes slideInArtifacts {
@@ -637,15 +639,15 @@ body {
     align-items: center;
     justify-content: space-between;
     padding: 16px 20px;
-    background: #111;
-    border-bottom: 1px solid #333;
+    background: #FFFFFF;
+    border-bottom: 1px solid #FFD166;
 }
 
 .artifacts-title {
     display: flex;
     align-items: center;
     gap: 8px;
-    color: #fff;
+    color: #FFFFFF;
     font-size: 16px;
     font-weight: 600;
 }
@@ -657,7 +659,7 @@ body {
 .artifacts-close {
     background: none;
     border: none;
-    color: #888;
+    color: #999999;
     font-size: 16px;
     cursor: pointer;
     padding: 8px;
@@ -666,8 +668,8 @@ body {
 }
 
 .artifacts-close:hover {
-    color: #fff;
-    background: #333;
+    color: #FFFFFF;
+    background: #FFD166;
 }
 
 .artifacts-content {
@@ -680,8 +682,8 @@ body {
 /* 상단: 맛집 카드 섹션 */
 .artifacts-cards-section {
     height: 50%;
-    background: #000;
-    border-bottom: 1px solid #333;
+    background: #F7F7F7;
+    border-bottom: 1px solid #FFD166;
     display: flex;
     flex-direction: column;
     padding: 20px;
@@ -691,7 +693,7 @@ body {
     font-size: 18px;
     font-weight: 600;
     margin-bottom: 16px;
-    color: #fff;
+    color: #FFFFFF;
 }
 
 .artifacts-cards-wrapper {
@@ -712,8 +714,8 @@ body {
 
 .artifacts-restaurant-card {
     min-width: 280px;
-    background: #111;
-    border: 1px solid #333;
+    background: #FFFFFF;
+    border: 1px solid #FFD166;
     border-radius: 12px;
     overflow: hidden;
     cursor: pointer;
@@ -729,12 +731,12 @@ body {
 
 .artifacts-card-image {
     height: 120px;
-    background: linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+    background: linear-gradient(135deg, #FF6B35 0%, #FFD166 100%);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 32px;
-    color: #fff;
+    color: #FFFFFF;
 }
 
 .artifacts-card-content {
@@ -745,11 +747,11 @@ body {
     font-size: 16px;
     font-weight: 600;
     margin-bottom: 8px;
-    color: #fff;
+    color: #FFFFFF;
 }
 
 .artifacts-card-location {
-    color: #888;
+    color: #999999;
     font-size: 12px;
     margin-bottom: 8px;
     display: flex;
@@ -776,20 +778,20 @@ body {
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background: #333;
+    background: #FFD166;
     cursor: pointer;
     transition: all 0.2s;
 }
 
 .artifacts-dot.active {
-    background: #f09433;
+    background: #FF6B35;
     transform: scale(1.2);
 }
 
 /* 하단: 지도 섹션 */
 .artifacts-map-section {
     height: 50%;
-    background: #111;
+    background: #FFFFFF;
     display: flex;
     flex-direction: column;
     padding: 20px;
@@ -799,18 +801,18 @@ body {
     font-size: 18px;
     font-weight: 600;
     margin-bottom: 16px;
-    color: #fff;
+    color: #FFFFFF;
 }
 
 .artifacts-map {
     flex: 1;
-    background: #1a1a1a;
-    border: 1px solid #333;
+    background: #FFFFFF;
+    border: 1px solid #FFD166;
     border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #666;
+    color: #999999;
 }
 
 .artifacts-map .map-placeholder {
@@ -829,11 +831,11 @@ body {
 
 /* 위치 카드 버튼 스타일 */
 .location-trigger-card {
-    background: linear-gradient(135deg, #f09433, #e6683c);
+    background: linear-gradient(135deg, #FF6B35 0%, #FFD166 100%);
     border: none;
     border-radius: 12px;
     padding: 12px 16px;
-    color: #fff;
+    color: #FFFFFF;
     cursor: pointer;
     transition: all 0.3s ease;
     display: inline-flex;
@@ -906,12 +908,12 @@ body {
 
 /* Artifacts 카드 스타일 */
 .artifacts-card {
-    background: #1c1c1c;
+    background: #FFFFFF;
     border-radius: 16px;
     padding: 20px;
     min-width: 100%;
     max-width: 100%;
-    border: 1px solid #3c3c3c;
+    border: 1px solid #FFD166;
     transition: all 0.3s ease;
     display: flex;
     flex-direction: column;
@@ -930,7 +932,7 @@ body {
     width: 120px;
     height: 120px;
     border-radius: 16px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #FFD166 0%, #FF6B35 100%);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -958,7 +960,7 @@ body {
 }
 
 .artifacts-card-content h3 {
-    color: #fff;
+    color: #FFFFFF;
     font-size: 20px;
     font-weight: 600;
     margin: 0 0 12px 0;
@@ -966,7 +968,7 @@ body {
 }
 
 .artifacts-card-location {
-    color: #999;
+    color: #999999;
     font-size: 14px;
     margin: 0 0 16px 0;
     display: flex;
@@ -1009,8 +1011,8 @@ body {
 }
 
 .artifacts-card-price {
-    background: #0095f6;
-    color: white;
+    background: linear-gradient(135deg, #FF6B35 0%, #FFD166 100%);
+    color: #FFFFFF;
     padding: 8px 16px;
     border-radius: 20px;
     font-size: 14px;
@@ -1022,18 +1024,18 @@ body {
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background: #666;
+    background: #FFD166;
     cursor: pointer;
     transition: all 0.3s ease;
 }
 
 .artifacts-dot.active {
-    background: #0095f6;
+    background: linear-gradient(135deg, #FF6B35 0%, #FFD166 100%);
     transform: scale(1.2);
 }
 
 .artifacts-dot:hover {
-    background: #0095f6;
+    background: linear-gradient(135deg, #FF6B35 0%, #FFD166 100%);
     opacity: 0.7;
 }
 
@@ -1046,15 +1048,15 @@ body {
 
 /* 지도 보기 카드 스타일 */
 .map-view-card {
-    background: #1a1a1a;
-    border: 1px solid #262626;
+    background: #FFFFFF;
+    border: 1px solid #F7F7F7;
     border-radius: 12px;
     overflow: hidden;
     cursor: pointer;
     transition: all 0.3s ease;
     width: 100%;
     max-width: 320px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 2px 8px rgba(255, 209, 102, 0.3);
 }
 
 .map-view-card:hover {
@@ -1084,7 +1086,7 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.4);
+    background: rgba(255, 209, 102, 0.4);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1092,8 +1094,8 @@ body {
 
 .map-card-overlay i {
     font-size: 40px;
-    color: white;
-    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+    color: #FFFFFF;
+    text-shadow: 0 2px 8px rgba(255, 107, 53, 0.3);
 }
 
 .map-card-content {
@@ -1106,7 +1108,7 @@ body {
     gap: 8px;
     font-size: 16px;
     font-weight: 600;
-    color: #fff;
+    color: #FFFFFF;
     margin-bottom: 8px;
 }
 
@@ -1116,7 +1118,7 @@ body {
 }
 
 .map-card-subtitle {
-    color: #8e8e8e;
+    color: #999999;
     font-size: 13px;
     margin-bottom: 12px;
 }
@@ -1129,9 +1131,9 @@ body {
 }
 
 .preview-restaurant {
-    color: #fff;
+    color: #FFFFFF;
     font-size: 12px;
-    background: #262626;
+    background: #F7F7F7;
     padding: 4px 8px;
     border-radius: 4px;
 }
@@ -1187,7 +1189,7 @@ body {
 /* 카드 추가 정보 스타일 */
 .artifacts-card-address,
 .artifacts-card-phone {
-    color: #888;
+    color: #999999;
     font-size: 12px;
     margin: 6px 0;
     display: flex;
@@ -1206,18 +1208,18 @@ body {
 .map-simulation {
     width: 100%;
     height: 100%;
-    background: #1c1c1c;
+    background: #FFFFFF;
     border-radius: 12px;
-    border: 1px solid #3c3c3c;
+    border: 1px solid #FFD166;
     overflow: hidden;
     display: flex;
     flex-direction: column;
 }
 
 .map-header {
-    background: #2c2c2c;
+    background: #F7F7F7;
     padding: 12px 16px;
-    border-bottom: 1px solid #3c3c3c;
+    border-bottom: 1px solid #FFD166;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -1229,13 +1231,13 @@ body {
 }
 
 .map-header span {
-    color: #fff;
+    color: #FFFFFF;
     font-weight: 600;
     font-size: 14px;
 }
 
 .map-coords {
-    color: #888;
+    color: #999999;
     font-size: 11px;
     font-family: monospace;
 }
@@ -1250,8 +1252,8 @@ body {
 }
 
 .map-marker {
-    background: #2c2c2c;
-    border: 1px solid #3c3c3c;
+    background: #F7F7F7;
+    border: 1px solid #FFD166;
     border-radius: 8px;
     padding: 12px;
     cursor: pointer;
@@ -1264,7 +1266,7 @@ body {
 .map-marker:hover,
 .map-marker.active {
     border-color: #0095f6;
-    background: #0095f610;
+    background: rgba(255, 107, 53, 0.06);
     transform: translateX(4px);
 }
 
@@ -1279,37 +1281,37 @@ body {
 }
 
 .marker-name {
-    color: #fff;
+    color: #FFFFFF;
     font-weight: 600;
     font-size: 14px;
     margin-bottom: 4px;
 }
 
 .marker-area {
-    color: #888;
+    color: #999999;
     font-size: 12px;
     margin-bottom: 2px;
 }
 
 .marker-coords {
-    color: #666;
+    color: #999999;
     font-size: 10px;
     font-family: monospace;
 }
 
 .map-actions {
     padding: 12px 16px;
-    border-top: 1px solid #3c3c3c;
-    background: #2c2c2c;
+    border-top: 1px solid #FFD166;
+    background: #F7F7F7;
 }
 
 .map-action-btn {
     width: 100%;
-    background: linear-gradient(135deg, #0095f6 0%, #00d4ff 100%);
+    background: linear-gradient(135deg, #FF6B35 0%, #FFD166 100%);
     border: none;
     border-radius: 8px;
     padding: 10px 16px;
-    color: white;
+    color: #FFFFFF;
     font-size: 12px;
     font-weight: 600;
     cursor: pointer;
@@ -1336,7 +1338,7 @@ body {
     align-items: center;
     justify-content: center;
     height: 100%;
-    color: #888;
+    color: #999999;
     text-align: center;
 }
 
@@ -1354,7 +1356,7 @@ body {
 .loading-spinner {
     width: 20px;
     height: 20px;
-    border: 2px solid #3c3c3c;
+    border: 2px solid #FFD166;
     border-top: 2px solid #0095f6;
     border-radius: 50%;
     animation: spin 1s linear infinite;
@@ -1375,7 +1377,7 @@ body {
     height: 100%;
     padding: 20px;
     text-align: center;
-    background: #2c2c2c;
+    background: #F7F7F7;
     border-radius: 12px;
 }
 
@@ -1392,7 +1394,7 @@ body {
 }
 
 .map-fallback .map-header span {
-    color: #fff;
+    color: #FFFFFF;
     font-size: 16px;
     font-weight: 600;
 }
@@ -1410,14 +1412,14 @@ body {
 /* 네이버 지도 컨테이너 스타일 */
 #naverMap {
     border-radius: 12px;
-    border: 1px solid #3c3c3c;
+    border: 1px solid #FFD166;
     overflow: hidden;
 }
 
 /* 네이버 지도 내부 컨트롤 스타일 조정 */
 #naverMap .nmap_control_button {
     background: rgba(28, 28, 28, 0.8) !important;
-    border: 1px solid #3c3c3c !important;
+    border: 1px solid #FFD166 !important;
     color: #ffffff !important;
 }
 
