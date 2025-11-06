@@ -688,15 +688,16 @@ body {
     color: #fff;
 }
 
+.artifacts-cards-wrapper {
+    overflow: hidden;
+    width: 100%;
+    position: relative;
+}
+
 .artifacts-cards-slider {
-    flex: 1;
     display: flex;
-    gap: 16px;
-    overflow-x: auto;
-    padding: 8px 0;
-    scroll-behavior: smooth;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
+    transition: transform 0.3s ease;
+    gap: 0;
 }
 
 .artifacts-cards-slider::-webkit-scrollbar {
@@ -901,7 +902,7 @@ body {
 .artifacts-card {
     background: #1c1c1c;
     border-radius: 16px;
-    padding: 24px;
+    padding: 20px;
     min-width: 100%;
     max-width: 100%;
     border: 1px solid #3c3c3c;
@@ -909,6 +910,7 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
+    flex-shrink: 0;
     text-align: center;
 }
 
