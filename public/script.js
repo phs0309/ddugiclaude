@@ -375,16 +375,22 @@ ${restaurant.description}`;
         // 최대 5개 레스토랑만 표시
         const displayRestaurants = restaurants.slice(0, 5);
         
+        // 모든 카드를 한 번에 생성
         displayRestaurants.forEach((restaurant, index) => {
+            // 카드 생성 및 추가
             const card = this.createArtifactsCard(restaurant, index);
-            cardsSlider.appendChild(card);
-            
-            // 슬라이더 점 생성
-            const dot = document.createElement('div');
-            dot.className = `artifacts-dot ${index === 0 ? 'active' : ''}`;
-            dot.addEventListener('click', () => this.goToSlide(index));
-            sliderDots.appendChild(dot);
+            if (card) {
+                cardsSlider.appendChild(card);
+                
+                // 슬라이더 점 생성
+                const dot = document.createElement('div');
+                dot.className = `artifacts-dot ${index === 0 ? 'active' : ''}`;
+                dot.addEventListener('click', () => this.goToSlide(index));
+                sliderDots.appendChild(dot);
+            }
         });
+        
+        console.log(`모달에 ${displayRestaurants.length}개 음식점 카드 생성`);
         
         // 슬라이더 초기화
         this.currentSlide = 0;
@@ -505,19 +511,43 @@ ${restaurant.description}`;
         const buttonContainer = document.createElement('div');
         buttonContainer.className = 'modal-button-container';
         
-        const button = document.createElement('button');
-        button.className = 'modal-open-button';
-        button.innerHTML = `
-            <i class="fas fa-map-marker-alt"></i>
-            <span>맛집 지도 보기 (${restaurants.length}곳)</span>
-            <i class="fas fa-arrow-right"></i>
+        // 카드 스타일 버튼 생성
+        const card = document.createElement('div');
+        card.className = 'map-view-card';
+        
+        // 첫 번째 음식점의 썸네일 사용
+        const firstRestaurant = restaurants[0];
+        const thumbnailUrl = firstRestaurant.image || '/api/placeholder/400/300';
+        
+        card.innerHTML = `
+            <div class="map-card-image">
+                <img src="${thumbnailUrl}" alt="${firstRestaurant.name}" />
+                <div class="map-card-overlay">
+                    <i class="fas fa-map-marked-alt"></i>
+                </div>
+            </div>
+            <div class="map-card-content">
+                <div class="map-card-title">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span>맛집 지도 보기</span>
+                </div>
+                <div class="map-card-subtitle">
+                    ${restaurants.length}개 맛집 위치 확인
+                </div>
+                <div class="map-card-preview">
+                    ${restaurants.slice(0, 3).map(r => `
+                        <span class="preview-restaurant">• ${r.name}</span>
+                    `).join('')}
+                    ${restaurants.length > 3 ? `<span class="preview-more">외 ${restaurants.length - 3}곳</span>` : ''}
+                </div>
+            </div>
         `;
         
-        button.addEventListener('click', () => {
+        card.addEventListener('click', () => {
             this.showArtifacts(restaurants, location);
         });
         
-        buttonContainer.appendChild(button);
+        buttonContainer.appendChild(card);
         
         // 마지막 봇 메시지에 버튼 추가
         const lastBotMessage = this.messagesContainer.querySelector('.bot-group:last-child .message-content');
