@@ -2,9 +2,19 @@
   "functions": {
     "api/chat.js": {
       "maxDuration": 30
+    },
+    "api/random.js": {
+      "maxDuration": 10
+    },
+    "api/naver_map_api.js": {
+      "maxDuration": 10
     }
   },
   "rewrites": [
+    {
+      "source": "/api/random/:count",
+      "destination": "/api/random"
+    },
     {
       "source": "/",
       "destination": "/public/index.html"
