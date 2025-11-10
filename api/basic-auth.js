@@ -76,7 +76,10 @@ module.exports = async function handler(req, res) {
                     throw new Error('Google 토큰에 필수 사용자 정보가 없습니다');
                 }
 
-                // Supabase에 사용자 정보 저장/업데이트 (안전하게)
+                // Supabase에 사용자 정보 저장/업데이트
+                let dbSaveSuccess = false;
+                let dbError = null;
+                
                 try {
                     console.log('🔍 Supabase 연결 시도...');
                     
@@ -89,6 +92,7 @@ module.exports = async function handler(req, res) {
 
                     if (findError && findError.code !== 'PGRST116') {
                         console.log('⚠️ 사용자 조회 오류:', findError);
+                        dbError = findError;
                     }
 
                     if (!existingUser) {
@@ -103,9 +107,11 @@ module.exports = async function handler(req, res) {
                             }]);
 
                         if (insertError) {
-                            console.log('⚠️ 사용자 생성 오류:', insertError);
+                            console.log('❌ 사용자 생성 실패:', insertError);
+                            dbError = insertError;
                         } else {
                             console.log('✅ 새 사용자 생성:', jsonPayload.email);
+                            dbSaveSuccess = true;
                         }
                     } else {
                         // 기존 사용자 정보 업데이트
@@ -119,16 +125,27 @@ module.exports = async function handler(req, res) {
                             .eq('email', jsonPayload.email);
 
                         if (updateError) {
-                            console.log('⚠️ 사용자 업데이트 오류:', updateError);
+                            console.log('❌ 사용자 업데이트 실패:', updateError);
+                            dbError = updateError;
                         } else {
                             console.log('✅ 기존 사용자 정보 업데이트:', jsonPayload.email);
+                            dbSaveSuccess = true;
                         }
                     }
-                    
-                    console.log('✅ Supabase 저장 처리 완료');
-                } catch (dbError) {
-                    console.error('⚠️ Supabase 저장 실패 (로그인은 계속 진행):', dbError);
-                    // 데이터베이스 오류가 있어도 로그인은 계속 진행
+                } catch (catchError) {
+                    console.error('❌ Supabase 저장 실패:', catchError);
+                    dbError = catchError;
+                }
+
+                // 데이터베이스 저장 실패시 로그인 실패 처리
+                if (!dbSaveSuccess || dbError) {
+                    console.error('❌ 데이터베이스 저장 실패로 로그인 거부');
+                    return res.status(500).json({
+                        error: '데이터베이스 연결 실패',
+                        code: 'DATABASE_SAVE_FAILED',
+                        message: '사용자 정보를 저장할 수 없어 로그인이 실패했습니다. 잠시 후 다시 시도해주세요.',
+                        details: process.env.NODE_ENV === 'development' ? dbError?.message : undefined
+                    });
                 }
 
                 const userPayload = {
@@ -152,7 +169,7 @@ module.exports = async function handler(req, res) {
                         profilePicture: jsonPayload.picture,
                         provider: 'google'
                     },
-                    message: 'Google 로그인 성공'
+                    message: 'Google 로그인 및 데이터베이스 저장 성공'
                 });
             } catch (error) {
                 console.error('❌ Google 토큰 처리 오류:', error);
