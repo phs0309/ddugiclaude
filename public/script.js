@@ -650,6 +650,13 @@ ${restaurant.description}`;
         // 터치 스와이프 기능 추가
         this.addTouchSwipe(cardsSlider);
         
+        // 저장된 맛집 상태 복원
+        if (apiClient.isLoggedIn()) {
+            setTimeout(() => {
+                restoreSavedRestaurants();
+            }, 100);
+        }
+        
         // 모달 표시
         overlay.style.display = 'flex';
         setTimeout(() => {
@@ -1900,4 +1907,11 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // 메뉴 상태 업데이트
     updateMenuForLoggedInUser();
+    
+    // 저장된 맛집 상태 복원 (로그인한 경우에만)
+    if (apiClient.isLoggedIn()) {
+        setTimeout(() => {
+            restoreSavedRestaurants();
+        }, 1000);
+    }
 });
