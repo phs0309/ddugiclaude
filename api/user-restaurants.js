@@ -2,16 +2,17 @@
 import { sql } from '@vercel/postgres';
 
 export default async function handler(req, res) {
-    // CORS 설정
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-
-    if (req.method === 'OPTIONS') {
-        return res.status(200).end();
-    }
-
+    console.log('🍽️ User Restaurants API 시작:', { method: req.method });
+    
     try {
+        // CORS 설정
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
+        if (req.method === 'OPTIONS') {
+            return res.status(200).end();
+        }
         // 토큰에서 사용자 정보 추출
         const authHeader = req.headers.authorization;
         let user = null;
@@ -35,16 +36,17 @@ export default async function handler(req, res) {
             });
         }
 
-        // 데이터베이스 테이블 초기화 (존재하지 않으면 생성)
+        // 데이터베이스 테이블 초기화 (안전하게)
         try {
+            console.log('🔧 데이터베이스 테이블 초기화 시도...');
             await initializeTables();
+            console.log('✅ 테이블 초기화 완료');
         } catch (dbError) {
-            console.error('데이터베이스 초기화 실패:', dbError);
-            // 데이터베이스 연결 실패
+            console.error('❌ 데이터베이스 초기화 실패:', dbError);
             return res.status(503).json({
                 error: '데이터베이스 연결에 실패했습니다',
                 code: 'DATABASE_CONNECTION_FAILED',
-                message: '잠시 후 다시 시도해주세요. 문제가 지속되면 관리자에게 문의해주세요.',
+                message: '데이터베이스 서비스가 일시적으로 사용할 수 없습니다',
                 details: process.env.NODE_ENV === 'development' ? dbError.message : undefined
             });
         }
@@ -185,14 +187,12 @@ export default async function handler(req, res) {
     } catch (error) {
         console.error('사용자 맛집 API 오류:', error);
         
-        // 데이터베이스 연결 오류인 경우 게스트 모드로 폴백
+        // 데이터베이스 연결 오류 처리 (로컬스토리지 언급 제거)
         if (error.message && error.message.includes('connect')) {
-            return res.status(200).json({
-                isGuest: true,
-                restaurants: [],
-                count: 0,
-                fallback: true,
-                message: '데이터베이스 연결 실패, 로컬스토리지를 사용해주세요'
+            return res.status(503).json({
+                error: '데이터베이스 연결 실패',
+                code: 'DATABASE_CONNECTION_FAILED',
+                message: '데이터베이스 서비스에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.'
             });
         }
 
@@ -207,6 +207,13 @@ export default async function handler(req, res) {
 // 데이터베이스 테이블 초기화
 async function initializeTables() {
     try {
+        // 환경변수 확인
+        if (!process.env.POSTGRES_URL && !process.env.DATABASE_URL && !process.env.POSTGRES_PRISMA_URL) {
+            throw new Error('PostgreSQL 환경변수가 설정되지 않았습니다');
+        }
+
+        console.log('📊 테이블 생성 시작...');
+        
         // 사용자 테이블 생성 (존재하지 않으면)
         await sql`
             CREATE TABLE IF NOT EXISTS users (
@@ -219,6 +226,7 @@ async function initializeTables() {
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `;
+        console.log('✅ users 테이블 준비');
 
         // 사용자 맛집 테이블 생성 (존재하지 않으면)
         await sql`
@@ -230,6 +238,7 @@ async function initializeTables() {
                 UNIQUE(user_id, restaurant_data->>'id')
             )
         `;
+        console.log('✅ user_restaurants 테이블 준비');
 
         // 인덱스 생성 (성능 향상)
         await sql`
@@ -241,10 +250,14 @@ async function initializeTables() {
             CREATE INDEX IF NOT EXISTS idx_user_restaurants_restaurant_id 
             ON user_restaurants USING GIN ((restaurant_data->>'id'))
         `;
+        console.log('✅ 인덱스 준비 완료');
 
-        console.log('데이터베이스 테이블 초기화 완료');
     } catch (error) {
-        console.error('테이블 초기화 오류:', error);
-        throw error;
+        console.error('❌ 테이블 초기화 실패:', {
+            name: error.name,
+            message: error.message,
+            code: error.code
+        });
+        throw new Error(`데이터베이스 초기화 실패: ${error.message}`);
     }
 }
