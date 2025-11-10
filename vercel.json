@@ -8,6 +8,9 @@
     },
     "api/naver_map_api.js": {
       "maxDuration": 10
+    },
+    "api/basic-auth.js": {
+      "maxDuration": 10
     }
   },
   "rewrites": [
