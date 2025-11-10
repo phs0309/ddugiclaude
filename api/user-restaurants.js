@@ -57,28 +57,27 @@ module.exports = async function handler(req, res) {
         }
 
         if (req.method === 'GET') {
-            // 저장된 맛집 조회 (Supabase)
+            // 저장된 맛집 조회 (users 테이블에서)
             try {
-                const { data: results, error } = await supabase
-                    .from('user_restaurants')
-                    .select('restaurant_data, saved_at')
-                    .eq('user_id', user.userId || user.email)
-                    .order('saved_at', { ascending: false });
+                const { data: userData, error } = await supabase
+                    .from('users')
+                    .select('saved_restaurant_ids')
+                    .eq('email', user.email)
+                    .single();
 
                 if (error) {
                     throw error;
                 }
 
-                const restaurants = results.map(row => ({
-                    ...row.restaurant_data,
-                    savedAt: row.saved_at
-                }));
+                const savedIds = userData?.saved_restaurant_ids || [];
+                console.log('📋 저장된 맛집 ID들:', savedIds);
 
                 return res.status(200).json({
                     success: true,
-                    restaurants: restaurants,
-                    count: restaurants.length,
-                    isGuest: false
+                    restaurantIds: savedIds,
+                    count: savedIds.length,
+                    isGuest: false,
+                    message: `${savedIds.length}개의 저장된 맛집이 있습니다`
                 });
             } catch (dbError) {
                 console.error('저장된 맛집 조회 실패:', dbError);
@@ -102,52 +101,50 @@ module.exports = async function handler(req, res) {
             }
 
             try {
-                // 중복 체크 (Supabase) - JSONB 쿼리 수정
-                const { data: existing, error: checkError } = await supabase
-                    .from('user_restaurants')
-                    .select('id')
-                    .eq('user_id', user.userId || user.email)
-                    .eq('restaurant_data->>id', restaurant.id);
+                // 현재 저장된 맛집 ID들 가져오기
+                const { data: userData, error: fetchError } = await supabase
+                    .from('users')
+                    .select('saved_restaurant_ids')
+                    .eq('email', user.email)
+                    .single();
 
-                if (checkError) {
-                    throw checkError;
+                if (fetchError) {
+                    throw fetchError;
                 }
 
-                if (existing && existing.length > 0) {
+                const currentIds = userData?.saved_restaurant_ids || [];
+                console.log('📝 현재 저장된 ID들:', currentIds);
+
+                // 중복 체크
+                if (currentIds.includes(restaurant.id)) {
                     return res.status(400).json({
                         error: '이미 저장된 맛집입니다',
                         code: 'ALREADY_SAVED'
                     });
                 }
 
-                // 저장 (Supabase) - JSONB로 직접 저장
-                const restaurantData = {
-                    ...restaurant,
-                    savedAt: new Date().toISOString()
-                };
+                // 새 ID 추가
+                const updatedIds = [...currentIds, restaurant.id];
+                console.log('📝 업데이트될 ID들:', updatedIds);
 
-                console.log('📝 저장할 데이터:', {
-                    user_id: user.userId || user.email,
-                    restaurant_data: restaurantData,
-                    restaurant_id: restaurant.id
-                });
+                // users 테이블 업데이트
+                const { error: updateError } = await supabase
+                    .from('users')
+                    .update({
+                        saved_restaurant_ids: updatedIds,
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('email', user.email);
 
-                const { error: insertError } = await supabase
-                    .from('user_restaurants')
-                    .insert([{
-                        user_id: user.userId || user.email,
-                        restaurant_data: restaurantData,  // JSON 객체 그대로 전달
-                        saved_at: new Date().toISOString()
-                    }]);
-
-                if (insertError) {
-                    throw insertError;
+                if (updateError) {
+                    throw updateError;
                 }
 
                 return res.status(200).json({
                     success: true,
                     message: `"${restaurant.name}"을(를) 저장했습니다`,
-                    restaurant: restaurantData,
+                    restaurantId: restaurant.id,
+                    totalSaved: updatedIds.length,
                     isGuest: false
                 });
             } catch (dbError) {
@@ -172,39 +169,50 @@ module.exports = async function handler(req, res) {
             }
 
             try {
-                // 삭제 전 존재 확인 (Supabase) - JSONB 쿼리 수정
-                const { data: existing, error: findError } = await supabase
-                    .from('user_restaurants')
-                    .select('restaurant_data')
-                    .eq('user_id', user.userId || user.email)
-                    .eq('restaurant_data->>id', restaurantId);
+                // 현재 저장된 맛집 ID들 가져오기
+                const { data: userData, error: fetchError } = await supabase
+                    .from('users')
+                    .select('saved_restaurant_ids')
+                    .eq('email', user.email)
+                    .single();
 
-                if (findError) {
-                    throw findError;
+                if (fetchError) {
+                    throw fetchError;
                 }
 
-                if (!existing || existing.length === 0) {
+                const currentIds = userData?.saved_restaurant_ids || [];
+                console.log('🗑️ 현재 저장된 ID들:', currentIds);
+
+                // 삭제할 ID가 있는지 확인
+                if (!currentIds.includes(restaurantId)) {
                     return res.status(404).json({
                         error: '저장된 맛집을 찾을 수 없습니다',
                         code: 'NOT_FOUND'
                     });
                 }
 
-                // 삭제 (Supabase) - JSONB 쿼리 수정
-                const { error: deleteError } = await supabase
-                    .from('user_restaurants')
-                    .delete()
-                    .eq('user_id', user.userId || user.email)
-                    .eq('restaurant_data->>id', restaurantId);
+                // ID 제거
+                const updatedIds = currentIds.filter(id => id !== restaurantId);
+                console.log('🗑️ 업데이트될 ID들:', updatedIds);
 
-                if (deleteError) {
-                    throw deleteError;
+                // users 테이블 업데이트
+                const { error: updateError } = await supabase
+                    .from('users')
+                    .update({
+                        saved_restaurant_ids: updatedIds,
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('email', user.email);
+
+                if (updateError) {
+                    throw updateError;
                 }
 
                 return res.status(200).json({
                     success: true,
                     message: '맛집을 저장 목록에서 제거했습니다',
                     restaurantId: restaurantId,
+                    totalSaved: updatedIds.length,
                     isGuest: false
                 });
             } catch (dbError) {
