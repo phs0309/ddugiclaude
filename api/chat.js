@@ -210,22 +210,9 @@ async function callClaudeAPI(prompt) {
     }
 }
 
-// 간단한 폴백 응답 (Claude API 실패시에만 사용)
+// 폴백 응답 (Claude API 실패시에만 사용)
 function generateAIResponse(userMessage, recommendations) {
-    const { restaurants } = recommendations;
-    
-    // 위치 언급이 있었지만 맛집을 찾지 못한 경우
-    if (recommendations.hasLocationMention && restaurants.length === 0) {
-        return "아이구, 그 조건에 맞는 맛집을 못 찾겠다이가... 😅 다른 지역이나 음식으로 다시 말해봐라!";
-    }
-    
-    // 위치 언급이 있고 맛집을 찾은 경우
-    if (recommendations.hasLocationMention && restaurants.length > 0) {
-        return `마! 좋은 맛집들 ${restaurants.length}곳 찾았다이가! 🍽️ 아래 카드에서 자세히 봐라!`;
-    }
-    
-    // 일반 대화인 경우 (위치 언급 없음)
-    return "안녕하세요! 뚜기입니다! 🐧 부산 맛집 궁금한 거 있으면 언제든 말해주세요!";
+    return "죄송합니다. AI 서버 연결에 문제가 있습니다. 잠시 후 다시 시도해주세요. 🤖⚠️";
 }
 
 // Claude AI 프롬프트 생성
