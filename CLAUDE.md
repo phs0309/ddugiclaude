@@ -14,26 +14,51 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ### Local Development
 - `npm start` - Start local Express server on port 3000
 - `npm run dev` - Start development server with nodemon
+- `PORT=3005 npm start` - Start server on custom port (useful when port 3000 is occupied)
+
+### Data Management (Deprecated - files removed)
+- Data collector scripts have been removed from codebase
+- Only use existing `restaurants.json` data
 
 ### Deployment
 - Vercel 배포용 serverless function: `api/chat.js`
 - 환경변수: `claude_api_key` (기존 Vercel 설정에 맞춤)
+- Supabase 환경변수: `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`
 
 ## Architecture
 
-### Data Source
-- **restaurants.json**: 10개 부산 맛집 데이터 (절대 변경 금지)
-- 해운대 돼지국밥, 광안리 회센터, 서면 밀면골목 등 실제 맛집만 포함
+### Core Data Layer
+- **restaurants.json**: 437개 부산 맛집 데이터 (실제 크롤링된 데이터)
+- **R_data/**: 원시 데이터 파일들 (노포, 모범음식점, 비짓부산 등 CSV)
+- **Supabase**: 사용자 계정, 저장된 맛집 데이터베이스
 
-### AI Engine
+### Authentication & User Management
+- **Google OAuth**: `api/basic-auth.js`를 통한 Google 로그인
+- **Guest Mode**: 임시 사용자 기능
+- **JWT Tokens**: Base64 인코딩된 사용자 정보
+- **ApiClient**: `public/api-client.js`에서 인증 상태 관리
+
+### Restaurant Management
+- **User Saved Restaurants**: `api/user-restaurants.js` - Supabase users.saved_restaurant_ids 컬럼 기반
+- **Column-based Storage**: 별도 테이블 대신 users 테이블의 TEXT[] 컬럼 사용
+- **NO localStorage**: 모든 저장은 서버 데이터베이스만 사용
+
+### AI & Search Engine
 - **RestaurantAI Class**: JSON 데이터 기반 검색 및 필터링
 - **Claude API Integration**: 부산 사투리 자연어 응답 생성
-- **Fallback System**: API 실패 시 기본 응답 제공
+- **Smart Agents**: `agents/` 폴더의 특화된 추천 에이전트들
+
+### Frontend Pages
+- **index.html**: 메인 맛집 추천 페이지
+- **saved.html**: 저장된 맛집 관리
+- **login.html**: 로그인 페이지
+- **admin.html**: 관리자 도구
+- **settings.html**: 사용자 설정
 
 ### Deployment Structure
 - **Local**: `server.js` - Express 서버
-- **Production**: `api/chat.js` - Vercel serverless function
-- **Frontend**: `public/` - 정적 파일들
+- **Production**: Vercel serverless functions in `api/`
+- **Database**: Supabase PostgreSQL
 
 ## Key Features
 
@@ -66,18 +91,56 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Use `claude_api_key` (not CLAUDE_API_KEY)
 - Matches existing Vercel configuration
 
+## Context Engineering Guidelines
+
+### Always Update CLAUDE.md
+- **CRITICAL**: Before starting any task, read this CLAUDE.md file
+- **REQUIRED**: Update this file whenever you make architectural changes
+- **MANDATORY**: Document new patterns, APIs, or significant code changes here
+
+### Development Patterns
+- **API Response Format**: Always use `{success: boolean, data/error: any, message: string}`
+- **Error Handling**: Comprehensive try-catch with user-friendly messages
+- **Authentication**: Check `apiClient.isLoggedIn()` before protected operations
+- **Data Validation**: Validate all inputs, especially restaurant data
+
+### Code Quality Standards
+- **No localStorage for User Data**: All user data must be stored in Supabase
+- **Consistent Logging**: Use structured console.log with emojis for visual clarity
+- **API Format Consistency**: New APIs must return `restaurantIds` arrays, not full objects
+- **Database Schema**: Use column-based storage (users.saved_restaurant_ids) over separate tables
+
+### Common Debugging Patterns
+- **Supabase Errors**: Check replica identity settings: `ALTER TABLE users REPLICA IDENTITY FULL;`
+- **API Format Mismatches**: Ensure frontend expects `restaurantIds` not `restaurants`
+- **Port Conflicts**: Use `PORT=3005 npm start` for local development
+- **Authentication Issues**: Verify Base64 token parsing in API endpoints
+
+### Work Progress Tracking
+- **Use TodoWrite Tool**: Always use todo list for multi-step tasks
+- **Mark Tasks Complete**: Update todos immediately after completion
+- **Document Blockers**: Add new todos for discovered issues
+
 ## File Structure
 
 ```
 /
-├── restaurants.json          # 맛집 데이터 (10개)
+├── restaurants.json          # 437개 맛집 데이터 (크롤링된 실제 데이터)
 ├── restaurantAI.js          # AI 엔진 (로컬용)
 ├── server.js                # 로컬 Express 서버
+├── R_data/                  # 원시 데이터 CSV 파일들
+├── agents/                  # AI 추천 에이전트들
 ├── api/
-│   └── chat.js             # Vercel 서버리스 함수
+│   ├── chat.js             # Claude AI 챗봇
+│   ├── basic-auth.js       # Google OAuth 인증
+│   ├── user-restaurants.js # 저장된 맛집 관리 (Supabase)
+│   └── [other APIs]        # 기타 서버리스 함수들
 ├── public/
-│   ├── index.html          # 메인 페이지
-│   ├── style.css           # 스타일
-│   └── script.js           # 프론트엔드 로직
+│   ├── index.html          # 메인 맛집 추천 페이지
+│   ├── saved.html          # 저장된 맛집 페이지
+│   ├── login.html          # 로그인 페이지
+│   ├── api-client.js       # 프론트엔드 API 클라이언트
+│   ├── script.js           # 메인 프론트엔드 로직
+│   └── style.css           # 스타일시트
 └── vercel.json             # Vercel 배포 설정
 ```
