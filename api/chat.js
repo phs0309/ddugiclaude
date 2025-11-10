@@ -1,4 +1,5 @@
-const restaurants = require('../restaurants.json');
+const path = require('path');
+const restaurants = require(path.join(process.cwd(), 'restaurants.json'));
 
 // Restaurant AI 로직을 Vercel 함수에 맞게 구현
 class RestaurantAI {
@@ -273,7 +274,9 @@ module.exports = async function handler(req, res) {
     console.log(`💬 사용자: "${message}"`);
 
     try {
+        console.log('🔄 RestaurantAI 인스턴스 생성 시작...');
         const restaurantAI = new RestaurantAI();
+        console.log('✅ RestaurantAI 인스턴스 생성 완료');
 
         // 위치 데이터 언급 여부 체크
         const locationKeywords = [
