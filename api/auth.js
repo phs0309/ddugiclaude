@@ -1,6 +1,7 @@
 // 사용자 인증 API 엔드포인트
-const database = require('../lib/database');
-const authManager = require('../lib/auth');
+import { sql } from '@vercel/postgres';
+import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 
 export default async function handler(req, res) {
     // CORS 설정
@@ -14,7 +15,7 @@ export default async function handler(req, res) {
 
     try {
         // 데이터베이스 초기화 (첫 요청시에만 실행됨)
-        await database.initializeDatabase();
+        await initializeDatabase();
 
         const { method, query } = req;
         const action = query.action;
@@ -67,22 +68,25 @@ async function handleGoogleLogin(req, res) {
         }
 
         // Google ID 토큰 디코딩
-        const googleUser = authManager.decodeGoogleToken(idToken);
+        const googleUser = decodeGoogleToken(idToken);
         
         // 사용자 데이터 정규화
-        const normalizedUser = authManager.normalizeUserData(googleUser, 'google');
+        const normalizedUser = {
+            email: googleUser.email,
+            name: googleUser.name,
+            profilePicture: googleUser.picture,
+            provider: 'google',
+            providerId: googleUser.sub
+        };
 
         // 사용자 생성 또는 업데이트
-        const user = await database.upsertUser(normalizedUser);
+        const user = await upsertUser(normalizedUser);
 
         // JWT 토큰 생성
-        const token = authManager.generateToken(user);
+        const token = generateToken(user);
 
-        // 로그인 활동 기록
-        await database.logUserActivity(user.id, 'login', {
-            provider: 'google',
-            ip: req.headers['x-forwarded-for'] || req.connection.remoteAddress
-        });
+        // 로그인 활동 기록 (간소화)
+        console.log(`✅ Google 로그인: ${user.email}`);
 
         res.status(200).json({
             success: true,
@@ -111,7 +115,7 @@ async function handleGoogleLogin(req, res) {
 async function handleGuestLogin(req, res) {
     try {
         // 게스트 토큰 생성
-        const token = authManager.generateGuestToken();
+        const token = generateGuestToken();
 
         res.status(200).json({
             success: true,
@@ -253,4 +257,127 @@ async function handleLogout(req, res) {
             message: error.message
         });
     }
+}
+
+// 데이터베이스 초기화
+async function initializeDatabase() {
+    try {
+        console.log('🗄️ 데이터베이스 초기화 시작...');
+
+        // 사용자 테이블 생성
+        await sql`
+            CREATE TABLE IF NOT EXISTS users (
+                id SERIAL PRIMARY KEY,
+                email VARCHAR(255) UNIQUE NOT NULL,
+                name VARCHAR(255) NOT NULL,
+                profile_picture TEXT,
+                provider VARCHAR(50) DEFAULT 'email',
+                provider_id VARCHAR(255),
+                password_hash VARCHAR(255),
+                created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                last_login TIMESTAMP WITH TIME ZONE
+            )
+        `;
+
+        // 저장된 맛집 테이블 생성
+        await sql`
+            CREATE TABLE IF NOT EXISTS saved_restaurants (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                restaurant_id VARCHAR(255) NOT NULL,
+                restaurant_name VARCHAR(255) NOT NULL,
+                restaurant_area VARCHAR(255),
+                restaurant_category VARCHAR(255),
+                restaurant_data JSONB,
+                saved_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE(user_id, restaurant_id)
+            )
+        `;
+
+        // 인덱스 생성
+        await sql`CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)`;
+        await sql`CREATE INDEX IF NOT EXISTS idx_saved_restaurants_user_id ON saved_restaurants(user_id)`;
+
+        console.log('✅ 데이터베이스 초기화 완료');
+    } catch (error) {
+        console.error('❌ 데이터베이스 초기화 실패:', error);
+        throw error;
+    }
+}
+
+// JWT 토큰 생성
+function generateToken(user) {
+    const jwtSecret = process.env.JWT_SECRET || crypto.randomBytes(64).toString('hex');
+    const payload = {
+        userId: user.id,
+        email: user.email,
+        name: user.name,
+        provider: user.provider
+    };
+
+    return jwt.sign(payload, jwtSecret, { 
+        expiresIn: '7d',
+        issuer: 'ddugi-busan-restaurant-app'
+    });
+}
+
+// Google ID 토큰 디코딩
+function decodeGoogleToken(idToken) {
+    try {
+        const base64Url = idToken.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(
+            Buffer.from(base64, 'base64')
+                .toString('utf8')
+                .split('')
+                .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+                .join('')
+        );
+
+        return JSON.parse(jsonPayload);
+    } catch (error) {
+        console.error('Google ID 토큰 디코딩 실패:', error);
+        throw new Error('유효하지 않은 Google 토큰입니다');
+    }
+}
+
+// 사용자 생성 또는 업데이트
+async function upsertUser(userData) {
+    try {
+        const { email, name, profilePicture, provider, providerId } = userData;
+
+        const result = await sql`
+            INSERT INTO users (email, name, profile_picture, provider, provider_id, last_login)
+            VALUES (${email}, ${name}, ${profilePicture || null}, ${provider}, ${providerId || null}, CURRENT_TIMESTAMP)
+            ON CONFLICT (email)
+            DO UPDATE SET
+                name = EXCLUDED.name,
+                profile_picture = COALESCE(EXCLUDED.profile_picture, users.profile_picture),
+                last_login = CURRENT_TIMESTAMP
+            RETURNING id, email, name, profile_picture, provider, created_at
+        `;
+
+        return result.rows[0];
+    } catch (error) {
+        console.error('사용자 생성/업데이트 실패:', error);
+        throw error;
+    }
+}
+
+// 게스트 토큰 생성
+function generateGuestToken() {
+    const jwtSecret = process.env.JWT_SECRET || crypto.randomBytes(64).toString('hex');
+    const guestPayload = {
+        userId: null,
+        email: 'guest@ddugi.app',
+        name: '게스트 사용자',
+        provider: 'guest',
+        isGuest: true
+    };
+
+    return jwt.sign(guestPayload, jwtSecret, { 
+        expiresIn: '1d',
+        issuer: 'ddugi-busan-restaurant-app'
+    });
 }
