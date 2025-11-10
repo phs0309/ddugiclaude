@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API 테스트 페이지</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        button {
+            background: #FF6B35;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 10px;
+        }
+        button:hover {
+            background: #e55a2b;
+        }
+        .response {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 6px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .loading {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🐧 뚜기 API 테스트</h1>
+        
+        <div class="test-section">
+            <h3>💬 채팅 API 테스트</h3>
+            <input type="text" id="message" placeholder="메시지를 입력하세요 (예: 안녕하세요, 서면 맛집)" value="안녕하세요">
+            <br>
+            <button onclick="testChatAPI()">API 테스트</button>
+            <button onclick="testLocationQuery()">위치 쿼리 테스트</button>
+            <button onclick="clearResponse()">결과 지우기</button>
+            <div id="response" class="response" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🔧 빠른 테스트</h3>
+            <button onclick="quickTest('안녕하세요')">일반 인사</button>
+            <button onclick="quickTest('서면 맛집')">서면 맛집</button>
+            <button onclick="quickTest('해운대 회')">해운대 회</button>
+            <button onclick="quickTest('광안리 카페')">광안리 카페</button>
+        </div>
+
+        <div class="test-section">
+            <h3>📊 API 정보</h3>
+            <p><strong>엔드포인트:</strong> /api/chat</p>
+            <p><strong>메서드:</strong> POST</p>
+            <p><strong>Content-Type:</strong> application/json</p>
+            <p><strong>요청 형식:</strong> {"message": "사용자 메시지"}</p>
+        </div>
+    </div>
+
+    <script>
+        async function testChatAPI() {
+            const message = document.getElementById('message').value.trim();
+            if (!message) {
+                alert('메시지를 입력해주세요');
+                return;
+            }
+
+            const responseDiv = document.getElementById('response');
+            responseDiv.style.display = 'block';
+            responseDiv.className = 'response loading';
+            responseDiv.textContent = '⏳ API 호출 중...';
+
+            try {
+                const startTime = Date.now();
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ message })
+                });
+
+                const endTime = Date.now();
+                const responseTime = endTime - startTime;
+                const data = await response.json();
+
+                if (response.ok) {
+                    responseDiv.className = 'response success';
+                    responseDiv.textContent = 
+`✅ 성공 (${responseTime}ms)
+상태: ${response.status}
+응답:
+${JSON.stringify(data, null, 2)}`;
+                } else {
+                    responseDiv.className = 'response error';
+                    responseDiv.textContent = 
+`❌ 에러 (${responseTime}ms)
+상태: ${response.status}
+응답:
+${JSON.stringify(data, null, 2)}`;
+                }
+            } catch (error) {
+                responseDiv.className = 'response error';
+                responseDiv.textContent = `❌ 네트워크 에러: ${error.message}`;
+            }
+        }
+
+        function quickTest(message) {
+            document.getElementById('message').value = message;
+            testChatAPI();
+        }
+
+        function testLocationQuery() {
+            document.getElementById('message').value = '서면 저렴한 돼지국밥';
+            testChatAPI();
+        }
+
+        function clearResponse() {
+            document.getElementById('response').style.display = 'none';
+        }
+
+        // Enter 키로 테스트 실행
+        document.getElementById('message').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                testChatAPI();
+            }
+        });
+    </script>
+</body>
+</html>
