@@ -268,14 +268,34 @@
                 return;
             }
             
+            // 전체 맛집 데이터 먼저 로드
+            await loadAllRestaurants();
             await loadSavedRestaurants();
         });
+        
+        // 전체 맛집 데이터 로드
+        async function loadAllRestaurants() {
+            try {
+                const response = await fetch('/api/restaurants');
+                const data = await response.json();
+                window.allRestaurants = data.restaurants || [];
+            } catch (error) {
+                console.error('전체 맛집 데이터 로드 실패:', error);
+                window.allRestaurants = [];
+            }
+        }
         
         // 저장된 맛집 불러오기
         async function loadSavedRestaurants() {
             try {
                 const savedData = await apiClient.getSavedRestaurants();
-                savedRestaurants = savedData.restaurants;
+                const savedIds = savedData.restaurantIds || [];
+                
+                // 전체 맛집 데이터에서 저장된 ID에 해당하는 맛집 필터링
+                const allRestaurants = window.allRestaurants || [];
+                savedRestaurants = allRestaurants.filter(restaurant => 
+                    savedIds.includes(restaurant.id)
+                );
                 
                 document.getElementById('savedCount').textContent = savedRestaurants.length;
                 
@@ -286,15 +306,7 @@
                 }
             } catch (error) {
                 console.error('저장된 맛집 로드 실패:', error);
-                // localStorage 폴백
-                savedRestaurants = JSON.parse(localStorage.getItem('savedRestaurants') || '[]');
-                document.getElementById('savedCount').textContent = savedRestaurants.length;
-                
-                if (savedRestaurants.length === 0) {
-                    showEmptyState();
-                } else {
-                    displaySavedRestaurants();
-                }
+                showEmptyState();
             }
         }
         
