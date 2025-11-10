@@ -36,19 +36,43 @@ module.exports = async function handler(req, res) {
             });
         }
 
-        // 데이터베이스 테이블 초기화 (안전하게)
+        // 데이터베이스 테이블 초기화 (연결 실패시 임시 모드)
+        let dbConnected = false;
         try {
             console.log('🔧 데이터베이스 테이블 초기화 시도...');
             await initializeTables();
             console.log('✅ 테이블 초기화 완료');
+            dbConnected = true;
         } catch (dbError) {
             console.error('❌ 데이터베이스 초기화 실패:', dbError);
-            return res.status(503).json({
-                error: '데이터베이스 연결에 실패했습니다',
-                code: 'DATABASE_CONNECTION_FAILED',
-                message: '데이터베이스 서비스가 일시적으로 사용할 수 없습니다',
-                details: process.env.NODE_ENV === 'development' ? dbError.message : undefined
-            });
+            console.log('⚠️ 데이터베이스 연결 실패 - 임시 모드로 전환');
+            dbConnected = false;
+        }
+
+        // 데이터베이스 연결 실패시 임시 응답
+        if (!dbConnected) {
+            if (req.method === 'GET') {
+                return res.status(200).json({
+                    success: true,
+                    restaurants: [],
+                    count: 0,
+                    isGuest: false,
+                    tempMode: true,
+                    message: '데이터베이스 연결 문제로 저장된 맛집을 불러올 수 없습니다'
+                });
+            } else if (req.method === 'POST') {
+                return res.status(503).json({
+                    error: '데이터베이스 연결에 실패했습니다',
+                    code: 'DATABASE_CONNECTION_FAILED',
+                    message: '현재 맛집 저장 기능을 사용할 수 없습니다'
+                });
+            } else if (req.method === 'DELETE') {
+                return res.status(503).json({
+                    error: '데이터베이스 연결에 실패했습니다',
+                    code: 'DATABASE_CONNECTION_FAILED',
+                    message: '현재 맛집 삭제 기능을 사용할 수 없습니다'
+                });
+            }
         }
 
         if (req.method === 'GET') {
@@ -207,7 +231,14 @@ module.exports = async function handler(req, res) {
 // 데이터베이스 테이블 초기화
 async function initializeTables() {
     try {
-        // 환경변수 확인
+        // 환경변수 확인 및 로깅
+        console.log('🔍 환경변수 확인:', {
+            POSTGRES_URL: !!process.env.POSTGRES_URL,
+            DATABASE_URL: !!process.env.DATABASE_URL,  
+            POSTGRES_PRISMA_URL: !!process.env.POSTGRES_PRISMA_URL,
+            POSTGRES_URL_NON_POOLING: !!process.env.POSTGRES_URL_NON_POOLING
+        });
+        
         if (!process.env.POSTGRES_URL && !process.env.DATABASE_URL && !process.env.POSTGRES_PRISMA_URL) {
             throw new Error('PostgreSQL 환경변수가 설정되지 않았습니다');
         }
