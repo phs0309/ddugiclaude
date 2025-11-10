@@ -320,11 +320,14 @@ module.exports = async function handler(req, res) {
         });
 
     } catch (error) {
-        console.error('❌ 오류:', error);
+        console.error('❌ 서버 오류 발생:', error);
+        console.error('❌ 오류 스택:', error.stack);
+        console.error('❌ 사용자 메시지:', message);
         res.status(500).json({
-            message: "죄송합니다. 오류가 발생했어요. 다시 시도해주세요! 😅",
+            message: `서버 오류가 발생했습니다: ${error.message}`,
             restaurants: [],
-            type: 'error'
+            type: 'error',
+            debug: process.env.NODE_ENV === 'development' ? error.stack : undefined
         });
     }
 };
