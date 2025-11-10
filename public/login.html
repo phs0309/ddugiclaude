@@ -454,9 +454,9 @@
         }
         
         // 이미 로그인된 경우 리다이렉트
-        window.addEventListener('DOMContentLoaded', async () => {
+        window.addEventListener('DOMContentLoaded', () => {
             if (apiClient.isLoggedIn()) {
-                const verification = await apiClient.verifyToken();
+                const verification = apiClient.verifyToken();
                 if (verification.valid) {
                     window.location.href = 'index.html';
                 }

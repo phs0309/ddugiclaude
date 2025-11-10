@@ -84,26 +84,25 @@ class ApiClient {
         return data;
     }
 
-    // 토큰 검증
-    async verifyToken() {
+    // 간단한 토큰 검증 (Base64 디코딩)
+    verifyToken() {
         if (!this.token) {
             return { valid: false, error: '토큰이 없습니다' };
         }
 
         try {
-            const data = await this.request('/api/auth?action=verify-token', {
-                method: 'POST',
-                body: JSON.stringify({ token: this.token })
-            });
-
-            if (data.valid) {
-                localStorage.setItem('userInfo', JSON.stringify(data.user));
+            const payload = JSON.parse(atob(this.token));
+            
+            // 만료 시간 확인
+            if (payload.exp && Date.now() > payload.exp) {
+                this.logout();
+                return { valid: false, error: '토큰이 만료되었습니다' };
             }
 
-            return data;
+            return { valid: true, user: payload };
         } catch (error) {
             this.logout();
-            return { valid: false, error: error.message };
+            return { valid: false, error: '유효하지 않은 토큰입니다' };
         }
     }
 
