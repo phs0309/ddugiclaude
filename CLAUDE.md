@@ -9,21 +9,24 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Claude API 연동으로 자연스러운 부산 사투리 응답
 - Vercel 서버리스 배포 환경
 
-## Commands
+## Environment
 
-### Local Development
-- `npm start` - Start local Express server on port 3000
-- `npm run dev` - Start development server with nodemon
-- `PORT=3005 npm start` - Start server on custom port (useful when port 3000 is occupied)
+**🚨 CRITICAL: ALL WORK MUST TARGET VERCEL PRODUCTION ENVIRONMENT 🚨**
 
-### Data Management (Deprecated - files removed)
-- Data collector scripts have been removed from codebase
-- Only use existing `restaurants.json` data
+This project operates exclusively in Vercel serverless environment:
+- **NO LOCAL DEVELOPMENT**: All testing and development work should be done against Vercel deployment
+- **NO LOCAL SERVERS**: Do not run `npm start` or local Express servers
+- **VERCEL-ONLY TESTING**: Use deployed Vercel functions for all API testing
+- **PRODUCTION-FIRST**: All changes should be committed and pushed to trigger Vercel deployment
 
-### Deployment
-- Vercel 배포용 serverless function: `api/chat.js`
-- 환경변수: `claude_api_key` (기존 Vercel 설정에 맞춤)
-- Supabase 환경변수: `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`
+### Deployment Environment
+- **Platform**: Vercel serverless functions
+- **Region**: Seoul (icn1) for optimal latency
+- **Functions**: All APIs in `api/` directory are serverless functions
+- **Environment Variables**: 
+  - `claude_api_key`: Claude AI API key
+  - `NEXT_PUBLIC_SUPABASE_URL`: Supabase project URL  
+  - `SUPABASE_SERVICE_ROLE_KEY`: Supabase service key
 
 ## Architecture
 
@@ -55,10 +58,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **admin.html**: 관리자 도구
 - **settings.html**: 사용자 설정
 
-### Deployment Structure
-- **Local**: `server.js` - Express 서버
-- **Production**: Vercel serverless functions in `api/`
-- **Database**: Supabase PostgreSQL
+### Production Structure  
+- **Production Only**: Vercel serverless functions in `api/`
+- **Database**: Supabase PostgreSQL (Seoul region)
+- **Frontend**: Static files served from `public/`
 
 ## Key Features
 
@@ -112,8 +115,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Common Debugging Patterns
 - **Supabase Errors**: Check replica identity settings: `ALTER TABLE users REPLICA IDENTITY FULL;`
-- **API Format Mismatches**: Ensure frontend expects `restaurantIds` not `restaurants`
-- **Port Conflicts**: Use `PORT=3005 npm start` for local development
+- **API Format Mismatches**: Ensure frontend expects `restaurantIds` not `restaurants`  
+- **Vercel Deployment**: All testing must be done against live Vercel endpoints
 - **Authentication Issues**: Verify Base64 token parsing in API endpoints
 
 ### Work Progress Tracking
@@ -125,22 +128,22 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ```
 /
-├── restaurants.json          # 437개 맛집 데이터 (크롤링된 실제 데이터)
-├── restaurantAI.js          # AI 엔진 (로컬용)
-├── server.js                # 로컬 Express 서버
+├── restaurants.json          # 437개 맛집 데이터 (크롤링된 실제 데이터)  
 ├── R_data/                  # 원시 데이터 CSV 파일들
 ├── agents/                  # AI 추천 에이전트들
-├── api/
-│   ├── chat.js             # Claude AI 챗봇
-│   ├── basic-auth.js       # Google OAuth 인증
-│   ├── user-restaurants.js # 저장된 맛집 관리 (Supabase)
-│   └── [other APIs]        # 기타 서버리스 함수들
-├── public/
+├── api/ (PRODUCTION SERVERLESS FUNCTIONS)
+│   ├── chat.js             # Claude AI 챗봇 (Vercel Function)
+│   ├── basic-auth.js       # Google OAuth 인증 (Vercel Function)
+│   ├── user-restaurants.js # 저장된 맛집 관리 (Vercel Function + Supabase)
+│   └── [other APIs]        # 기타 Vercel 서버리스 함수들
+├── public/ (STATIC FRONTEND)
 │   ├── index.html          # 메인 맛집 추천 페이지
 │   ├── saved.html          # 저장된 맛집 페이지
 │   ├── login.html          # 로그인 페이지
 │   ├── api-client.js       # 프론트엔드 API 클라이언트
 │   ├── script.js           # 메인 프론트엔드 로직
 │   └── style.css           # 스타일시트
-└── vercel.json             # Vercel 배포 설정
+├── vercel.json             # Vercel 배포 설정 (Seoul region)
+├── server.js               # DEPRECATED - Not used in production
+└── restaurantAI.js         # DEPRECATED - Functionality moved to api/chat.js
 ```
