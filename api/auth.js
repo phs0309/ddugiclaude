@@ -1,7 +1,5 @@
 // 사용자 인증 API 엔드포인트
 import { sql } from '@vercel/postgres';
-import * as jwt from 'jsonwebtoken';
-import { randomBytes } from 'crypto';
 
 export default async function handler(req, res) {
     // CORS 설정
@@ -306,20 +304,17 @@ async function initializeDatabase() {
     }
 }
 
-// JWT 토큰 생성
+// 간단한 토큰 생성 (Base64 인코딩)
 function generateToken(user) {
-    const jwtSecret = process.env.JWT_SECRET || randomBytes(64).toString('hex');
     const payload = {
         userId: user.id,
         email: user.email,
         name: user.name,
-        provider: user.provider
+        provider: user.provider,
+        exp: Date.now() + (7 * 24 * 60 * 60 * 1000) // 7일 후 만료
     };
 
-    return jwt.sign(payload, jwtSecret, { 
-        expiresIn: '7d',
-        issuer: 'ddugi-busan-restaurant-app'
-    });
+    return Buffer.from(JSON.stringify(payload)).toString('base64');
 }
 
 // Google ID 토큰 디코딩
@@ -367,17 +362,14 @@ async function upsertUser(userData) {
 
 // 게스트 토큰 생성
 function generateGuestToken() {
-    const jwtSecret = process.env.JWT_SECRET || randomBytes(64).toString('hex');
     const guestPayload = {
         userId: null,
         email: 'guest@ddugi.app',
         name: '게스트 사용자',
         provider: 'guest',
-        isGuest: true
+        isGuest: true,
+        exp: Date.now() + (24 * 60 * 60 * 1000) // 1일 후 만료
     };
 
-    return jwt.sign(guestPayload, jwtSecret, { 
-        expiresIn: '1d',
-        issuer: 'ddugi-busan-restaurant-app'
-    });
+    return Buffer.from(JSON.stringify(guestPayload)).toString('base64');
 }
