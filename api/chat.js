@@ -333,11 +333,23 @@ module.exports = async function handler(req, res) {
     try {
         const restaurantAI = new RestaurantAI();
 
-        // 모든 메시지를 Claude API로 처리
+        // 위치 데이터 언급 여부 체크
+        const locationKeywords = [
+            '해운대', '광안리', '서면', '남포동', '중구', '동구', '서구', '영도', '부산진구', 
+            '동래구', '남구', '북구', '사상구', '금정구', '강서구', '연제구', '수영구', '사하구',
+            '기장', '양산', '온천장', '센텀', '자갈치', '국제시장', '태종대', '용두산', 
+            '부평', '덕천', '화명', '구포', '사직', '연산', '거제', '교대', '부경대', '동아대'
+        ];
+        
+        const hasLocationMention = locationKeywords.some(keyword => 
+            message.toLowerCase().includes(keyword)
+        );
 
-
-        // AI 맛집 추천
-        const recommendations = restaurantAI.recommendRestaurants(message);
+        // 위치 언급이 있을 때만 맛집 추천
+        let recommendations = { restaurants: [], analysis: {}, total: 0 };
+        if (hasLocationMention) {
+            recommendations = restaurantAI.recommendRestaurants(message);
+        }
         
         // 항상 Claude AI로 응답 생성
         const claudePrompt = generateClaudePrompt(message, recommendations.restaurants);
@@ -346,13 +358,14 @@ module.exports = async function handler(req, res) {
         // AI 응답이 없으면 폴백 응답 사용
         const finalResponse = aiResponse || generateAIResponse(message, recommendations);
 
-        console.log(`🤖 추천 맛집: ${recommendations.restaurants.length}개`);
+        console.log(`🤖 위치 언급: ${hasLocationMention}, 추천 맛집: ${recommendations.restaurants.length}개`);
 
+        // 위치 언급이 있을 때만 맛집 카드 전송
         res.json({
             message: finalResponse,
-            restaurants: recommendations.restaurants,
-            analysis: recommendations.analysis,
-            type: 'recommendation',
+            restaurants: hasLocationMention ? recommendations.restaurants : [],
+            analysis: hasLocationMention ? recommendations.analysis : {},
+            type: hasLocationMention ? 'recommendation' : 'chat',
             aiGenerated: !!aiResponse
         });
 
