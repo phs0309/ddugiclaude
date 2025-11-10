@@ -167,6 +167,8 @@ async function callClaudeAPI(prompt) {
     }
 
     console.log('🤖 Claude API 호출 시작...');
+    console.log('🔑 API 키 확인:', apiKey ? '설정됨' : '설정되지 않음');
+    console.log('🔑 API 키 길이:', apiKey ? apiKey.length : '없음');
     
     try {
         const response = await fetch('https://api.anthropic.com/v1/messages', {
