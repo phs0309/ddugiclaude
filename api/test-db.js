@@ -35,9 +35,29 @@ module.exports = async function handler(req, res) {
 
         console.log('🔗 데이터베이스 연결 시도...');
         
-        // 간단한 쿼리 테스트
-        const result = await sql`SELECT 1 as test`;
-        console.log('✅ 데이터베이스 연결 성공:', result);
+        // 재시도 로직 추가
+        let result;
+        let lastError;
+        
+        for (let attempt = 1; attempt <= 3; attempt++) {
+            try {
+                console.log(`🔗 연결 시도 ${attempt}/3`);
+                result = await sql`SELECT 1 as test, NOW() as current_time`;
+                console.log('✅ 데이터베이스 연결 성공:', result);
+                break;
+            } catch (retryError) {
+                console.log(`❌ 시도 ${attempt} 실패:`, retryError.message);
+                lastError = retryError;
+                if (attempt < 3) {
+                    console.log('⏳ 2초 후 재시도...');
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                }
+            }
+        }
+        
+        if (!result) {
+            throw lastError;
+        }
 
         return res.status(200).json({
             success: true,

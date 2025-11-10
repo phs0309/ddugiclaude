@@ -1,5 +1,10 @@
 // 사용자 저장 맛집 관리 API
-const { sql } = require('@vercel/postgres');
+const { createClient } = require('@supabase/supabase-js');
+
+// Supabase 클라이언트 초기화
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 module.exports = async function handler(req, res) {
     console.log('🍽️ User Restaurants API 시작:', { method: req.method });
@@ -52,16 +57,19 @@ module.exports = async function handler(req, res) {
         }
 
         if (req.method === 'GET') {
-            // 저장된 맛집 조회
+            // 저장된 맛집 조회 (Supabase)
             try {
-                const result = await sql`
-                    SELECT restaurant_data, saved_at 
-                    FROM user_restaurants 
-                    WHERE user_id = ${user.userId || user.email}
-                    ORDER BY saved_at DESC
-                `;
+                const { data: results, error } = await supabase
+                    .from('user_restaurants')
+                    .select('restaurant_data, saved_at')
+                    .eq('user_id', user.userId || user.email)
+                    .order('saved_at', { ascending: false });
 
-                const restaurants = result.rows.map(row => ({
+                if (error) {
+                    throw error;
+                }
+
+                const restaurants = results.map(row => ({
                     ...row.restaurant_data,
                     savedAt: row.saved_at
                 }));
@@ -94,30 +102,41 @@ module.exports = async function handler(req, res) {
             }
 
             try {
-                // 중복 체크
-                const existing = await sql`
-                    SELECT id FROM user_restaurants 
-                    WHERE user_id = ${user.userId || user.email} 
-                    AND restaurant_data->>'id' = ${restaurant.id}
-                `;
+                // 중복 체크 (Supabase)
+                const { data: existing, error: checkError } = await supabase
+                    .from('user_restaurants')
+                    .select('id')
+                    .eq('user_id', user.userId || user.email)
+                    .eq('restaurant_data->id', restaurant.id);
 
-                if (existing.rows.length > 0) {
+                if (checkError) {
+                    throw checkError;
+                }
+
+                if (existing && existing.length > 0) {
                     return res.status(400).json({
                         error: '이미 저장된 맛집입니다',
                         code: 'ALREADY_SAVED'
                     });
                 }
 
-                // 저장
+                // 저장 (Supabase)
                 const restaurantData = {
                     ...restaurant,
                     savedAt: new Date().toISOString()
                 };
 
-                await sql`
-                    INSERT INTO user_restaurants (user_id, restaurant_data, saved_at)
-                    VALUES (${user.userId || user.email}, ${JSON.stringify(restaurantData)}, NOW())
-                `;
+                const { error: insertError } = await supabase
+                    .from('user_restaurants')
+                    .insert([{
+                        user_id: user.userId || user.email,
+                        restaurant_data: restaurantData,
+                        saved_at: new Date().toISOString()
+                    }]);
+
+                if (insertError) {
+                    throw insertError;
+                }
 
                 return res.status(200).json({
                     success: true,
@@ -147,18 +166,33 @@ module.exports = async function handler(req, res) {
             }
 
             try {
-                const result = await sql`
-                    DELETE FROM user_restaurants 
-                    WHERE user_id = ${user.userId || user.email} 
-                    AND restaurant_data->>'id' = ${restaurantId}
-                    RETURNING restaurant_data->>'name' as name
-                `;
+                // 삭제 전 존재 확인 (Supabase)
+                const { data: existing, error: findError } = await supabase
+                    .from('user_restaurants')
+                    .select('restaurant_data')
+                    .eq('user_id', user.userId || user.email)
+                    .eq('restaurant_data->id', restaurantId);
 
-                if (result.rows.length === 0) {
+                if (findError) {
+                    throw findError;
+                }
+
+                if (!existing || existing.length === 0) {
                     return res.status(404).json({
                         error: '저장된 맛집을 찾을 수 없습니다',
                         code: 'NOT_FOUND'
                     });
+                }
+
+                // 삭제 (Supabase)
+                const { error: deleteError } = await supabase
+                    .from('user_restaurants')
+                    .delete()
+                    .eq('user_id', user.userId || user.email)
+                    .eq('restaurant_data->id', restaurantId);
+
+                if (deleteError) {
+                    throw deleteError;
                 }
 
                 return res.status(200).json({
@@ -204,67 +238,54 @@ module.exports = async function handler(req, res) {
     }
 }
 
-// 데이터베이스 테이블 초기화
+// 데이터베이스 테이블 초기화 (Supabase)
 async function initializeTables() {
     try {
         // 환경변수 확인 및 로깅
-        console.log('🔍 환경변수 확인:', {
-            POSTGRES_URL: !!process.env.POSTGRES_URL,
-            DATABASE_URL: !!process.env.DATABASE_URL,  
-            POSTGRES_PRISMA_URL: !!process.env.POSTGRES_PRISMA_URL,
-            POSTGRES_URL_NON_POOLING: !!process.env.POSTGRES_URL_NON_POOLING
+        console.log('🔍 Supabase 환경변수 확인:', {
+            SUPABASE_URL: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+            SUPABASE_SERVICE_KEY: !!process.env.SUPABASE_SERVICE_ROLE_KEY
         });
         
-        if (!process.env.POSTGRES_URL && !process.env.DATABASE_URL && !process.env.POSTGRES_PRISMA_URL) {
-            throw new Error('PostgreSQL 환경변수가 설정되지 않았습니다');
+        if (!supabaseUrl || !supabaseKey) {
+            throw new Error('Supabase 환경변수가 설정되지 않았습니다');
         }
 
-        console.log('📊 테이블 생성 시작...');
+        console.log('📊 Supabase 테이블 생성 시작...');
         
         // 사용자 테이블 생성 (존재하지 않으면)
-        await sql`
-            CREATE TABLE IF NOT EXISTS users (
-                id SERIAL PRIMARY KEY,
-                email VARCHAR(255) UNIQUE NOT NULL,
-                name VARCHAR(255),
-                profile_picture TEXT,
-                provider VARCHAR(50) DEFAULT 'google',
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        `;
-        console.log('✅ users 테이블 준비');
+        const { error: usersError } = await supabase.rpc('create_users_table_if_not_exists');
+        if (usersError && !usersError.message.includes('already exists')) {
+            // 직접 SQL 실행 방식으로 폴백
+            const { error: directUsersError } = await supabase
+                .from('users')
+                .select('id')
+                .limit(1);
+            
+            if (directUsersError && directUsersError.code === 'PGRST116') {
+                console.log('✅ users 테이블이 필요하지만 자동 생성은 제한됨');
+            }
+        }
+        console.log('✅ users 테이블 확인 완료');
 
-        // 사용자 맛집 테이블 생성 (존재하지 않으면)
-        await sql`
-            CREATE TABLE IF NOT EXISTS user_restaurants (
-                id SERIAL PRIMARY KEY,
-                user_id VARCHAR(255) NOT NULL,
-                restaurant_data JSONB NOT NULL,
-                saved_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                UNIQUE(user_id, restaurant_data->>'id')
-            )
-        `;
-        console.log('✅ user_restaurants 테이블 준비');
-
-        // 인덱스 생성 (성능 향상)
-        await sql`
-            CREATE INDEX IF NOT EXISTS idx_user_restaurants_user_id 
-            ON user_restaurants(user_id)
-        `;
-
-        await sql`
-            CREATE INDEX IF NOT EXISTS idx_user_restaurants_restaurant_id 
-            ON user_restaurants USING GIN ((restaurant_data->>'id'))
-        `;
-        console.log('✅ 인덱스 준비 완료');
+        // 사용자 맛집 테이블 확인
+        const { error: restaurantsError } = await supabase
+            .from('user_restaurants')
+            .select('id')
+            .limit(1);
+            
+        if (restaurantsError && restaurantsError.code === 'PGRST116') {
+            console.log('⚠️ user_restaurants 테이블이 존재하지 않습니다');
+            throw new Error('필요한 테이블이 존재하지 않습니다. Supabase 대시보드에서 테이블을 생성해주세요.');
+        }
+        console.log('✅ user_restaurants 테이블 확인 완료');
 
     } catch (error) {
-        console.error('❌ 테이블 초기화 실패:', {
+        console.error('❌ Supabase 테이블 초기화 실패:', {
             name: error.name,
             message: error.message,
             code: error.code
         });
-        throw new Error(`데이터베이스 초기화 실패: ${error.message}`);
+        throw new Error(`Supabase 초기화 실패: ${error.message}`);
     }
 }

@@ -13,6 +13,7 @@
     "data-report": "node restaurantDataManager.js report"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.80.0",
     "@vercel/postgres": "^0.10.0",
     "axios": "^1.6.2",
     "cheerio": "^1.0.0-rc.12",

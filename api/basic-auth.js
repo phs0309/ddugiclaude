@@ -1,5 +1,10 @@
-// 기본 인증 API (데이터베이스 연동)
-const { sql } = require('@vercel/postgres');
+// 기본 인증 API (Supabase 연동)
+const { createClient } = require('@supabase/supabase-js');
+
+// Supabase 클라이언트 초기화
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 module.exports = async function handler(req, res) {
     console.log('🚀 Simple Basic Auth API 시작:', { method: req.method, action: req.query?.action });
@@ -71,36 +76,58 @@ module.exports = async function handler(req, res) {
                     throw new Error('Google 토큰에 필수 사용자 정보가 없습니다');
                 }
 
-                // 데이터베이스에 사용자 정보 저장/업데이트 (안전하게)
+                // Supabase에 사용자 정보 저장/업데이트 (안전하게)
                 try {
-                    console.log('🔍 데이터베이스 연결 시도...');
-                    await initializeTables();
+                    console.log('🔍 Supabase 연결 시도...');
                     
-                    // 사용자 확인 및 저장
-                    const existingUser = await sql`
-                        SELECT id, email FROM users WHERE email = ${jsonPayload.email}
-                    `;
+                    // 사용자 확인
+                    const { data: existingUser, error: findError } = await supabase
+                        .from('users')
+                        .select('id, email')
+                        .eq('email', jsonPayload.email)
+                        .single();
 
-                    if (existingUser.rows.length === 0) {
-                        await sql`
-                            INSERT INTO users (email, name, profile_picture, provider)
-                            VALUES (${jsonPayload.email}, ${jsonPayload.name}, ${jsonPayload.picture}, 'google')
-                        `;
-                        console.log('✅ 새 사용자 생성:', jsonPayload.email);
+                    if (findError && findError.code !== 'PGRST116') {
+                        console.log('⚠️ 사용자 조회 오류:', findError);
+                    }
+
+                    if (!existingUser) {
+                        // 새 사용자 생성
+                        const { error: insertError } = await supabase
+                            .from('users')
+                            .insert([{
+                                email: jsonPayload.email,
+                                name: jsonPayload.name,
+                                profile_picture: jsonPayload.picture,
+                                provider: 'google'
+                            }]);
+
+                        if (insertError) {
+                            console.log('⚠️ 사용자 생성 오류:', insertError);
+                        } else {
+                            console.log('✅ 새 사용자 생성:', jsonPayload.email);
+                        }
                     } else {
-                        await sql`
-                            UPDATE users 
-                            SET name = ${jsonPayload.name}, 
-                                profile_picture = ${jsonPayload.picture},
-                                updated_at = CURRENT_TIMESTAMP
-                            WHERE email = ${jsonPayload.email}
-                        `;
-                        console.log('✅ 기존 사용자 정보 업데이트:', jsonPayload.email);
+                        // 기존 사용자 정보 업데이트
+                        const { error: updateError } = await supabase
+                            .from('users')
+                            .update({
+                                name: jsonPayload.name,
+                                profile_picture: jsonPayload.picture,
+                                updated_at: new Date().toISOString()
+                            })
+                            .eq('email', jsonPayload.email);
+
+                        if (updateError) {
+                            console.log('⚠️ 사용자 업데이트 오류:', updateError);
+                        } else {
+                            console.log('✅ 기존 사용자 정보 업데이트:', jsonPayload.email);
+                        }
                     }
                     
-                    console.log('✅ 데이터베이스 저장 성공');
+                    console.log('✅ Supabase 저장 처리 완료');
                 } catch (dbError) {
-                    console.error('⚠️ 데이터베이스 저장 실패 (로그인은 계속 진행):', dbError);
+                    console.error('⚠️ Supabase 저장 실패 (로그인은 계속 진행):', dbError);
                     // 데이터베이스 오류가 있어도 로그인은 계속 진행
                 }
 
@@ -156,25 +183,4 @@ module.exports = async function handler(req, res) {
     }
 }
 
-// 데이터베이스 테이블 초기화
-async function initializeTables() {
-    try {
-        // 사용자 테이블 생성 (존재하지 않으면)
-        await sql`
-            CREATE TABLE IF NOT EXISTS users (
-                id SERIAL PRIMARY KEY,
-                email VARCHAR(255) UNIQUE NOT NULL,
-                name VARCHAR(255),
-                profile_picture TEXT,
-                provider VARCHAR(50) DEFAULT 'google',
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        `;
-
-        console.log('✅ 사용자 테이블 초기화 완료');
-    } catch (error) {
-        console.error('❌ 테이블 초기화 오류:', error);
-        throw error;
-    }
-}
+// Supabase에서는 테이블 초기화가 별도로 필요 없음
