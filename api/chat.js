@@ -161,10 +161,12 @@ async function callClaudeAPI(prompt) {
     const apiKey = process.env.claude_api_key;
     
     if (!apiKey) {
-        console.log('⚠️ Claude API 키가 없어서 AI 응답 생략');
+        console.log('❌ Claude API 키가 설정되지 않음');
         return null;
     }
 
+    console.log('🤖 Claude API 호출 시작...');
+    
     try {
         const response = await fetch('https://api.anthropic.com/v1/messages', {
             method: 'POST',
@@ -183,16 +185,27 @@ async function callClaudeAPI(prompt) {
             })
         });
 
+        console.log(`📡 Claude API 응답: ${response.status} ${response.statusText}`);
+
         if (!response.ok) {
-            console.log('⚠️ Claude API 오류, 기본 응답 사용');
+            const errorText = await response.text();
+            console.log('❌ Claude API 오류 상세:', errorText);
             return null;
         }
 
         const data = await response.json();
-        return data.content[0].text;
+        const aiResponse = data.content[0]?.text;
+        
+        if (aiResponse) {
+            console.log('✅ Claude AI 응답 성공');
+            return aiResponse;
+        } else {
+            console.log('❌ Claude API 응답 형식 오류:', data);
+            return null;
+        }
 
     } catch (error) {
-        console.log('⚠️ Claude API 호출 실패:', error.message);
+        console.log('❌ Claude API 호출 실패:', error.message);
         return null;
     }
 }
@@ -202,10 +215,10 @@ function generateAIResponse(userMessage, recommendations) {
     const { restaurants } = recommendations;
     
     if (restaurants.length === 0) {
-        return "죄송해요, 잠시 문제가 있네요. 다시 말해보세요! 😅";
+        return "아이구, 조건에 맞는 맛집을 못 찾겠다이가... 😅 다른 지역이나 음식으로 다시 말해봐라!";
     }
 
-    return "맛집 추천 완료! 아래 카드를 확인해보세요! 😊";
+    return `마! 좋은 맛집들 ${restaurants.length}곳 찾았다이가! 🍽️ 아래 카드에서 자세히 봐라!`;
 }
 
 // Claude AI 프롬프트 생성
