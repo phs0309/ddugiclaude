@@ -210,10 +210,6 @@ async function callClaudeAPI(prompt) {
     }
 }
 
-// 폴백 응답 (Claude API 실패시에만 사용)
-function generateAIResponse(userMessage, recommendations) {
-    return "죄송합니다. AI 서버 연결에 문제가 있습니다. 잠시 후 다시 시도해주세요. 🤖⚠️";
-}
 
 // Claude AI 프롬프트 생성
 function generateClaudePrompt(userMessage, restaurants) {
@@ -302,18 +298,25 @@ module.exports = async function handler(req, res) {
         const claudePrompt = generateClaudePrompt(message, recommendations.restaurants);
         let aiResponse = await callClaudeAPI(claudePrompt);
 
-        // AI 응답이 없으면 폴백 응답 사용
-        const finalResponse = aiResponse || generateAIResponse(message, recommendations);
-
         console.log(`🤖 위치 언급: ${hasLocationMention}, 추천 맛집: ${recommendations.restaurants.length}개`);
+
+        // AI 응답이 없으면 에러 응답
+        if (!aiResponse) {
+            return res.status(500).json({
+                message: "AI 서버 연결에 문제가 있습니다. 잠시 후 다시 시도해주세요.",
+                restaurants: [],
+                type: 'error',
+                aiGenerated: false
+            });
+        }
 
         // 위치 언급이 있을 때만 맛집 카드 전송
         res.json({
-            message: finalResponse,
+            message: aiResponse,
             restaurants: hasLocationMention ? recommendations.restaurants : [],
             analysis: hasLocationMention ? recommendations.analysis : {},
             type: hasLocationMention ? 'recommendation' : 'chat',
-            aiGenerated: !!aiResponse
+            aiGenerated: true
         });
 
     } catch (error) {
