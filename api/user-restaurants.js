@@ -102,12 +102,12 @@ module.exports = async function handler(req, res) {
             }
 
             try {
-                // 중복 체크 (Supabase)
+                // 중복 체크 (Supabase) - JSONB 쿼리 수정
                 const { data: existing, error: checkError } = await supabase
                     .from('user_restaurants')
                     .select('id')
                     .eq('user_id', user.userId || user.email)
-                    .eq('restaurant_data->id', restaurant.id);
+                    .eq('restaurant_data->>id', restaurant.id);
 
                 if (checkError) {
                     throw checkError;
@@ -120,17 +120,23 @@ module.exports = async function handler(req, res) {
                     });
                 }
 
-                // 저장 (Supabase)
+                // 저장 (Supabase) - JSONB로 직접 저장
                 const restaurantData = {
                     ...restaurant,
                     savedAt: new Date().toISOString()
                 };
 
+                console.log('📝 저장할 데이터:', {
+                    user_id: user.userId || user.email,
+                    restaurant_data: restaurantData,
+                    restaurant_id: restaurant.id
+                });
+
                 const { error: insertError } = await supabase
                     .from('user_restaurants')
                     .insert([{
                         user_id: user.userId || user.email,
-                        restaurant_data: restaurantData,
+                        restaurant_data: restaurantData,  // JSON 객체 그대로 전달
                         saved_at: new Date().toISOString()
                     }]);
 
@@ -166,12 +172,12 @@ module.exports = async function handler(req, res) {
             }
 
             try {
-                // 삭제 전 존재 확인 (Supabase)
+                // 삭제 전 존재 확인 (Supabase) - JSONB 쿼리 수정
                 const { data: existing, error: findError } = await supabase
                     .from('user_restaurants')
                     .select('restaurant_data')
                     .eq('user_id', user.userId || user.email)
-                    .eq('restaurant_data->id', restaurantId);
+                    .eq('restaurant_data->>id', restaurantId);
 
                 if (findError) {
                     throw findError;
@@ -184,12 +190,12 @@ module.exports = async function handler(req, res) {
                     });
                 }
 
-                // 삭제 (Supabase)
+                // 삭제 (Supabase) - JSONB 쿼리 수정
                 const { error: deleteError } = await supabase
                     .from('user_restaurants')
                     .delete()
                     .eq('user_id', user.userId || user.email)
-                    .eq('restaurant_data->id', restaurantId);
+                    .eq('restaurant_data->>id', restaurantId);
 
                 if (deleteError) {
                     throw deleteError;
