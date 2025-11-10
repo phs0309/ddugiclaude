@@ -309,10 +309,11 @@ module.exports = async function handler(req, res) {
 
         console.log(`🤖 위치 언급: ${hasLocationMention}, 추천 맛집: ${recommendations.restaurants.length}개`);
 
-        // AI 응답이 없으면 에러 응답
+        // AI 응답이 없으면 에러 반환
         if (!aiResponse) {
+            console.log('❌ Claude API 실패 - 에러 반환');
             return res.status(500).json({
-                message: "AI 서버 연결에 문제가 있습니다. 잠시 후 다시 시도해주세요.",
+                message: "Claude AI 서버 연결 실패",
                 restaurants: [],
                 type: 'error',
                 aiGenerated: false
