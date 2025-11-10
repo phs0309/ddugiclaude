@@ -1,8 +1,7 @@
-// 사용자 저장 맛집 관리 API (임시 - 로컬스토리지 백엔드 에뮬레이션)
+// 사용자 저장 맛집 관리 API
+import { sql } from '@vercel/postgres';
 
 export default async function handler(req, res) {
-    console.log('🍽️ User Restaurants API (Simple) 시작:', { method: req.method });
-    
     // CORS 설정
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
@@ -36,22 +35,53 @@ export default async function handler(req, res) {
             });
         }
 
-        if (req.method === 'GET') {
-            // 저장된 맛집 조회 (임시로 빈 배열 반환)
-            console.log('📋 저장된 맛집 조회 요청 (데이터베이스 미연결 상태)');
-            
-            return res.status(200).json({
-                success: true,
-                restaurants: [], // 임시로 빈 배열
-                count: 0,
-                isGuest: false,
-                message: '데이터베이스 연결 문제로 저장된 맛집을 불러올 수 없습니다. 로컬스토리지를 사용해주세요.',
-                fallback: true,
-                note: 'Google 로그인은 성공했지만 데이터베이스가 연결되지 않아 저장 기능을 사용할 수 없습니다'
+        // 데이터베이스 테이블 초기화 (존재하지 않으면 생성)
+        try {
+            await initializeTables();
+        } catch (dbError) {
+            console.error('데이터베이스 초기화 실패:', dbError);
+            // 데이터베이스 연결 실패
+            return res.status(503).json({
+                error: '데이터베이스 연결에 실패했습니다',
+                code: 'DATABASE_CONNECTION_FAILED',
+                message: '잠시 후 다시 시도해주세요. 문제가 지속되면 관리자에게 문의해주세요.',
+                details: process.env.NODE_ENV === 'development' ? dbError.message : undefined
             });
+        }
+
+        if (req.method === 'GET') {
+            // 저장된 맛집 조회
+            try {
+                const result = await sql`
+                    SELECT restaurant_data, saved_at 
+                    FROM user_restaurants 
+                    WHERE user_id = ${user.userId || user.email}
+                    ORDER BY saved_at DESC
+                `;
+
+                const restaurants = result.rows.map(row => ({
+                    ...row.restaurant_data,
+                    savedAt: row.saved_at
+                }));
+
+                return res.status(200).json({
+                    success: true,
+                    restaurants: restaurants,
+                    count: restaurants.length,
+                    isGuest: false
+                });
+            } catch (dbError) {
+                console.error('저장된 맛집 조회 실패:', dbError);
+                return res.status(500).json({
+                    error: '저장된 맛집 조회 중 오류가 발생했습니다',
+                    code: 'DATABASE_QUERY_FAILED',
+                    message: '잠시 후 다시 시도해주세요',
+                    details: process.env.NODE_ENV === 'development' ? dbError.message : undefined
+                });
+            }
 
         } else if (req.method === 'POST') {
-            // 맛집 저장 (임시로 성공 응답만)
+            // 맛집 저장
             const { restaurant } = req.body;
 
             if (!restaurant || !restaurant.id) {
@@ -61,22 +91,50 @@ export default async function handler(req, res) {
                 });
             }
 
-            console.log('💾 맛집 저장 시도 (데이터베이스 미연결 상태):', restaurant.name);
+            try {
+                // 중복 체크
+                const existing = await sql`
+                    SELECT id FROM user_restaurants 
+                    WHERE user_id = ${user.userId || user.email} 
+                    AND restaurant_data->>'id' = ${restaurant.id}
+                `;
 
-            // 임시로 성공 응답
-            return res.status(200).json({
-                success: true,
-                message: `"${restaurant.name}"을(를) 저장했습니다 (임시 - 실제로는 저장되지 않음)`,
-                restaurant: {
+                if (existing.rows.length > 0) {
+                    return res.status(400).json({
+                        error: '이미 저장된 맛집입니다',
+                        code: 'ALREADY_SAVED'
+                    });
+                }
+
+                // 저장
+                const restaurantData = {
                     ...restaurant,
                     savedAt: new Date().toISOString()
-                },
-                isGuest: false,
-                note: '데이터베이스 연결 문제로 실제로는 저장되지 않습니다. 곧 수정예정입니다.'
-            });
+                };
+
+                await sql`
+                    INSERT INTO user_restaurants (user_id, restaurant_data, saved_at)
+                    VALUES (${user.userId || user.email}, ${JSON.stringify(restaurantData)}, NOW())
+                `;
+
+                return res.status(200).json({
+                    success: true,
+                    message: `"${restaurant.name}"을(를) 저장했습니다`,
+                    restaurant: restaurantData,
+                    isGuest: false
+                });
+            } catch (dbError) {
+                console.error('맛집 저장 실패:', dbError);
+                return res.status(500).json({
+                    error: '맛집 저장 중 오류가 발생했습니다',
+                    code: 'DATABASE_INSERT_FAILED',
+                    message: '잠시 후 다시 시도해주세요',
+                    details: process.env.NODE_ENV === 'development' ? dbError.message : undefined
+                });
+            }
 
         } else if (req.method === 'DELETE') {
-            // 맛집 저장 해제 (임시로 성공 응답만)
+            // 맛집 저장 해제
             const { restaurantId } = req.query;
 
             if (!restaurantId) {
@@ -86,15 +144,36 @@ export default async function handler(req, res) {
                 });
             }
 
-            console.log('🗑️ 맛집 삭제 시도 (데이터베이스 미연결 상태):', restaurantId);
+            try {
+                const result = await sql`
+                    DELETE FROM user_restaurants 
+                    WHERE user_id = ${user.userId || user.email} 
+                    AND restaurant_data->>'id' = ${restaurantId}
+                    RETURNING restaurant_data->>'name' as name
+                `;
 
-            return res.status(200).json({
-                success: true,
-                message: '맛집을 저장 목록에서 제거했습니다 (임시)',
-                restaurantId: restaurantId,
-                isGuest: false,
-                note: '데이터베이스 연결 문제로 실제로는 삭제되지 않습니다.'
-            });
+                if (result.rows.length === 0) {
+                    return res.status(404).json({
+                        error: '저장된 맛집을 찾을 수 없습니다',
+                        code: 'NOT_FOUND'
+                    });
+                }
+
+                return res.status(200).json({
+                    success: true,
+                    message: '맛집을 저장 목록에서 제거했습니다',
+                    restaurantId: restaurantId,
+                    isGuest: false
+                });
+            } catch (dbError) {
+                console.error('맛집 삭제 실패:', dbError);
+                return res.status(500).json({
+                    error: '맛집 삭제 중 오류가 발생했습니다',
+                    code: 'DATABASE_DELETE_FAILED',
+                    message: '잠시 후 다시 시도해주세요',
+                    details: process.env.NODE_ENV === 'development' ? dbError.message : undefined
+                });
+            }
 
         } else {
             return res.status(405).json({
@@ -104,12 +183,68 @@ export default async function handler(req, res) {
         }
 
     } catch (error) {
-        console.error('❌ User Restaurants API 오류:', error);
+        console.error('사용자 맛집 API 오류:', error);
         
+        // 데이터베이스 연결 오류인 경우 게스트 모드로 폴백
+        if (error.message && error.message.includes('connect')) {
+            return res.status(200).json({
+                isGuest: true,
+                restaurants: [],
+                count: 0,
+                fallback: true,
+                message: '데이터베이스 연결 실패, 로컬스토리지를 사용해주세요'
+            });
+        }
+
         return res.status(500).json({
             error: '서버 오류가 발생했습니다',
             code: 'INTERNAL_SERVER_ERROR',
             details: process.env.NODE_ENV === 'development' ? error.message : undefined
         });
+    }
+}
+
+// 데이터베이스 테이블 초기화
+async function initializeTables() {
+    try {
+        // 사용자 테이블 생성 (존재하지 않으면)
+        await sql`
+            CREATE TABLE IF NOT EXISTS users (
+                id SERIAL PRIMARY KEY,
+                email VARCHAR(255) UNIQUE NOT NULL,
+                name VARCHAR(255),
+                profile_picture TEXT,
+                provider VARCHAR(50) DEFAULT 'google',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `;
+
+        // 사용자 맛집 테이블 생성 (존재하지 않으면)
+        await sql`
+            CREATE TABLE IF NOT EXISTS user_restaurants (
+                id SERIAL PRIMARY KEY,
+                user_id VARCHAR(255) NOT NULL,
+                restaurant_data JSONB NOT NULL,
+                saved_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE(user_id, restaurant_data->>'id')
+            )
+        `;
+
+        // 인덱스 생성 (성능 향상)
+        await sql`
+            CREATE INDEX IF NOT EXISTS idx_user_restaurants_user_id 
+            ON user_restaurants(user_id)
+        `;
+
+        await sql`
+            CREATE INDEX IF NOT EXISTS idx_user_restaurants_restaurant_id 
+            ON user_restaurants USING GIN ((restaurant_data->>'id'))
+        `;
+
+        console.log('데이터베이스 테이블 초기화 완료');
+    } catch (error) {
+        console.error('테이블 초기화 오류:', error);
+        throw error;
     }
 }
