@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>뚜기 설정</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .settings-container {
+            min-height: 100vh;
+            background: #FFFFFF;
+            padding: 0;
+        }
+        
+        .settings-header {
+            background: #FFFFFF;
+            border-bottom: 1px solid #E5E5E5;
+            padding: 20px 24px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .settings-back-btn {
+            background: #F5F5F5;
+            border: none;
+            color: #2F2F2F;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        
+        .settings-back-btn:hover {
+            background: #E5E5E5;
+        }
+        
+        .settings-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #2F2F2F;
+        }
+        
+        .settings-content {
+            padding: 0;
+        }
+        
+        .settings-section {
+            border-bottom: 1px solid #F0F0F0;
+        }
+        
+        .section-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #8E8E8E;
+            padding: 20px 24px 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .settings-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 24px;
+            background: #FFFFFF;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        
+        .settings-item:hover {
+            background: #F8F8F8;
+        }
+        
+        .settings-item:active {
+            background: #F0F0F0;
+        }
+        
+        .item-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .item-icon {
+            width: 24px;
+            color: #8E8E8E;
+            font-size: 18px;
+            display: flex;
+            justify-content: center;
+        }
+        
+        .item-content {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .item-title {
+            font-size: 16px;
+            font-weight: 500;
+            color: #2F2F2F;
+            margin-bottom: 2px;
+        }
+        
+        .item-description {
+            font-size: 14px;
+            color: #8E8E8E;
+        }
+        
+        .item-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .item-value {
+            font-size: 14px;
+            color: #8E8E8E;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 28px;
+            background: #E5E5E5;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        
+        .toggle-switch.active {
+            background: #FF6B35;
+        }
+        
+        .toggle-knob {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 22px;
+            height: 22px;
+            background: #FFFFFF;
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .toggle-switch.active .toggle-knob {
+            transform: translateX(22px);
+        }
+        
+        .arrow-icon {
+            color: #C0C0C0;
+            font-size: 14px;
+        }
+        
+        .user-profile {
+            background: linear-gradient(135deg, #FF6B35 0%, #FFD166 100%);
+            padding: 24px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .profile-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+        }
+        
+        .profile-info h3 {
+            color: #FFFFFF;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .profile-info p {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+        }
+        
+        .danger-item .item-title {
+            color: #FF4757;
+        }
+        
+        .danger-item .item-icon {
+            color: #FF4757;
+        }
+        
+        @media (max-width: 768px) {
+            .settings-header {
+                padding: 16px 20px;
+            }
+            
+            .settings-item {
+                padding: 14px 20px;
+            }
+            
+            .section-title {
+                padding: 16px 20px 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="settings-container">
+        <div class="settings-header">
+            <button class="settings-back-btn" onclick="goBack()" aria-label="뒤로가기">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <h1 class="settings-title">설정</h1>
+        </div>
+        
+        <!-- 사용자 프로필 -->
+        <div class="user-profile" id="userProfile">
+            <div class="profile-avatar">🐧</div>
+            <div class="profile-info">
+                <h3 id="userName">게스트</h3>
+                <p id="userEmail">guest@ddugi.app</p>
+            </div>
+        </div>
+        
+        <div class="settings-content">
+            <!-- 계정 설정 -->
+            <div class="settings-section">
+                <div class="section-title">계정</div>
+                <div class="settings-item" onclick="editProfile()">
+                    <div class="item-left">
+                        <div class="item-icon">
+                            <i class="fas fa-user-edit"></i>
+                        </div>
+                        <div class="item-content">
+                            <div class="item-title">프로필 편집</div>
+                            <div class="item-description">이름과 프로필 사진 변경</div>
+                        </div>
+                    </div>
+                    <div class="item-right">
+                        <i class="fas fa-chevron-right arrow-icon"></i>
+                    </div>
+                </div>
+                
+                <div class="settings-item" onclick="changePassword()">
+                    <div class="item-left">
+                        <div class="item-icon">
+                            <i class="fas fa-lock"></i>
+                        </div>
+                        <div class="item-content">
+                            <div class="item-title">비밀번호 변경</div>
+                            <div class="item-description">계정 보안을 위해 주기적으로 변경하세요</div>
+                        </div>
+                    </div>
+                    <div class="item-right">
+                        <i class="fas fa-chevron-right arrow-icon"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 앱 설정 -->
+            <div class="settings-section">
+                <div class="section-title">앱 설정</div>
+                <div class="settings-item">
+                    <div class="item-left">
+                        <div class="item-icon">
+                            <i class="fas fa-bell"></i>
+                        </div>
+                        <div class="item-content">
+                            <div class="item-title">알림</div>
+                            <div class="item-description">새로운 맛집 알림 받기</div>
+                        </div>
+                    </div>
+                    <div class="item-right">
+                        <div class="toggle-switch active" onclick="toggleNotification(this)">
+                            <div class="toggle-knob"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="settings-item">
+                    <div class="item-left">
+                        <div class="item-icon">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                        <div class="item-content">
+                            <div class="item-title">위치 서비스</div>
+                            <div class="item-description">근처 맛집 추천을 위해 사용</div>
+                        </div>
+                    </div>
+                    <div class="item-right">
+                        <div class="toggle-switch" onclick="toggleLocation(this)">
+                            <div class="toggle-knob"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="settings-item" onclick="setDefaultRegion()">
+                    <div class="item-left">
+                        <div class="item-icon">
+                            <i class="fas fa-home"></i>
+                        </div>
+                        <div class="item-content">
+                            <div class="item-title">기본 지역</div>
+                            <div class="item-description">선호하는 맛집 지역 설정</div>
+                        </div>
+                    </div>
+                    <div class="item-right">
+                        <span class="item-value" id="defaultRegion">해운대구</span>
+                        <i class="fas fa-chevron-right arrow-icon"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 개인화 -->
+            <div class="settings-section">
+                <div class="section-title">개인화</div>
+                <div class="settings-item" onclick="manageDietaryRestrictions()">
+                    <div class="item-left">
+                        <div class="item-icon">
+                            <i class="fas fa-utensils"></i>
+                        </div>
+                        <div class="item-content">
+                            <div class="item-title">식단 제한</div>
+                            <div class="item-description">알레르기, 선호 음식 설정</div>
+                        </div>
+                    </div>
+                    <div class="item-right">
+                        <i class="fas fa-chevron-right arrow-icon"></i>
+                    </div>
+                </div>
+                
+                <div class="settings-item" onclick="manageFavoriteCategories()">
+                    <div class="item-left">
+                        <div class="item-icon">
+                            <i class="fas fa-heart"></i>
+                        </div>
+                        <div class="item-content">
+                            <div class="item-title">선호 카테고리</div>
+                            <div class="item-description">좋아하는 음식 종류 선택</div>
+                        </div>
+                    </div>
+                    <div class="item-right">
+                        <span class="item-value">한식, 일식</span>
+                        <i class="fas fa-chevron-right arrow-icon"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 데이터 및 개인정보 -->
+            <div class="settings-section">
+                <div class="section-title">데이터 및 개인정보</div>
+                <div class="settings-item" onclick="manageData()">
+                    <div class="item-left">
+                        <div class="item-icon">
+                            <i class="fas fa-download"></i>
+                        </div>
+                        <div class="item-content">
+                            <div class="item-title">데이터 다운로드</div>
+                            <div class="item-description">저장된 맛집과 검색 기록 다운로드</div>
+                        </div>
+                    </div>
+                    <div class="item-right">
+                        <i class="fas fa-chevron-right arrow-icon"></i>
+                    </div>
+                </div>
+                
+                <div class="settings-item" onclick="clearSearchHistory()">
+                    <div class="item-left">
+                        <div class="item-icon">
+                            <i class="fas fa-trash-alt"></i>
+                        </div>
+                        <div class="item-content">
+                            <div class="item-title">검색 기록 삭제</div>
+                            <div class="item-description">모든 검색 기록을 삭제합니다</div>
+                        </div>
+                    </div>
+                    <div class="item-right">
+                        <i class="fas fa-chevron-right arrow-icon"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 고객지원 -->
+            <div class="settings-section">
+                <div class="section-title">고객지원</div>
+                <div class="settings-item" onclick="contactSupport()">
+                    <div class="item-left">
+                        <div class="item-icon">
+                            <i class="fas fa-headset"></i>
+                        </div>
+                        <div class="item-content">
+                            <div class="item-title">고객센터</div>
+                            <div class="item-description">문의사항이나 도움이 필요하면 연락하세요</div>
+                        </div>
+                    </div>
+                    <div class="item-right">
+                        <i class="fas fa-chevron-right arrow-icon"></i>
+                    </div>
+                </div>
+                
+                <div class="settings-item" onclick="showAbout()">
+                    <div class="item-left">
+                        <div class="item-icon">
+                            <i class="fas fa-info-circle"></i>
+                        </div>
+                        <div class="item-content">
+                            <div class="item-title">앱 정보</div>
+                            <div class="item-description">버전 및 개발자 정보</div>
+                        </div>
+                    </div>
+                    <div class="item-right">
+                        <span class="item-value">v1.0.0</span>
+                        <i class="fas fa-chevron-right arrow-icon"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 계정 관리 -->
+            <div class="settings-section">
+                <div class="section-title">계정 관리</div>
+                <div class="settings-item danger-item" onclick="logout()">
+                    <div class="item-left">
+                        <div class="item-icon">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </div>
+                        <div class="item-content">
+                            <div class="item-title">로그아웃</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="settings-item danger-item" onclick="deleteAccount()">
+                    <div class="item-left">
+                        <div class="item-icon">
+                            <i class="fas fa-user-times"></i>
+                        </div>
+                        <div class="item-content">
+                            <div class="item-title">계정 삭제</div>
+                            <div class="item-description">모든 데이터가 영구적으로 삭제됩니다</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 페이지 로드시 사용자 정보 표시
+        document.addEventListener('DOMContentLoaded', () => {
+            const userEmail = localStorage.getItem('userEmail') || 'guest@ddugi.app';
+            const isLoggedIn = localStorage.getItem('isLoggedIn');
+            
+            document.getElementById('userEmail').textContent = userEmail;
+            
+            if (isLoggedIn === 'guest') {
+                document.getElementById('userName').textContent = '게스트';
+            } else {
+                document.getElementById('userName').textContent = '뚜기 사용자';
+            }
+        });
+        
+        function goBack() {
+            window.location.href = 'index.html';
+        }
+        
+        function editProfile() {
+            alert('프로필 편집 기능은 개발 중입니다! 🚧');
+        }
+        
+        function changePassword() {
+            alert('비밀번호 변경 기능은 개발 중입니다! 🚧');
+        }
+        
+        function toggleNotification(element) {
+            element.classList.toggle('active');
+            const isEnabled = element.classList.contains('active');
+            localStorage.setItem('notificationEnabled', isEnabled);
+            
+            if (isEnabled) {
+                alert('알림이 활성화되었습니다! 🔔');
+            } else {
+                alert('알림이 비활성화되었습니다. 🔕');
+            }
+        }
+        
+        function toggleLocation(element) {
+            element.classList.toggle('active');
+            const isEnabled = element.classList.contains('active');
+            localStorage.setItem('locationEnabled', isEnabled);
+            
+            if (isEnabled) {
+                alert('위치 서비스가 활성화되었습니다! 📍');
+            } else {
+                alert('위치 서비스가 비활성화되었습니다.');
+            }
+        }
+        
+        function setDefaultRegion() {
+            const regions = ['해운대구', '부산진구', '서구', '동구', '영도구', '중구'];
+            const currentRegion = document.getElementById('defaultRegion').textContent;
+            
+            let choice = prompt(`기본 지역을 선택하세요:\n${regions.map((r, i) => `${i+1}. ${r}`).join('\n')}\n\n현재: ${currentRegion}`);
+            
+            if (choice && choice >= 1 && choice <= regions.length) {
+                const selectedRegion = regions[choice - 1];
+                document.getElementById('defaultRegion').textContent = selectedRegion;
+                localStorage.setItem('defaultRegion', selectedRegion);
+                alert(`기본 지역이 ${selectedRegion}로 변경되었습니다!`);
+            }
+        }
+        
+        function manageDietaryRestrictions() {
+            alert('식단 제한 설정 기능은 개발 중입니다! 🚧');
+        }
+        
+        function manageFavoriteCategories() {
+            alert('선호 카테고리 설정 기능은 개발 중입니다! 🚧');
+        }
+        
+        function manageData() {
+            const savedRestaurants = localStorage.getItem('savedRestaurants') || '[]';
+            const blob = new Blob([savedRestaurants], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = '뚜기_저장된맛집.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            alert('저장된 맛집 데이터가 다운로드되었습니다! 📁');
+        }
+        
+        function clearSearchHistory() {
+            if (confirm('모든 검색 기록을 삭제하시겠습니까?')) {
+                // 검색 기록 관련 localStorage 항목들 삭제
+                const keysToRemove = [];
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    if (key && key.includes('search') || key.includes('preference')) {
+                        keysToRemove.push(key);
+                    }
+                }
+                
+                keysToRemove.forEach(key => localStorage.removeItem(key));
+                alert('검색 기록이 삭제되었습니다! 🗑️');
+            }
+        }
+        
+        function contactSupport() {
+            alert('고객센터 연락처:\n📧 support@ddugi.app\n📞 1588-0000\n\n운영시간: 평일 9:00-18:00');
+        }
+        
+        function showAbout() {
+            alert('🐧 뚜기 - 부산 맛집 가이드\n\n버전: 1.0.0\n개발자: 뚜기팀\n\n부산의 숨은 맛집을 찾아드리는\nAI 맛집 가이드입니다!');
+        }
+        
+        function logout() {
+            if (confirm('로그아웃 하시겠습니까?')) {
+                localStorage.removeItem('isLoggedIn');
+                localStorage.removeItem('userEmail');
+                window.location.href = 'login.html';
+            }
+        }
+        
+        function deleteAccount() {
+            const confirmation = prompt('계정을 삭제하려면 "삭제"를 입력하세요:');
+            
+            if (confirmation === '삭제') {
+                if (confirm('정말로 계정을 삭제하시겠습니까?\n모든 데이터가 영구적으로 삭제됩니다.')) {
+                    localStorage.clear();
+                    alert('계정이 삭제되었습니다.');
+                    window.location.href = 'login.html';
+                }
+            }
+        }
+        
+        // 설정값 로드
+        const notificationEnabled = localStorage.getItem('notificationEnabled');
+        const locationEnabled = localStorage.getItem('locationEnabled');
+        const defaultRegion = localStorage.getItem('defaultRegion');
+        
+        if (notificationEnabled === 'false') {
+            document.querySelector('.toggle-switch').classList.remove('active');
+        }
+        
+        if (locationEnabled === 'true') {
+            document.querySelectorAll('.toggle-switch')[1].classList.add('active');
+        }
+        
+        if (defaultRegion) {
+            document.getElementById('defaultRegion').textContent = defaultRegion;
+        }
+    </script>
+</body>
+</html>

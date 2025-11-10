@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>뚜기 로그인</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Google Sign-In API -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <meta name="google-signin-client_id" content="YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com">
+    <script src="api-client.js"></script>
+    <style>
+        .login-container {
+            min-height: 100vh;
+            background: #FFFFFF;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .login-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .login-logo {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #FF6B35 0%, #FFD166 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            margin: 0 auto 20px;
+        }
+        
+        .login-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #2F2F2F;
+            margin-bottom: 8px;
+        }
+        
+        .login-subtitle {
+            font-size: 16px;
+            color: #8E8E8E;
+        }
+        
+        .login-form {
+            width: 100%;
+            max-width: 400px;
+            background: #FFFFFF;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .form-group {
+            margin-bottom: 24px;
+        }
+        
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: #2F2F2F;
+            margin-bottom: 8px;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #E5E5E5;
+            border-radius: 12px;
+            font-size: 16px;
+            color: #2F2F2F;
+            background: #F8F8F8;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #FF6B35;
+            background: #FFFFFF;
+        }
+        
+        .login-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #FF6B35 0%, #FFD166 100%);
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            color: #FFFFFF;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 16px;
+        }
+        
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 107, 53, 0.3);
+        }
+        
+        .login-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .social-login {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 20px;
+        }
+        
+        .social-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 14px;
+            border: 2px solid #E5E5E5;
+            border-radius: 12px;
+            background: #FFFFFF;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .social-btn:hover {
+            border-color: #FF6B35;
+            background: #FFF8F5;
+        }
+        
+        .google-btn {
+            color: #4285F4;
+        }
+        
+        .kakao-btn {
+            color: #FEE500;
+            background: #FEE500;
+            border-color: #FEE500;
+        }
+        
+        .kakao-btn:hover {
+            background: #F9D71C;
+            border-color: #F9D71C;
+        }
+        
+        #g_id_onload {
+            display: none;
+        }
+        
+        .google-signin-btn {
+            width: 100%;
+            height: 50px;
+            border: 2px solid #E5E5E5;
+            border-radius: 12px;
+            background: #FFFFFF;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            font-weight: 500;
+            gap: 10px;
+        }
+        
+        .google-signin-btn:hover {
+            border-color: #4285F4;
+            background: #F8F9FF;
+        }
+        
+        .divider {
+            text-align: center;
+            margin: 24px 0;
+            position: relative;
+        }
+        
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #E5E5E5;
+        }
+        
+        .divider span {
+            background: #FFFFFF;
+            padding: 0 16px;
+            color: #8E8E8E;
+            font-size: 14px;
+        }
+        
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: #F5F5F5;
+            border: none;
+            color: #2F2F2F;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        
+        .back-btn:hover {
+            background: #E5E5E5;
+        }
+        
+        .guest-login {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #E5E5E5;
+        }
+        
+        .guest-btn {
+            color: #8E8E8E;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+        
+        .guest-btn:hover {
+            color: #FF6B35;
+        }
+        
+        @media (max-width: 768px) {
+            .login-form {
+                padding: 24px;
+            }
+            
+            .login-title {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="back-btn" onclick="goBack()" aria-label="뒤로가기">
+        <i class="fas fa-arrow-left"></i>
+    </button>
+    
+    <div class="login-container">
+        <div class="login-header">
+            <div class="login-logo">🐧</div>
+            <h1 class="login-title">뚜기에 어서오세요!</h1>
+            <p class="login-subtitle">부산 최고의 맛집을 찾아드릴게요</p>
+        </div>
+        
+        <form class="login-form" onsubmit="handleLogin(event)">
+            <div class="form-group">
+                <label for="email" class="form-label">이메일</label>
+                <input 
+                    type="email" 
+                    id="email" 
+                    name="email" 
+                    class="form-input" 
+                    placeholder="이메일을 입력하세요"
+                    required
+                >
+            </div>
+            
+            <div class="form-group">
+                <label for="password" class="form-label">비밀번호</label>
+                <input 
+                    type="password" 
+                    id="password" 
+                    name="password" 
+                    class="form-input" 
+                    placeholder="비밀번호를 입력하세요"
+                    required
+                >
+            </div>
+            
+            <button type="submit" class="login-btn" id="loginBtn">
+                <i class="fas fa-sign-in-alt"></i>
+                로그인
+            </button>
+            
+            <div class="divider">
+                <span>또는</span>
+            </div>
+            
+            <div class="social-login">
+                <!-- Google Sign-In Button -->
+                <div id="g_id_onload"
+                     data-client_id="YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com"
+                     data-context="signin"
+                     data-ux_mode="popup"
+                     data-callback="handleCredentialResponse"
+                     data-auto_prompt="false">
+                </div>
+                
+                <div class="google-signin-btn" onclick="initGoogleSignIn()">
+                    <svg width="20" height="20" viewBox="0 0 24 24">
+                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                    </svg>
+                    Google로 계속하기
+                </div>
+                
+                <button type="button" class="social-btn kakao-btn" onclick="loginWithKakao()">
+                    <i class="fas fa-comment"></i>
+                    카카오로 계속하기
+                </button>
+            </div>
+            
+            <div class="guest-login">
+                <a href="#" class="guest-btn" onclick="loginAsGuest()">
+                    <i class="fas fa-user"></i>
+                    게스트로 계속하기
+                </a>
+            </div>
+        </form>
+    </div>
+    
+    <script>
+        function goBack() {
+            history.back();
+        }
+        
+        function handleLogin(event) {
+            event.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const loginBtn = document.getElementById('loginBtn');
+            
+            // 로딩 상태
+            loginBtn.disabled = true;
+            loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 로그인 중...';
+            
+            // 임시 로그인 로직 (실제로는 서버와 통신)
+            setTimeout(() => {
+                alert('로그인 기능은 개발 중입니다! 😊\n곧 업데이트 예정이에요.');
+                
+                // 사용자 정보 저장 (임시)
+                localStorage.setItem('userEmail', email);
+                localStorage.setItem('isLoggedIn', 'true');
+                
+                // 메인 페이지로 이동
+                window.location.href = 'index.html';
+            }, 1500);
+        }
+        
+        function initGoogleSignIn() {
+            google.accounts.id.initialize({
+                client_id: "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com",
+                callback: handleCredentialResponse
+            });
+            
+            google.accounts.id.prompt();
+        }
+        
+        async function handleCredentialResponse(response) {
+            try {
+                console.log('Google 로그인 처리 시작...');
+                
+                // 로딩 상태 표시
+                const googleBtn = document.querySelector('.google-signin-btn');
+                if (googleBtn) {
+                    googleBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Google 로그인 중...';
+                    googleBtn.style.pointerEvents = 'none';
+                }
+                
+                // API 클라이언트를 통해 Google 로그인
+                const result = await apiClient.loginWithGoogle(response.credential);
+                
+                if (result.success) {
+                    alert('Google 로그인 성공! 😊');
+                    console.log('로그인 사용자:', result.user);
+                    window.location.href = 'index.html';
+                } else {
+                    throw new Error(result.error || '로그인 처리 실패');
+                }
+            } catch (error) {
+                console.error('Google 로그인 오류:', error);
+                alert('Google 로그인 중 오류가 발생했습니다: ' + error.message);
+                
+                // 버튼 복원
+                const googleBtn = document.querySelector('.google-signin-btn');
+                if (googleBtn) {
+                    googleBtn.innerHTML = `
+                        <svg width="20" height="20" viewBox="0 0 24 24">
+                            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                        </svg>
+                        Google로 계속하기
+                    `;
+                    googleBtn.style.pointerEvents = 'auto';
+                }
+            }
+        }
+        
+        function decodeJwtResponse(token) {
+            const base64Url = token.split('.')[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
+            return JSON.parse(jsonPayload);
+        }
+        
+        function loginWithGoogle() {
+            initGoogleSignIn();
+        }
+        
+        function loginWithKakao() {
+            alert('카카오 로그인은 개발 중입니다! 🚧');
+        }
+        
+        async function loginAsGuest() {
+            try {
+                console.log('게스트 로그인 처리 시작...');
+                
+                const result = await apiClient.loginAsGuest();
+                
+                if (result.success) {
+                    console.log('게스트 로그인 성공:', result.user);
+                    window.location.href = 'index.html';
+                } else {
+                    throw new Error(result.error || '게스트 로그인 실패');
+                }
+            } catch (error) {
+                console.error('게스트 로그인 오류:', error);
+                alert('게스트 로그인 중 오류가 발생했습니다: ' + error.message);
+            }
+        }
+        
+        // 이미 로그인된 경우 리다이렉트
+        window.addEventListener('DOMContentLoaded', async () => {
+            if (apiClient.isLoggedIn()) {
+                const verification = await apiClient.verifyToken();
+                if (verification.valid) {
+                    window.location.href = 'index.html';
+                }
+            }
+        });
+    </script>
+</body>
+</html>

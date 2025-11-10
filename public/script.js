@@ -472,6 +472,9 @@ ${restaurant.description}`;
                         <p>${restaurant.area} · ${restaurant.category}</p>
                     </div>
                 </div>
+                <button class="heart-btn" onclick="toggleSaveRestaurant(event, ${JSON.stringify(restaurant).replace(/"/g, '&quot;')})" aria-label="맛집 저장">
+                    <i class="far fa-heart"></i>
+                </button>
                 <div class="image-overlay">
                     <div class="overlay-content">
                         <h3>${restaurant.name}</h3>
@@ -1250,13 +1253,21 @@ function closeSideMenu() {
 function handleLogin() {
     closeSideMenu();
     
-    // 임시 로그인 기능 - 추후 실제 로그인 시스템 연동
-    const chatBot = window.instagramChatBot;
-    if (chatBot) {
-        chatBot.addMessage('로그인 기능은 개발 중입니다! 😊', 'bot');
-    }
+    // 로그인 상태 확인
+    const isLoggedIn = localStorage.getItem('isLoggedIn');
     
-    console.log('로그인 기능 실행');
+    if (isLoggedIn) {
+        // 이미 로그인된 경우 프로필 또는 로그아웃 옵션
+        if (confirm('이미 로그인되어 있습니다.\n로그아웃하시겠습니까?')) {
+            localStorage.removeItem('isLoggedIn');
+            localStorage.removeItem('userEmail');
+            alert('로그아웃되었습니다.');
+            location.reload();
+        }
+    } else {
+        // 로그인 페이지로 이동
+        window.location.href = 'login.html';
+    }
 }
 
 function showSavedRestaurants() {
@@ -1281,13 +1292,8 @@ function showSavedRestaurants() {
 function showSettings() {
     closeSideMenu();
     
-    // 임시 설정 기능
-    const chatBot = window.instagramChatBot;
-    if (chatBot) {
-        chatBot.addMessage('설정 메뉴는 개발 중입니다! ⚙️\n\n현재 사용 가능한 기능:\n• 햄버거 메뉴\n• 맛집 추천\n• 지역별/카테고리별 검색', 'bot');
-    }
-    
-    console.log('설정 기능 실행');
+    // 설정 페이지로 이동
+    window.location.href = 'settings.html';
 }
 
 // 저장된 맛집 관리 함수들
@@ -1339,4 +1345,299 @@ document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
         closeSideMenu();
     }
+});
+
+// Restaurant Save Functionality (Database-backed)
+async function toggleSaveRestaurant(event, restaurant) {
+    event.preventDefault();
+    event.stopPropagation();
+    
+    const heartBtn = event.currentTarget;
+    const heartIcon = heartBtn.querySelector('i');
+    
+    try {
+        // 현재 저장 상태 확인
+        const savedData = await apiClient.getSavedRestaurants();
+        const isAlreadySaved = savedData.restaurants.some(saved => saved.id === restaurant.id);
+        
+        if (isAlreadySaved) {
+            // 저장 해제
+            await apiClient.unsaveRestaurant(restaurant.id);
+            
+            // UI 업데이트
+            heartBtn.classList.remove('saved');
+            heartIcon.classList.remove('fas');
+            heartIcon.classList.add('far');
+            
+            showToast(`"${restaurant.name}"을(를) 저장 목록에서 제거했습니다`, 'info');
+            
+        } else {
+            // 저장
+            await apiClient.saveRestaurant(restaurant);
+            
+            // UI 업데이트
+            heartBtn.classList.add('saved', 'animate');
+            heartIcon.classList.remove('far');
+            heartIcon.classList.add('fas');
+            
+            showToast(`"${restaurant.name}"을(를) 저장했습니다! ❤️`, 'success');
+            
+            // 애니메이션 제거
+            setTimeout(() => {
+                heartBtn.classList.remove('animate');
+            }, 600);
+        }
+    } catch (error) {
+        console.error('맛집 저장/해제 실패:', error);
+        showToast('저장 처리 중 오류가 발생했습니다', 'error');
+        
+        // 오류 발생시 기존 localStorage 방식으로 폴백
+        fallbackToggleSave(heartBtn, heartIcon, restaurant);
+    }
+}
+
+// localStorage 폴백 함수
+function fallbackToggleSave(heartBtn, heartIcon, restaurant) {
+    const savedRestaurants = JSON.parse(localStorage.getItem('savedRestaurants') || '[]');
+    const isAlreadySaved = savedRestaurants.some(saved => saved.id === restaurant.id);
+    
+    if (isAlreadySaved) {
+        const filteredRestaurants = savedRestaurants.filter(saved => saved.id !== restaurant.id);
+        localStorage.setItem('savedRestaurants', JSON.stringify(filteredRestaurants));
+        
+        heartBtn.classList.remove('saved');
+        heartIcon.classList.remove('fas');
+        heartIcon.classList.add('far');
+        
+        showToast(`"${restaurant.name}"을(를) 저장 목록에서 제거했습니다 (로컬)`, 'info');
+    } else {
+        const restaurantToSave = {
+            ...restaurant,
+            savedAt: new Date().toISOString()
+        };
+        
+        savedRestaurants.push(restaurantToSave);
+        localStorage.setItem('savedRestaurants', JSON.stringify(savedRestaurants));
+        
+        heartBtn.classList.add('saved', 'animate');
+        heartIcon.classList.remove('far');
+        heartIcon.classList.add('fas');
+        
+        showToast(`"${restaurant.name}"을(를) 저장했습니다! ❤️ (로컬)`, 'success');
+        
+        setTimeout(() => {
+            heartBtn.classList.remove('animate');
+        }, 600);
+    }
+}
+
+function showToast(message, type = 'info') {
+    // 기존 토스트 제거
+    const existingToast = document.querySelector('.toast');
+    if (existingToast) {
+        existingToast.remove();
+    }
+    
+    // 토스트 생성
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    
+    const icons = {
+        success: 'fas fa-check-circle',
+        error: 'fas fa-exclamation-circle',
+        info: 'fas fa-info-circle'
+    };
+    
+    toast.innerHTML = `
+        <i class="${icons[type] || icons.info}"></i>
+        <span>${message}</span>
+    `;
+    
+    // 스타일 추가
+    if (!document.querySelector('#toast-styles')) {
+        const style = document.createElement('style');
+        style.id = 'toast-styles';
+        style.textContent = `
+            .toast {
+                position: fixed;
+                bottom: 80px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: rgba(0, 0, 0, 0.8);
+                color: white;
+                padding: 12px 16px;
+                border-radius: 8px;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                z-index: 9999;
+                animation: toastSlideUp 0.3s ease;
+                backdrop-filter: blur(8px);
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+                font-size: 14px;
+                max-width: 90%;
+                text-align: center;
+            }
+            
+            .toast-success {
+                background: rgba(76, 175, 80, 0.9);
+            }
+            
+            .toast-error {
+                background: rgba(244, 67, 54, 0.9);
+            }
+            
+            .toast-info {
+                background: rgba(33, 150, 243, 0.9);
+            }
+            
+            @keyframes toastSlideUp {
+                from {
+                    transform: translateX(-50%) translateY(100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(-50%) translateY(0);
+                    opacity: 1;
+                }
+            }
+            
+            @keyframes toastSlideDown {
+                from {
+                    transform: translateX(-50%) translateY(0);
+                    opacity: 1;
+                }
+                to {
+                    transform: translateX(-50%) translateY(100%);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    
+    document.body.appendChild(toast);
+    
+    // 3초 후 자동 제거
+    setTimeout(() => {
+        toast.style.animation = 'toastSlideDown 0.3s ease';
+        setTimeout(() => {
+            toast.remove();
+        }, 300);
+    }, 3000);
+}
+
+// 페이지 로드시 저장된 맛집 상태 복원 (Database-backed)
+async function restoreSavedRestaurants() {
+    try {
+        // 데이터베이스에서 저장된 맛집 목록 가져오기
+        const savedData = await apiClient.getSavedRestaurants();
+        const savedIds = savedData.restaurants.map(r => r.id);
+        
+        // 모든 하트 버튼에 대해 저장 상태 확인
+        document.querySelectorAll('.heart-btn').forEach(btn => {
+            const onclickAttr = btn.getAttribute('onclick');
+            if (onclickAttr) {
+                // onclick에서 레스토랑 ID 추출
+                const match = onclickAttr.match(/"id":"([^"]+)"/);
+                if (match && savedIds.includes(match[1])) {
+                    btn.classList.add('saved');
+                    const icon = btn.querySelector('i');
+                    if (icon) {
+                        icon.classList.remove('far');
+                        icon.classList.add('fas');
+                    }
+                } else {
+                    // 저장되지 않은 맛집은 상태 초기화
+                    btn.classList.remove('saved');
+                    const icon = btn.querySelector('i');
+                    if (icon) {
+                        icon.classList.remove('fas');
+                        icon.classList.add('far');
+                    }
+                }
+            }
+        });
+    } catch (error) {
+        console.error('저장 상태 복원 실패:', error);
+        
+        // 오류시 localStorage 폴백
+        const savedRestaurants = JSON.parse(localStorage.getItem('savedRestaurants') || '[]');
+        const savedIds = savedRestaurants.map(r => r.id);
+        
+        document.querySelectorAll('.heart-btn').forEach(btn => {
+            const onclickAttr = btn.getAttribute('onclick');
+            if (onclickAttr) {
+                const match = onclickAttr.match(/"id":"([^"]+)"/);
+                if (match && savedIds.includes(match[1])) {
+                    btn.classList.add('saved');
+                    const icon = btn.querySelector('i');
+                    if (icon) {
+                        icon.classList.remove('far');
+                        icon.classList.add('fas');
+                    }
+                }
+            }
+        });
+    }
+}
+
+// 사이드 메뉴의 저장된 맛집 기능 (Database-backed)
+async function showSavedRestaurants() {
+    closeSideMenu();
+    
+    const chatBot = window.instagramChatBot;
+    if (!chatBot) return;
+    
+    try {
+        // 데이터베이스에서 저장된 맛집 가져오기
+        const savedData = await apiClient.getSavedRestaurants();
+        const savedRestaurants = savedData.restaurants;
+        
+        if (savedRestaurants.length > 0) {
+            const userInfo = apiClient.getCurrentUser();
+            const source = savedData.isGuest || savedData.fallback ? '(로컬 저장)' : '';
+            
+            chatBot.addMessage(`저장된 맛집 ${savedRestaurants.length}곳을 찾았습니다! ❤️ ${source}`, 'bot');
+            
+            // 저장된 맛집을 카드 형태로 표시
+            setTimeout(() => {
+                chatBot.displayRestaurantCards(savedRestaurants, '저장된 맛집');
+            }, 500);
+        } else {
+            chatBot.addMessage('아직 저장된 맛집이 없습니다.\n\n맛집 카드의 ❤️ 버튼을 눌러 마음에 드는 맛집을 저장해보세요! 💫', 'bot');
+        }
+        
+        // 저장 상태 복원
+        setTimeout(() => {
+            restoreSavedRestaurants();
+        }, 1000);
+        
+    } catch (error) {
+        console.error('저장된 맛집 조회 실패:', error);
+        
+        // 오류시 localStorage 폴백
+        const localSaved = JSON.parse(localStorage.getItem('savedRestaurants') || '[]');
+        if (localSaved.length > 0) {
+            chatBot.addMessage(`저장된 맛집 ${localSaved.length}곳을 찾았습니다! ❤️ (로컬 저장)`, 'bot');
+            setTimeout(() => {
+                chatBot.displayRestaurantCards(localSaved, '저장된 맛집');
+            }, 500);
+        } else {
+            chatBot.addMessage('아직 저장된 맛집이 없습니다.\n\n맛집 카드의 ❤️ 버튼을 눌러 마음에 드는 맛집을 저장해보세요! 💫', 'bot');
+        }
+    }
+}
+
+// MutationObserver로 새로 생성된 카드의 저장 상태 복원
+const cardObserver = new MutationObserver(() => {
+    restoreSavedRestaurants();
+});
+
+// DOM 변경 감시 시작
+document.addEventListener('DOMContentLoaded', () => {
+    cardObserver.observe(document.body, {
+        childList: true,
+        subtree: true
+    });
 });
