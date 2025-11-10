@@ -194,79 +194,15 @@ async function callClaudeAPI(prompt) {
     }
 }
 
-// AI 응답 생성 (뚜기 캐릭터)
+// 간단한 폴백 응답 (Claude API 실패시에만 사용)
 function generateAIResponse(userMessage, recommendations) {
-    const { analysis, restaurants, total } = recommendations;
+    const { restaurants } = recommendations;
     
-    const dduggiResponses = {
-        noResults: [
-            "마! 아쉽다이가... 조건에 딱 맞는 맛집을 못 찾겠네 😅 다른 지역이나 음식으로 다시 말해봐라!",
-            "이런, 내가 아는 맛집 중에는 없네... 🤔 혹시 다른 음식이나 지역으로 물어봐라!",
-            "앗, 그 조건으로는 추천할 곳이 없다이가 😓 조금 다르게 말해보면 좋은 곳 알려줄게!"
-        ],
-        greetings: [
-            "마! 뚜기다이가! 🐧 부산 맛집은 나한테 맡겨라! 뭔 맛있는 거 찾고 있노?",
-            "안녕하세요! 부산 토박이 뚜기입니다 😊 어떤 맛집 찾고 계신가요? 내가 다 아는데!",
-            "어서와라! 🙌 뚜기가 부산 맛집 다 알려줄게! 어디 가고 싶은지 말해봐라!"
-        ],
-        casual: [
-            "뚜기가 도와줄게! 🐧 뭔 얘기할까?",
-            "마! 좋다이가 😄 또 뭔 궁금한 거 있나?",
-            "부산 살이 어때? 🌊 맛집 얘기면 언제든 말해라!"
-        ]
-    };
-
     if (restaurants.length === 0) {
-        const randomResponse = dduggiResponses.noResults[Math.floor(Math.random() * dduggiResponses.noResults.length)];
-        return randomResponse;
+        return "죄송해요, 잠시 문제가 있네요. 다시 말해보세요! 😅";
     }
 
-    // 뚜기 스타일 응답 생성
-    let responseMessage = "";
-    
-    // 시작 인사
-    const starters = [
-        "마! 좋은 곳들 찾았다이가! 🍽️",
-        "어이구, 맛있는 곳들이 있네! 😋",
-        "완전 좋은 맛집들 추천해줄게! 👌"
-    ];
-    responseMessage += starters[Math.floor(Math.random() * starters.length)] + "\n\n";
-    
-    // 지역/음식 언급
-    if (analysis.area) {
-        responseMessage += `${analysis.area}에서 `;
-    }
-    if (analysis.food) {
-        responseMessage += `${analysis.food} 맛집 `;
-    } else if (analysis.category) {
-        responseMessage += `${analysis.category} 맛집 `;
-    }
-    
-    responseMessage += `${restaurants.length}곳 골라줬어! `;
-    
-    // 뚜기만의 코멘트
-    const comments = [
-        "내가 다 먹어봤는데 진짜 맛있어!",
-        "여기들 완전 개꿀이야!",
-        "부산 사람들이 진짜 많이 가는 곳들이다이가!",
-        "관광객들한테는 비밀인데... 진짜 맛집들이야!"
-    ];
-    responseMessage += comments[Math.floor(Math.random() * comments.length)] + "\n\n";
-    
-    // 맛집 간단 소개
-    if (restaurants.length > 0) {
-        const topRestaurant = restaurants[0];
-        const praises = [
-            "특히 여기가 평점도 높고 진짜 유명해!",
-            "이 집은 내가 자주 가는 곳인데 완전 추천!",
-            "여기 사장님도 완전 친절하고 맛도 끝내줘!",
-            "이 집은 부산 사람들 사이에서 완전 핫플이야!"
-        ];
-        responseMessage += praises[Math.floor(Math.random() * praises.length)];
-        responseMessage += " 아래 카드 눌러서 자세히 봐라! 🔽";
-    }
-
-    return responseMessage;
+    return "맛집 추천 완료! 아래 카드를 확인해보세요! 😊";
 }
 
 // Claude AI 프롬프트 생성
