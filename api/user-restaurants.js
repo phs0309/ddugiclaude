@@ -37,28 +37,52 @@ export default async function handler(req, res) {
         }
 
         // 데이터베이스 테이블 초기화 (존재하지 않으면 생성)
-        await initializeTables();
+        try {
+            await initializeTables();
+        } catch (dbError) {
+            console.error('데이터베이스 초기화 실패:', dbError);
+            // 데이터베이스 연결 실패시 게스트 모드로 폴백
+            return res.status(200).json({
+                isGuest: true,
+                restaurants: [],
+                count: 0,
+                fallback: true,
+                message: '데이터베이스 연결 실패, 로컬스토리지를 사용해주세요'
+            });
+        }
 
         if (req.method === 'GET') {
             // 저장된 맛집 조회
-            const result = await sql`
-                SELECT restaurant_data, saved_at 
-                FROM user_restaurants 
-                WHERE user_id = ${user.userId || user.email}
-                ORDER BY saved_at DESC
-            `;
+            try {
+                const result = await sql`
+                    SELECT restaurant_data, saved_at 
+                    FROM user_restaurants 
+                    WHERE user_id = ${user.userId || user.email}
+                    ORDER BY saved_at DESC
+                `;
 
-            const restaurants = result.rows.map(row => ({
-                ...row.restaurant_data,
-                savedAt: row.saved_at
-            }));
+                const restaurants = result.rows.map(row => ({
+                    ...row.restaurant_data,
+                    savedAt: row.saved_at
+                }));
 
-            return res.status(200).json({
-                success: true,
-                restaurants: restaurants,
-                count: restaurants.length,
-                isGuest: false
-            });
+                return res.status(200).json({
+                    success: true,
+                    restaurants: restaurants,
+                    count: restaurants.length,
+                    isGuest: false
+                });
+            } catch (dbError) {
+                console.error('저장된 맛집 조회 실패:', dbError);
+                // 데이터베이스 오류시 게스트 모드로 폴백
+                return res.status(200).json({
+                    isGuest: true,
+                    restaurants: [],
+                    count: 0,
+                    fallback: true,
+                    message: '데이터베이스 조회 실패, 로컬스토리지를 사용해주세요'
+                });
+            }
 
         } else if (req.method === 'POST') {
             // 맛집 저장
@@ -71,37 +95,49 @@ export default async function handler(req, res) {
                 });
             }
 
-            // 중복 체크
-            const existing = await sql`
-                SELECT id FROM user_restaurants 
-                WHERE user_id = ${user.userId || user.email} 
-                AND restaurant_data->>'id' = ${restaurant.id}
-            `;
+            try {
+                // 중복 체크
+                const existing = await sql`
+                    SELECT id FROM user_restaurants 
+                    WHERE user_id = ${user.userId || user.email} 
+                    AND restaurant_data->>'id' = ${restaurant.id}
+                `;
 
-            if (existing.rows.length > 0) {
-                return res.status(400).json({
-                    error: '이미 저장된 맛집입니다',
-                    code: 'ALREADY_SAVED'
+                if (existing.rows.length > 0) {
+                    return res.status(400).json({
+                        error: '이미 저장된 맛집입니다',
+                        code: 'ALREADY_SAVED'
+                    });
+                }
+
+                // 저장
+                const restaurantData = {
+                    ...restaurant,
+                    savedAt: new Date().toISOString()
+                };
+
+                await sql`
+                    INSERT INTO user_restaurants (user_id, restaurant_data, saved_at)
+                    VALUES (${user.userId || user.email}, ${JSON.stringify(restaurantData)}, NOW())
+                `;
+
+                return res.status(200).json({
+                    success: true,
+                    message: `"${restaurant.name}"을(를) 저장했습니다`,
+                    restaurant: restaurantData,
+                    isGuest: false
+                });
+            } catch (dbError) {
+                console.error('맛집 저장 실패:', dbError);
+                // 데이터베이스 오류시 게스트 모드로 폴백
+                return res.status(200).json({
+                    isGuest: true,
+                    success: true,
+                    message: `"${restaurant.name}"을(를) 로컬에 저장했습니다`,
+                    restaurant: { ...restaurant, savedAt: new Date().toISOString() },
+                    fallback: true
                 });
             }
-
-            // 저장
-            const restaurantData = {
-                ...restaurant,
-                savedAt: new Date().toISOString()
-            };
-
-            await sql`
-                INSERT INTO user_restaurants (user_id, restaurant_data, saved_at)
-                VALUES (${user.userId || user.email}, ${JSON.stringify(restaurantData)}, NOW())
-            `;
-
-            return res.status(200).json({
-                success: true,
-                message: `"${restaurant.name}"을(를) 저장했습니다`,
-                restaurant: restaurantData,
-                isGuest: false
-            });
 
         } else if (req.method === 'DELETE') {
             // 맛집 저장 해제
@@ -114,26 +150,38 @@ export default async function handler(req, res) {
                 });
             }
 
-            const result = await sql`
-                DELETE FROM user_restaurants 
-                WHERE user_id = ${user.userId || user.email} 
-                AND restaurant_data->>'id' = ${restaurantId}
-                RETURNING restaurant_data->>'name' as name
-            `;
+            try {
+                const result = await sql`
+                    DELETE FROM user_restaurants 
+                    WHERE user_id = ${user.userId || user.email} 
+                    AND restaurant_data->>'id' = ${restaurantId}
+                    RETURNING restaurant_data->>'name' as name
+                `;
 
-            if (result.rows.length === 0) {
-                return res.status(404).json({
-                    error: '저장된 맛집을 찾을 수 없습니다',
-                    code: 'NOT_FOUND'
+                if (result.rows.length === 0) {
+                    return res.status(404).json({
+                        error: '저장된 맛집을 찾을 수 없습니다',
+                        code: 'NOT_FOUND'
+                    });
+                }
+
+                return res.status(200).json({
+                    success: true,
+                    message: '맛집을 저장 목록에서 제거했습니다',
+                    restaurantId: restaurantId,
+                    isGuest: false
+                });
+            } catch (dbError) {
+                console.error('맛집 삭제 실패:', dbError);
+                // 데이터베이스 오류시 게스트 모드로 폴백
+                return res.status(200).json({
+                    isGuest: true,
+                    success: true,
+                    message: '로컬에서 맛집을 제거해주세요',
+                    restaurantId: restaurantId,
+                    fallback: true
                 });
             }
-
-            return res.status(200).json({
-                success: true,
-                message: '맛집을 저장 목록에서 제거했습니다',
-                restaurantId: restaurantId,
-                isGuest: false
-            });
 
         } else {
             return res.status(405).json({
