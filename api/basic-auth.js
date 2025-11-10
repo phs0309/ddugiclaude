@@ -2,18 +2,20 @@
 import { sql } from '@vercel/postgres';
 
 export default async function handler(req, res) {
-    // CORS 설정
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-
-    if (req.method === 'OPTIONS') {
-        return res.status(200).end();
-    }
-
-    const { action } = req.query;
-
+    console.log('🚀 Basic Auth API 시작:', { method: req.method, action: req.query?.action });
+    
     try {
+        // CORS 설정
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
+        if (req.method === 'OPTIONS') {
+            return res.status(200).end();
+        }
+
+        const { action } = req.query;
+        console.log('🔍 요청된 액션:', action);
         if (action === 'guest-login') {
             // 게스트 토큰 생성
             const guestPayload = {
@@ -68,26 +70,29 @@ export default async function handler(req, res) {
                     throw new Error('Google 토큰에 필수 사용자 정보가 없습니다');
                 }
 
-                // 데이터베이스에 사용자 정보 저장/업데이트 (선택적)
-                let userId = jsonPayload.sub;
+                // 데이터베이스에 사용자 정보 저장/업데이트
                 try {
-                    // 테이블 초기화 시도
+                    console.log('🔍 데이터베이스 연결 시도...');
+                    
+                    // 간단한 테스트 쿼리부터 시도
+                    await sql`SELECT 1 as test`;
+                    console.log('✅ 데이터베이스 연결 성공');
+                    
+                    // 테이블 초기화
                     await initializeTables();
                     
-                    // 사용자가 이미 존재하는지 확인
+                    // 사용자 확인 및 저장
                     const existingUser = await sql`
                         SELECT id, email FROM users WHERE email = ${jsonPayload.email}
                     `;
 
                     if (existingUser.rows.length === 0) {
-                        // 새 사용자 생성
                         await sql`
                             INSERT INTO users (email, name, profile_picture, provider)
                             VALUES (${jsonPayload.email}, ${jsonPayload.name}, ${jsonPayload.picture}, 'google')
                         `;
                         console.log('✅ 새 사용자 생성:', jsonPayload.email);
                     } else {
-                        // 기존 사용자 정보 업데이트
                         await sql`
                             UPDATE users 
                             SET name = ${jsonPayload.name}, 
@@ -98,8 +103,19 @@ export default async function handler(req, res) {
                         console.log('✅ 기존 사용자 정보 업데이트:', jsonPayload.email);
                     }
                 } catch (dbError) {
-                    console.error('⚠️ 데이터베이스 저장 실패 (로그인은 계속 진행):', dbError);
-                    // 데이터베이스 오류여도 로그인은 계속 진행
+                    console.error('❌ 데이터베이스 오류:', dbError);
+                    console.error('❌ 오류 상세:', {
+                        name: dbError.name,
+                        message: dbError.message,
+                        stack: dbError.stack,
+                        env_check: {
+                            POSTGRES_URL: !!process.env.POSTGRES_URL,
+                            DATABASE_URL: !!process.env.DATABASE_URL,
+                            POSTGRES_PRISMA_URL: !!process.env.POSTGRES_PRISMA_URL
+                        }
+                    });
+                    // 데이터베이스 오류가 있어도 로그인은 계속 진행
+                    console.log('⚠️ 데이터베이스 저장 실패했지만 로그인은 계속 진행');
                 }
 
                 const userPayload = {
@@ -140,22 +156,41 @@ export default async function handler(req, res) {
         });
 
     } catch (error) {
-        console.error('Basic Auth API 오류:', error);
-        res.status(500).json({
-            error: '서버 오류가 발생했습니다',
-            code: 'INTERNAL_ERROR',
-            message: error.message
+        console.error('❌ Basic Auth API 최상위 오류:', error);
+        console.error('❌ 오류 상세 정보:', {
+            name: error.name,
+            message: error.message,
+            stack: error.stack?.substring(0, 500), // 스택 일부만 로그
+            type: typeof error
         });
+        
+        // JSON 응답 보장
+        if (!res.headersSent) {
+            res.status(500).json({
+                error: '서버 오류가 발생했습니다',
+                code: 'INTERNAL_ERROR',
+                message: error.message,
+                details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+            });
+        }
     }
 }
 
 // 데이터베이스 테이블 초기화
 async function initializeTables() {
+    console.log('🔧 테이블 초기화 시작');
+    console.log('🔧 환경변수 체크:', {
+        POSTGRES_URL: !!process.env.POSTGRES_URL,
+        DATABASE_URL: !!process.env.DATABASE_URL,
+        POSTGRES_PRISMA_URL: !!process.env.POSTGRES_PRISMA_URL
+    });
+    
     try {
         // 데이터베이스 연결 확인
-        if (!process.env.POSTGRES_URL && !process.env.DATABASE_URL) {
-            console.warn('⚠️ PostgreSQL 환경변수가 설정되지 않았습니다');
-            return;
+        if (!process.env.POSTGRES_URL && !process.env.DATABASE_URL && !process.env.POSTGRES_PRISMA_URL) {
+            const errorMsg = 'PostgreSQL 환경변수가 설정되지 않았습니다 (POSTGRES_URL, DATABASE_URL, POSTGRES_PRISMA_URL 중 하나 필요)';
+            console.error('❌', errorMsg);
+            throw new Error(errorMsg);
         }
 
         // 사용자 테이블 생성 (존재하지 않으면)
