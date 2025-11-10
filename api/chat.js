@@ -214,11 +214,18 @@ async function callClaudeAPI(prompt) {
 function generateAIResponse(userMessage, recommendations) {
     const { restaurants } = recommendations;
     
-    if (restaurants.length === 0) {
-        return "아이구, 조건에 맞는 맛집을 못 찾겠다이가... 😅 다른 지역이나 음식으로 다시 말해봐라!";
+    // 위치 언급이 있었지만 맛집을 찾지 못한 경우
+    if (recommendations.hasLocationMention && restaurants.length === 0) {
+        return "아이구, 그 조건에 맞는 맛집을 못 찾겠다이가... 😅 다른 지역이나 음식으로 다시 말해봐라!";
     }
-
-    return `마! 좋은 맛집들 ${restaurants.length}곳 찾았다이가! 🍽️ 아래 카드에서 자세히 봐라!`;
+    
+    // 위치 언급이 있고 맛집을 찾은 경우
+    if (recommendations.hasLocationMention && restaurants.length > 0) {
+        return `마! 좋은 맛집들 ${restaurants.length}곳 찾았다이가! 🍽️ 아래 카드에서 자세히 봐라!`;
+    }
+    
+    // 일반 대화인 경우 (위치 언급 없음)
+    return "안녕하세요! 뚜기입니다! 🐧 부산 맛집 궁금한 거 있으면 언제든 말해주세요!";
 }
 
 // Claude AI 프롬프트 생성
@@ -298,9 +305,10 @@ module.exports = async function handler(req, res) {
         );
 
         // 위치 언급이 있을 때만 맛집 추천
-        let recommendations = { restaurants: [], analysis: {}, total: 0 };
+        let recommendations = { restaurants: [], analysis: {}, total: 0, hasLocationMention };
         if (hasLocationMention) {
             recommendations = restaurantAI.recommendRestaurants(message);
+            recommendations.hasLocationMention = hasLocationMention; // 추가
         }
         
         // 항상 Claude AI로 응답 생성
