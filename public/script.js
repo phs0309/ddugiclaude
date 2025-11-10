@@ -123,7 +123,16 @@ class InstagramStyleChatBot {
         } catch (error) {
             this.hideTypingIndicator();
             console.error('API Error:', error);
-            this.addMessage('죄송합니다. 잠시 문제가 발생했어요. 다시 시도해주세요! 🙏', 'bot');
+            
+            // 서버 에러 응답에서 실제 메시지 추출 시도
+            if (error.response && error.response.message) {
+                this.addMessage(error.response.message, 'bot');
+            } else if (error.message && error.message.includes('HTTP error! status: 500')) {
+                // 500 에러인 경우 서버에서 받은 응답 내용을 가져오려고 시도
+                this.addMessage('서버에서 오류가 발생했습니다. 개발자 도구의 네트워크 탭에서 자세한 내용을 확인해주세요.', 'bot');
+            } else {
+                this.addMessage(`연결 오류: ${error.message}`, 'bot');
+            }
         }
     }
 
@@ -289,7 +298,15 @@ ${restaurant.description}`;
         });
 
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            // 에러 응답의 내용을 파싱해서 실제 에러 메시지 추출
+            try {
+                const errorData = await response.json();
+                const error = new Error(`HTTP error! status: ${response.status}`);
+                error.response = errorData;
+                throw error;
+            } catch (parseError) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
         }
 
         return await response.json();
