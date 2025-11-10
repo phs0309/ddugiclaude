@@ -44,10 +44,11 @@ class RestaurantAI {
             rating: null
         };
 
-        // 지역 분석
+        // 지역 분석 (매칭된 키워드들을 모두 저장)
         for (const [area, keywords] of Object.entries(areaMap)) {
             if (keywords.some(keyword => lowerMessage.includes(keyword))) {
                 analysis.area = area;
+                analysis.areaKeywords = keywords; // 필터링에 사용할 키워드들
                 break;
             }
         }
@@ -88,10 +89,12 @@ class RestaurantAI {
         let candidates = [...this.restaurants];
 
         // 지역 필터링
-        if (analysis.area) {
+        if (analysis.area && analysis.areaKeywords) {
             candidates = candidates.filter(restaurant => {
-                return restaurant.address.includes(analysis.area) || 
-                       restaurant.area.includes(analysis.area);
+                return analysis.areaKeywords.some(keyword => 
+                    restaurant.address.includes(keyword) || 
+                    restaurant.area.includes(keyword)
+                );
             });
         }
 
