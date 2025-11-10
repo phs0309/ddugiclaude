@@ -55,7 +55,7 @@ class ApiClient {
 
     // Google 로그인
     async loginWithGoogle(idToken) {
-        const data = await this.request('/api/auth?action=google-login', {
+        const data = await this.request('/api/basic-auth?action=google-login', {
             method: 'POST',
             body: JSON.stringify({ idToken })
         });

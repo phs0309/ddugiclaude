@@ -40,6 +40,55 @@ export default async function handler(req, res) {
             });
         }
 
+        if (action === 'google-login') {
+            // Google 로그인 (간단 버전)
+            const { idToken } = req.body;
+
+            if (!idToken) {
+                return res.status(400).json({
+                    error: 'Google ID 토큰이 필요합니다',
+                    code: 'MISSING_ID_TOKEN'
+                });
+            }
+
+            try {
+                // Google ID 토큰 디코딩 (간단한 방법)
+                const base64Url = idToken.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const jsonPayload = JSON.parse(Buffer.from(base64, 'base64').toString());
+
+                const userPayload = {
+                    userId: jsonPayload.sub,
+                    email: jsonPayload.email,
+                    name: jsonPayload.name,
+                    provider: 'google',
+                    profilePicture: jsonPayload.picture,
+                    exp: Date.now() + (7 * 24 * 60 * 60 * 1000)
+                };
+
+                const token = Buffer.from(JSON.stringify(userPayload)).toString('base64');
+
+                return res.status(200).json({
+                    success: true,
+                    token: token,
+                    user: {
+                        id: jsonPayload.sub,
+                        email: jsonPayload.email,
+                        name: jsonPayload.name,
+                        profilePicture: jsonPayload.picture,
+                        provider: 'google'
+                    },
+                    message: 'Google 로그인 성공'
+                });
+            } catch (error) {
+                return res.status(400).json({
+                    error: 'Google 토큰 처리 중 오류',
+                    code: 'GOOGLE_TOKEN_ERROR',
+                    message: error.message
+                });
+            }
+        }
+
         res.status(400).json({
             error: '지원하지 않는 액션입니다',
             code: 'UNSUPPORTED_ACTION'
