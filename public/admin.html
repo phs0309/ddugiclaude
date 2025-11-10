@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>뚜기 데이터 관리 에이전트 대시보드</title>
+    <link rel="stylesheet" href="admin-style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="admin-container">
+        <!-- 사이드바 -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <i class="fas fa-robot"></i>
+                    <h2>뚜기 에이전트</h2>
+                </div>
+            </div>
+            
+            <ul class="sidebar-menu">
+                <li class="menu-item active" data-section="dashboard">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>대시보드</span>
+                </li>
+                <li class="menu-item" data-section="districts">
+                    <i class="fas fa-map"></i>
+                    <span>구역 관리</span>
+                </li>
+                <li class="menu-item" data-section="scheduler">
+                    <i class="fas fa-clock"></i>
+                    <span>스케줄러</span>
+                </li>
+                <li class="menu-item" data-section="reports">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>리포트</span>
+                </li>
+                <li class="menu-item" data-section="logs">
+                    <i class="fas fa-file-alt"></i>
+                    <span>로그</span>
+                </li>
+                <li class="menu-item" data-section="settings">
+                    <i class="fas fa-cog"></i>
+                    <span>설정</span>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- 메인 컨텐츠 -->
+        <main class="main-content">
+            <!-- 헤더 -->
+            <header class="header">
+                <div class="header-left">
+                    <h1 id="page-title">데이터 관리 대시보드</h1>
+                    <div class="breadcrumb">
+                        <span>홈</span> / <span id="current-section">대시보드</span>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <div class="status-indicator">
+                        <div class="status-dot online"></div>
+                        <span>에이전트 활성</span>
+                    </div>
+                    <div class="last-update">
+                        <i class="fas fa-sync-alt"></i>
+                        <span id="last-update-time">방금 전</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- 대시보드 섹션 -->
+            <section id="dashboard" class="content-section active">
+                <!-- 통계 카드 -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="total-districts">16</h3>
+                            <p>총 구역</p>
+                            <span class="stat-change positive">+0</span>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-utensils"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="total-restaurants">69</h3>
+                            <p>총 맛집</p>
+                            <span class="stat-change positive">+69</span>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="last-sync">오늘</h3>
+                            <p>마지막 동기화</p>
+                            <span class="stat-change neutral">자동</span>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="error-count">0</h3>
+                            <p>오류</p>
+                            <span class="stat-change positive">정상</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 빠른 액션 -->
+                <div class="quick-actions">
+                    <h3>빠른 액션</h3>
+                    <div class="action-buttons">
+                        <button class="action-btn primary" onclick="runFullUpdate()">
+                            <i class="fas fa-sync"></i>
+                            전체 업데이트
+                        </button>
+                        <button class="action-btn secondary" onclick="generateReport()">
+                            <i class="fas fa-file-pdf"></i>
+                            리포트 생성
+                        </button>
+                        <button class="action-btn warning" onclick="cleanupData()">
+                            <i class="fas fa-broom"></i>
+                            데이터 정리
+                        </button>
+                        <button class="action-btn success" onclick="startScheduler()">
+                            <i class="fas fa-play"></i>
+                            스케줄러 시작
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 최근 활동 -->
+                <div class="recent-activity">
+                    <h3>최근 활동</h3>
+                    <div class="activity-list" id="activity-list">
+                        <div class="activity-item">
+                            <div class="activity-icon success">
+                                <i class="fas fa-check"></i>
+                            </div>
+                            <div class="activity-content">
+                                <p><strong>전체 구역 초기화 완료</strong></p>
+                                <span class="activity-time">방금 전</span>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <div class="activity-icon info">
+                                <i class="fas fa-info"></i>
+                            </div>
+                            <div class="activity-content">
+                                <p>16개 구역에서 69개 맛집 데이터 수집</p>
+                                <span class="activity-time">5분 전</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 구역 관리 섹션 -->
+            <section id="districts" class="content-section">
+                <div class="section-header">
+                    <h2>구역별 관리</h2>
+                    <div class="header-actions">
+                        <button class="btn success" onclick="showAddDataModal()">
+                            <i class="fas fa-plus"></i>
+                            맛집 직접 추가
+                        </button>
+                        <button class="btn secondary" onclick="showSearchModal()">
+                            <i class="fas fa-search"></i>
+                            맛집 검색 추가
+                        </button>
+                        <button class="btn primary" onclick="updateAllDistricts()">
+                            <i class="fas fa-sync"></i>
+                            전체 업데이트
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 맛집 직접 추가 패널 -->
+                <div class="add-data-panel" id="add-data-panel">
+                    <div class="panel-header">
+                        <h3><i class="fas fa-plus-circle"></i> 새 맛집 직접 추가</h3>
+                        <button class="close-btn" onclick="hideAddDataPanel()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="add-data-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="add-district">구역 선택 *</label>
+                                <select id="add-district" class="form-control" required>
+                                    <option value="">구역을 선택하세요</option>
+                                    <option value="중구">중구</option>
+                                    <option value="서구">서구</option>
+                                    <option value="동구">동구</option>
+                                    <option value="영도구">영도구</option>
+                                    <option value="부산진구">부산진구</option>
+                                    <option value="동래구">동래구</option>
+                                    <option value="남구">남구</option>
+                                    <option value="북구">북구</option>
+                                    <option value="해운대구">해운대구</option>
+                                    <option value="사하구">사하구</option>
+                                    <option value="금정구">금정구</option>
+                                    <option value="강서구">강서구</option>
+                                    <option value="연제구">연제구</option>
+                                    <option value="수영구">수영구</option>
+                                    <option value="사상구">사상구</option>
+                                    <option value="기장군">기장군</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="add-name">맛집 이름 *</label>
+                                <input type="text" id="add-name" class="form-control" placeholder="맛집 이름을 입력하세요" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="add-category">카테고리 *</label>
+                                <select id="add-category" class="form-control" required>
+                                    <option value="">카테고리 선택</option>
+                                    <option value="한식">한식</option>
+                                    <option value="중식">중식</option>
+                                    <option value="일식">일식</option>
+                                    <option value="양식">양식</option>
+                                    <option value="카페">카페</option>
+                                    <option value="해산물">해산물</option>
+                                    <option value="간식">간식</option>
+                                    <option value="전통음식">전통음식</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="add-address">주소 *</label>
+                                <input type="text" id="add-address" class="form-control" placeholder="부산광역시 OO구 ..." required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="add-phone">전화번호</label>
+                                <input type="tel" id="add-phone" class="form-control" placeholder="051-000-0000">
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="add-rating">평점 *</label>
+                                <select id="add-rating" class="form-control" required>
+                                    <option value="">평점 선택</option>
+                                    <option value="5.0">5.0 (최고)</option>
+                                    <option value="4.8">4.8</option>
+                                    <option value="4.5">4.5</option>
+                                    <option value="4.3">4.3</option>
+                                    <option value="4.0">4.0</option>
+                                    <option value="3.8">3.8</option>
+                                    <option value="3.5">3.5</option>
+                                    <option value="3.0">3.0</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="add-price">가격대</label>
+                                <select id="add-price" class="form-control">
+                                    <option value="">가격대 선택</option>
+                                    <option value="저렴">저렴 (1만원 이하)</option>
+                                    <option value="보통">보통 (1-3만원)</option>
+                                    <option value="고급">고급 (3만원 이상)</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="add-hours">영업시간</label>
+                                <input type="text" id="add-hours" class="form-control" placeholder="예: 09:00-22:00">
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group full-width">
+                                <label for="add-description">설명</label>
+                                <textarea id="add-description" class="form-control" rows="3" placeholder="맛집에 대한 간단한 설명을 입력하세요"></textarea>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="add-specialties">대표 메뉴</label>
+                                <input type="text" id="add-specialties" class="form-control" placeholder="예: 돼지국밥, 순대국">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="add-image">이미지 URL</label>
+                                <input type="url" id="add-image" class="form-control" placeholder="https://...">
+                            </div>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button class="btn secondary" onclick="hideAddDataPanel()">
+                                <i class="fas fa-times"></i>
+                                취소
+                            </button>
+                            <button class="btn warning" onclick="resetAddForm()">
+                                <i class="fas fa-redo"></i>
+                                초기화
+                            </button>
+                            <button class="btn success" onclick="addRestaurantData()">
+                                <i class="fas fa-plus"></i>
+                                맛집 추가
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 검색 패널 -->
+                <div class="search-panel" id="search-panel">
+                    <div class="panel-header">
+                        <h3><i class="fas fa-search"></i> 맛집 검색 및 추가</h3>
+                        <button class="close-btn" onclick="hideSearchPanel()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="search-container">
+                        <div class="search-form">
+                            <div class="search-row">
+                                <div class="search-field">
+                                    <label for="search-district">구역 선택</label>
+                                    <select id="search-district" class="form-control">
+                                        <option value="">구역을 선택하세요</option>
+                                        <option value="중구">중구</option>
+                                        <option value="서구">서구</option>
+                                        <option value="동구">동구</option>
+                                        <option value="영도구">영도구</option>
+                                        <option value="부산진구">부산진구</option>
+                                        <option value="동래구">동래구</option>
+                                        <option value="남구">남구</option>
+                                        <option value="북구">북구</option>
+                                        <option value="해운대구">해운대구</option>
+                                        <option value="사하구">사하구</option>
+                                        <option value="금정구">금정구</option>
+                                        <option value="강서구">강서구</option>
+                                        <option value="연제구">연제구</option>
+                                        <option value="수영구">수영구</option>
+                                        <option value="사상구">사상구</option>
+                                        <option value="기장군">기장군</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="search-field">
+                                    <label for="search-keyword">검색 키워드</label>
+                                    <input type="text" id="search-keyword" class="form-control" placeholder="예: 돼지국밥, 회, 카페">
+                                </div>
+                                
+                                <div class="search-field">
+                                    <label for="search-count">추가할 맛집 수</label>
+                                    <input type="number" id="search-count" class="form-control" value="3" min="1" max="10">
+                                </div>
+                            </div>
+                            
+                            <div class="search-row">
+                                <div class="search-field">
+                                    <label for="search-category">카테고리</label>
+                                    <select id="search-category" class="form-control">
+                                        <option value="">전체</option>
+                                        <option value="한식">한식</option>
+                                        <option value="중식">중식</option>
+                                        <option value="일식">일식</option>
+                                        <option value="양식">양식</option>
+                                        <option value="카페">카페</option>
+                                        <option value="해산물">해산물</option>
+                                        <option value="간식">간식</option>
+                                        <option value="전통음식">전통음식</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="search-field">
+                                    <label for="search-price">가격대</label>
+                                    <select id="search-price" class="form-control">
+                                        <option value="">전체</option>
+                                        <option value="저렴">저렴</option>
+                                        <option value="보통">보통</option>
+                                        <option value="고급">고급</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="search-field">
+                                    <label for="search-rating">최소 평점</label>
+                                    <select id="search-rating" class="form-control">
+                                        <option value="">전체</option>
+                                        <option value="3.0">3.0 이상</option>
+                                        <option value="3.5">3.5 이상</option>
+                                        <option value="4.0">4.0 이상</option>
+                                        <option value="4.5">4.5 이상</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="search-actions">
+                                <button class="btn secondary" onclick="hideSearchPanel()">
+                                    <i class="fas fa-times"></i>
+                                    취소
+                                </button>
+                                <button class="btn warning" onclick="resetSearchForm()">
+                                    <i class="fas fa-redo"></i>
+                                    초기화
+                                </button>
+                                <button class="btn primary" onclick="searchAndAddRestaurants()">
+                                    <i class="fas fa-search"></i>
+                                    검색 및 추가
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="districts-grid" id="districts-grid">
+                    <!-- 구역 카드들이 동적으로 생성됩니다 -->
+                </div>
+            </section>
+
+            <!-- 스케줄러 섹션 -->
+            <section id="scheduler" class="content-section">
+                <div class="section-header">
+                    <h2>스케줄러 관리</h2>
+                    <div class="scheduler-controls">
+                        <button class="btn success" id="start-scheduler-btn" onclick="toggleScheduler()">
+                            <i class="fas fa-play"></i>
+                            스케줄러 시작
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="scheduler-info">
+                    <div class="schedule-card">
+                        <div class="schedule-header">
+                            <i class="fas fa-clock"></i>
+                            <h3>자동 업데이트 스케줄</h3>
+                        </div>
+                        <div class="schedule-details">
+                            <div class="schedule-item">
+                                <span class="schedule-time">매일 06:00</span>
+                                <span class="schedule-desc">전체 구역 데이터 업데이트</span>
+                                <span class="schedule-status active">활성</span>
+                            </div>
+                            <div class="schedule-item">
+                                <span class="schedule-time">일요일 03:00</span>
+                                <span class="schedule-desc">오래된 데이터 정리</span>
+                                <span class="schedule-status active">활성</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 리포트 섹션 -->
+            <section id="reports" class="content-section">
+                <div class="section-header">
+                    <h2>리포트 및 통계</h2>
+                    <button class="btn primary" onclick="refreshStats()">
+                        <i class="fas fa-refresh"></i>
+                        새로고침
+                    </button>
+                </div>
+                
+                <div class="reports-content">
+                    <div class="chart-container">
+                        <h3>구역별 맛집 분포</h3>
+                        <canvas id="districts-chart"></canvas>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <h3>카테고리별 분포</h3>
+                        <canvas id="categories-chart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 로그 섹션 -->
+            <section id="logs" class="content-section">
+                <div class="section-header">
+                    <h2>시스템 로그</h2>
+                    <div class="log-controls">
+                        <select id="log-level">
+                            <option value="all">모든 로그</option>
+                            <option value="info">정보</option>
+                            <option value="error">오류</option>
+                            <option value="success">성공</option>
+                        </select>
+                        <button class="btn secondary" onclick="clearLogs()">
+                            <i class="fas fa-trash"></i>
+                            로그 지우기
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="log-container" id="log-container">
+                    <div class="log-entry info">
+                        <span class="log-time">2025-11-06 14:00:39</span>
+                        <span class="log-level">INFO</span>
+                        <span class="log-message">전체 구역 초기화 시작</span>
+                    </div>
+                    <div class="log-entry success">
+                        <span class="log-time">2025-11-06 14:00:45</span>
+                        <span class="log-level">SUCCESS</span>
+                        <span class="log-message">16개 구역 데이터 업데이트 완료</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 설정 섹션 -->
+            <section id="settings" class="content-section">
+                <div class="section-header">
+                    <h2>시스템 설정</h2>
+                    <button class="btn primary" onclick="saveSettings()">
+                        <i class="fas fa-save"></i>
+                        설정 저장
+                    </button>
+                </div>
+                
+                <div class="settings-content">
+                    <div class="setting-group">
+                        <h3>데이터 수집 설정</h3>
+                        <div class="setting-item">
+                            <label for="update-interval">업데이트 간격 (시간)</label>
+                            <input type="number" id="update-interval" value="24" min="1" max="168">
+                        </div>
+                        <div class="setting-item">
+                            <label for="data-retention">데이터 보관 기간 (일)</label>
+                            <input type="number" id="data-retention" value="30" min="7" max="365">
+                        </div>
+                    </div>
+                    
+                    <div class="setting-group">
+                        <h3>알림 설정</h3>
+                        <div class="setting-item">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="email-notifications" checked>
+                                <span class="checkmark"></span>
+                                이메일 알림
+                            </label>
+                        </div>
+                        <div class="setting-item">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="error-notifications" checked>
+                                <span class="checkmark"></span>
+                                오류 알림
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- 모달 -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">제목</h3>
+                <span class="modal-close" onclick="closeModal()">&times;</span>
+            </div>
+            <div class="modal-body" id="modal-body">
+                내용
+            </div>
+            <div class="modal-footer">
+                <button class="btn secondary" onclick="closeModal()">취소</button>
+                <button class="btn primary" id="modal-confirm" onclick="confirmModal()">확인</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 로딩 오버레이 -->
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="loading-spinner">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>처리 중...</p>
+        </div>
+    </div>
+
+    <script src="admin-script.js"></script>
+</body>
+</html>

@@ -26,7 +26,13 @@
       "Bash(timeout 5s npm start)",
       "Bash(git clean:*)",
       "Bash(git pull:*)",
-      "WebFetch(domain:navermaps.github.io)"
+      "WebFetch(domain:navermaps.github.io)",
+      "Bash(PORT=3007 node server.js)",
+      "Bash(start http://localhost:3007)",
+      "Bash(nslookup:*)",
+      "Bash(curl:*)",
+      "WebSearch",
+      "Bash(jq:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"

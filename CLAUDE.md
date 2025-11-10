@@ -51,10 +51,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Critical Rules
 
-⚠️ **NEVER generate fake restaurant data**
-- Only use restaurants from `restaurants.json`
+⚠️ **절대 절대 절대 가짜 맛집 데이터 생성 금지!!!**
+- **NEVER EVER generate fake restaurant data**
+- **NO fallback data generation - 폴백 데이터 생성 절대 금지**
+- **NO mock data - 모의 데이터 생성 절대 금지**
+- **NO invented names or addresses - 임의로 만든 이름이나 주소 절대 금지**
+- Only use restaurants from actual web scraping or existing JSON files
 - Return empty results rather than inventing restaurants
-- All information must be from actual JSON data
+- All information must be from actual data sources
+- 웹 스크래핑이 실패하면 빈 배열 반환할 것
+- 데이터가 없으면 "데이터 없음"이라고 정직하게 말할 것
 
 ⚠️ **Environment Variables**
 - Use `claude_api_key` (not CLAUDE_API_KEY)

@@ -1207,3 +1207,136 @@ rippleStyle.textContent = `
     }
 `;
 document.head.appendChild(rippleStyle);
+
+// Side Menu Functions
+function toggleSideMenu() {
+    const sideMenu = document.getElementById('sideMenu');
+    const overlay = document.getElementById('sideMenuOverlay');
+    
+    if (sideMenu && overlay) {
+        const isActive = sideMenu.classList.contains('active');
+        
+        if (isActive) {
+            closeSideMenu();
+        } else {
+            openSideMenu();
+        }
+    }
+}
+
+function openSideMenu() {
+    const sideMenu = document.getElementById('sideMenu');
+    const overlay = document.getElementById('sideMenuOverlay');
+    
+    if (sideMenu && overlay) {
+        sideMenu.classList.add('active');
+        overlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function closeSideMenu() {
+    const sideMenu = document.getElementById('sideMenu');
+    const overlay = document.getElementById('sideMenuOverlay');
+    
+    if (sideMenu && overlay) {
+        sideMenu.classList.remove('active');
+        overlay.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+}
+
+// Side Menu Item Actions
+function handleLogin() {
+    closeSideMenu();
+    
+    // 임시 로그인 기능 - 추후 실제 로그인 시스템 연동
+    const chatBot = window.instagramChatBot;
+    if (chatBot) {
+        chatBot.addMessage('로그인 기능은 개발 중입니다! 😊', 'bot');
+    }
+    
+    console.log('로그인 기능 실행');
+}
+
+function showSavedRestaurants() {
+    closeSideMenu();
+    
+    // 임시 저장된 맛집 기능
+    const savedRestaurants = JSON.parse(localStorage.getItem('savedRestaurants') || '[]');
+    
+    const chatBot = window.instagramChatBot;
+    if (chatBot) {
+        if (savedRestaurants.length > 0) {
+            chatBot.addMessage(`저장된 맛집 ${savedRestaurants.length}곳을 찾았습니다! ❤️`, 'bot');
+            // 추후 저장된 맛집 표시 기능 구현
+        } else {
+            chatBot.addMessage('아직 저장된 맛집이 없습니다. 마음에 드는 맛집을 저장해보세요! 💫', 'bot');
+        }
+    }
+    
+    console.log('저장된 맛집 목록:', savedRestaurants);
+}
+
+function showSettings() {
+    closeSideMenu();
+    
+    // 임시 설정 기능
+    const chatBot = window.instagramChatBot;
+    if (chatBot) {
+        chatBot.addMessage('설정 메뉴는 개발 중입니다! ⚙️\n\n현재 사용 가능한 기능:\n• 햄버거 메뉴\n• 맛집 추천\n• 지역별/카테고리별 검색', 'bot');
+    }
+    
+    console.log('설정 기능 실행');
+}
+
+// 저장된 맛집 관리 함수들
+function saveRestaurant(restaurant) {
+    const savedRestaurants = JSON.parse(localStorage.getItem('savedRestaurants') || '[]');
+    
+    // 중복 체크
+    const isAlreadySaved = savedRestaurants.some(saved => saved.id === restaurant.id);
+    
+    if (!isAlreadySaved) {
+        savedRestaurants.push({
+            id: restaurant.id,
+            name: restaurant.name,
+            area: restaurant.area,
+            category: restaurant.category,
+            savedAt: new Date().toISOString()
+        });
+        
+        localStorage.setItem('savedRestaurants', JSON.stringify(savedRestaurants));
+        
+        const chatBot = window.instagramChatBot;
+        if (chatBot) {
+            chatBot.addMessage(`"${restaurant.name}" 맛집을 저장했습니다! ❤️`, 'bot');
+        }
+        
+        console.log('맛집 저장됨:', restaurant.name);
+        return true;
+    } else {
+        const chatBot = window.instagramChatBot;
+        if (chatBot) {
+            chatBot.addMessage(`"${restaurant.name}" 맛집은 이미 저장되어 있습니다! 😊`, 'bot');
+        }
+        return false;
+    }
+}
+
+function removeSavedRestaurant(restaurantId) {
+    const savedRestaurants = JSON.parse(localStorage.getItem('savedRestaurants') || '[]');
+    const filteredRestaurants = savedRestaurants.filter(saved => saved.id !== restaurantId);
+    
+    localStorage.setItem('savedRestaurants', JSON.stringify(filteredRestaurants));
+    
+    console.log('맛집 저장 해제됨:', restaurantId);
+    return filteredRestaurants;
+}
+
+// ESC 키로 사이드 메뉴 닫기
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        closeSideMenu();
+    }
+});

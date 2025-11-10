@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>뚜기의 부산 맛집</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
@@ -10,12 +10,48 @@
     <!-- 네이버 지도 API는 동적으로 로드됩니다 -->
 </head>
 <body>
+    <!-- Side Menu Overlay -->
+    <div class="side-menu-overlay" id="sideMenuOverlay" onclick="closeSideMenu()"></div>
+    
+    <!-- Side Menu -->
+    <div class="side-menu" id="sideMenu">
+        <div class="side-menu-header">
+            <div class="side-menu-profile">
+                <div class="side-menu-avatar">🐧</div>
+                <div class="side-menu-info">
+                    <h3>뚜기</h3>
+                    <p>부산 맛집 가이드</p>
+                </div>
+            </div>
+            <button class="side-menu-close" onclick="closeSideMenu()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="side-menu-content">
+            <nav class="side-menu-nav">
+                <button class="side-menu-item" onclick="handleLogin()">
+                    <i class="fas fa-user"></i>
+                    <span>로그인</span>
+                </button>
+                <button class="side-menu-item" onclick="showSavedRestaurants()">
+                    <i class="fas fa-heart"></i>
+                    <span>저장된 맛집</span>
+                </button>
+                <button class="side-menu-item" onclick="showSettings()">
+                    <i class="fas fa-cog"></i>
+                    <span>설정</span>
+                </button>
+            </nav>
+        </div>
+    </div>
+
     <div class="instagram-dm-container">
         <!-- Instagram-style header -->
         <div class="dm-header">
             <div class="dm-header-left">
-                <button class="back-btn" aria-label="뒤로가기">
-                    <i class="fas fa-arrow-left"></i>
+                <button class="menu-btn" aria-label="메뉴" onclick="toggleSideMenu()">
+                    <i class="fas fa-bars"></i>
                 </button>
                 <div class="profile-info">
                     <div class="profile-avatar">
