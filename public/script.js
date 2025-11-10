@@ -1744,9 +1744,9 @@ function showToast(message, type = 'info') {
 // 페이지 로드시 저장된 맛집 상태 복원 (Database-backed)
 async function restoreSavedRestaurants() {
     try {
-        // 데이터베이스에서 저장된 맛집 목록 가져오기
+        // 데이터베이스에서 저장된 맛집 ID 목록 가져오기
         const savedData = await apiClient.getSavedRestaurants();
-        const savedIds = savedData.restaurants.map(r => r.id);
+        const savedIds = savedData.restaurantIds || [];
         
         // 모든 하트 버튼에 대해 저장 상태 확인
         document.querySelectorAll('.heart-btn').forEach(btn => {
@@ -1785,20 +1785,27 @@ async function showSavedRestaurants() {
     if (!chatBot) return;
     
     try {
-        // 데이터베이스에서 저장된 맛집 가져오기
+        // 데이터베이스에서 저장된 맛집 ID 목록 가져오기
         const savedData = await apiClient.getSavedRestaurants();
-        const savedRestaurants = savedData.restaurants;
+        const savedIds = savedData.restaurantIds || [];
         
-        if (savedRestaurants.length > 0) {
-            const userInfo = apiClient.getCurrentUser();
-            const source = savedData.isGuest || savedData.fallback ? '(로컬 저장)' : '';
+        if (savedIds.length > 0) {
+            // 저장된 ID로 실제 맛집 데이터 찾기
+            const allRestaurants = window.allRestaurants || [];
+            const savedRestaurants = allRestaurants.filter(restaurant => 
+                savedIds.includes(restaurant.id)
+            );
             
-            chatBot.addMessage(`저장된 맛집 ${savedRestaurants.length}곳을 찾았습니다! ❤️ ${source}`, 'bot');
+            chatBot.addMessage(`저장된 맛집 ${savedIds.length}곳을 찾았습니다! ❤️`, 'bot');
             
             // 저장된 맛집을 카드 형태로 표시
-            setTimeout(() => {
-                chatBot.displayRestaurantCards(savedRestaurants, '저장된 맛집');
-            }, 500);
+            if (savedRestaurants.length > 0) {
+                setTimeout(() => {
+                    chatBot.displayRestaurantCards(savedRestaurants, '저장된 맛집');
+                }, 500);
+            } else {
+                chatBot.addMessage('저장된 맛집 정보를 불러올 수 없습니다. 맛집 데이터를 먼저 로드해주세요.', 'bot');
+            }
         } else {
             chatBot.addMessage('아직 저장된 맛집이 없습니다.\n\n맛집 카드의 ❤️ 버튼을 눌러 마음에 드는 맛집을 저장해보세요! 💫', 'bot');
         }
