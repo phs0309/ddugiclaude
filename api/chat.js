@@ -271,11 +271,7 @@ function generateAIResponse(userMessage, recommendations) {
 
 // Claude AI 프롬프트 생성
 function generateClaudePrompt(userMessage, restaurants) {
-    const restaurantInfo = restaurants.slice(0, 3).map((r, idx) => 
-        `${idx + 1}. ${r.name} (${r.area})\n   📍 ${r.address}\n   ⭐ ${r.rating}/5 (${r.reviewCount}개 리뷰)\n   🍽️ ${r.description}`
-    ).join('\n\n');
-
-    return `너는 "뚜기"라는 이름의 부산 토박이 맛집 가이드야. 다음과 같은 캐릭터로 대답해줘:
+    const basePrompt = `너는 "뚜기"라는 이름의 부산 토박이 맛집 가이드야. 다음과 같은 캐릭터로 대답해줘:
 
 🐧 캐릭터 설정:
 - 이름: 뚜기 (부산의 상징 갈매기에서 따온 애칭)
@@ -289,12 +285,24 @@ function generateClaudePrompt(userMessage, restaurants) {
 - "진짜", "완전", "개꿀" 등의 강조 표현
 - "내가 먹어봤는데", "여기 진짜 맛있어" 등 개인 경험 언급
 
-🍽️ 사용자 요청: "${userMessage}"
+🍽️ 사용자 메시지: "${userMessage}"`;
+
+    if (restaurants && restaurants.length > 0) {
+        const restaurantInfo = restaurants.slice(0, 3).map((r, idx) => 
+            `${idx + 1}. ${r.name} (${r.area})\n   📍 ${r.address}\n   ⭐ ${r.rating}/5 (${r.reviewCount}개 리뷰)\n   🍽️ ${r.description}`
+        ).join('\n\n');
+
+        return `${basePrompt}
 
 🏪 추천 맛집 데이터:
 ${restaurantInfo}
 
 위 맛집들을 뚜기의 캐릭터로 2-3문장 정도 추천해줘. 구체적인 이름이나 주소는 카드에 나오니까 반복하지 말고, 뚜기만의 개성있는 소개로 말해줘. 반드시 이모지도 포함해서 친근하게!`;
+    } else {
+        return `${basePrompt}
+
+사용자가 맛집과 관련된 질문을 했지만 조건에 맞는 맛집을 찾지 못했거나, 일반적인 대화를 하고 있어. 뚜기의 캐릭터로 친근하게 응답해줘. 맛집을 못 찾았다면 다른 조건으로 물어보라고 하고, 일반 대화라면 자연스럽게 맛집 얘기로 유도해봐. 2-3문장 정도로 이모지 포함해서!`;
+    }
 }
 
 // Vercel 서버리스 함수
@@ -325,73 +333,17 @@ module.exports = async function handler(req, res) {
     try {
         const restaurantAI = new RestaurantAI();
 
-        // 인사말이나 일반 대화 체크
-        const lowerMessage = message.toLowerCase();
-        const greetings = ['안녕', '하이', '반갑', '처음', '누구', '이름'];
-        const thanks = ['고마', '감사', '땡큐'];
-        const casual = ['어떻게', '뭐해', '어때', '좋은', '나쁜'];
+        // 모든 메시지를 Claude API로 처리
 
-        // 뚜기 캐릭터 응답들
-        const dduggiResponses = {
-            greetings: [
-                "마! 뚜기다이가! 🐧 부산 토박이 맛집 가이드야! 어떤 맛있는 거 찾고 있노?",
-                "안녕하세요! 부산 맛집은 나한테 맡겨라! 😊 뚜기가 다 알려줄게!",
-                "어서와라! 🙌 뚜기가 부산 최고 맛집들 소개해줄게! 뭔 음식 좋아하노?"
-            ],
-            thanks: [
-                "마! 뭘 고마워하노! 😄 뚜기한테는 당연한 일이다이가!",
-                "고맙긴! 맛있게 드시고 또 놀러와라! 🍽️",
-                "아이고, 고마워! 다음에도 맛집 찾으면 뚜기한테 말해라! 😊"
-            ],
-            casual: [
-                "마! 뚜기는 맛집 찾는 거 도와주고 있어! 🐧 너는 뭔 맛있는 거 먹고 싶노?",
-                "좋다이가! 😄 오늘도 맛집 탐방하는 중이야! 어디 가고 싶은지 말해봐라!",
-                "부산 바다 바람 맞으면서 맛집 찾고 있어! 🌊 어떤 음식 땡기노?"
-            ]
-        };
-
-        const isGreeting = greetings.some(greeting => lowerMessage.includes(greeting));
-        const isThank = thanks.some(thank => lowerMessage.includes(thank));
-        const isCasual = casual.some(c => lowerMessage.includes(c));
-
-        if (isGreeting) {
-            const randomGreeting = dduggiResponses.greetings[Math.floor(Math.random() * dduggiResponses.greetings.length)];
-            return res.json({
-                message: randomGreeting,
-                restaurants: restaurantAI.getRandomRecommendations(3),
-                type: 'greeting'
-            });
-        }
-
-        if (isThank) {
-            const randomThanks = dduggiResponses.thanks[Math.floor(Math.random() * dduggiResponses.thanks.length)];
-            return res.json({
-                message: randomThanks,
-                restaurants: [],
-                type: 'casual'
-            });
-        }
-
-        if (isCasual) {
-            const randomCasual = dduggiResponses.casual[Math.floor(Math.random() * dduggiResponses.casual.length)];
-            return res.json({
-                message: randomCasual,
-                restaurants: restaurantAI.getRandomRecommendations(2),
-                type: 'casual'
-            });
-        }
 
         // AI 맛집 추천
         const recommendations = restaurantAI.recommendRestaurants(message);
         
-        // Claude AI로 자연스러운 응답 생성 시도
-        let aiResponse = null;
-        if (recommendations.restaurants.length > 0) {
-            const claudePrompt = generateClaudePrompt(message, recommendations.restaurants);
-            aiResponse = await callClaudeAPI(claudePrompt);
-        }
+        // 항상 Claude AI로 응답 생성
+        const claudePrompt = generateClaudePrompt(message, recommendations.restaurants);
+        let aiResponse = await callClaudeAPI(claudePrompt);
 
-        // AI 응답이 없으면 기본 응답 사용
+        // AI 응답이 없으면 폴백 응답 사용
         const finalResponse = aiResponse || generateAIResponse(message, recommendations);
 
         console.log(`🤖 추천 맛집: ${recommendations.restaurants.length}개`);

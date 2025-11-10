@@ -107,85 +107,11 @@
             box-shadow: 0 6px 20px rgba(255, 107, 53, 0.3);
         }
         
-        /* 슬라이더 스타일 */
-        .slider-container {
-            position: relative;
-            max-width: 600px;
-            margin: 20px auto;
-            padding: 60px 0;
-        }
-        
-        .saved-slider {
-            overflow: hidden;
-            border-radius: 20px;
-            height: 400px;
-        }
-        
-        .slider-track {
-            display: flex;
-            flex-direction: column;
-            transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-        }
-        
-        .slider-btn {
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            background: white;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            border: none;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-            z-index: 10;
-            font-size: 18px;
-            color: #333;
-        }
-        
-        .slider-btn:hover {
-            background: #FF6B35;
-            color: white;
-            transform: translateX(-50%) scale(1.1);
-        }
-        
-        .slider-btn.prev {
-            top: 0;
-        }
-        
-        .slider-btn.next {
-            bottom: 0;
-        }
-        
-        .slider-btn:disabled {
-            opacity: 0.3;
-            cursor: not-allowed;
-        }
-        
-        .slider-dots {
-            display: flex;
-            justify-content: center;
-            gap: 8px;
+        .saved-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
             margin-top: 20px;
-        }
-        
-        .dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: #E5E5E5;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .dot.active {
-            width: 24px;
-            border-radius: 4px;
-            background: #FF6B35;
         }
         
         .saved-card {
@@ -306,23 +232,8 @@
         }
 
         @media (max-width: 768px) {
-            .slider-container {
-                padding: 50px 20px;
-            }
-            
-            .saved-slider {
-                height: 350px;
-            }
-            
-            .slider-btn {
-                width: 35px;
-                height: 35px;
-                font-size: 14px;
-            }
-            
-            .saved-card {
-                height: 350px !important;
-                min-height: 350px !important;
+            .saved-grid {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -397,11 +308,7 @@
             `;
         }
         
-        // 슬라이더 관련 변수
-        let currentSlide = 0;
-        let totalSlides = 0;
-        
-        // 저장된 맛집 표시 (슬라이더 방식)
+        // 저장된 맛집 표시
         function displaySavedRestaurants() {
             const categoryEmojis = {
                 '한식': '🍲',
@@ -410,102 +317,44 @@
                 '카페': '☕'
             };
             
-            totalSlides = savedRestaurants.length;
-            currentSlide = 0;
-            
             const html = `
-                <div class="slider-container">
-                    <button class="slider-btn prev" onclick="prevSlide()" ${totalSlides <= 1 ? 'disabled' : ''}>
-                        <i class="fas fa-chevron-up"></i>
-                    </button>
-                    <button class="slider-btn next" onclick="nextSlide()" ${totalSlides <= 1 ? 'disabled' : ''}>
-                        <i class="fas fa-chevron-down"></i>
-                    </button>
-                    
-                    <div class="saved-slider">
-                        <div class="slider-track" id="sliderTrack">
-                            ${savedRestaurants.map(restaurant => {
-                                const emoji = categoryEmojis[restaurant.category] || '🍽️';
-                                const savedDate = restaurant.savedAt ? 
-                                    new Date(restaurant.savedAt).toLocaleDateString('ko-KR') : 
-                                    '최근';
-                                
-                                return `
-                                    <div class="saved-card" style="min-height: 400px; height: 400px; flex-shrink: 0;">
-                                        <div class="saved-card-header">
-                                            ${emoji}
-                                            <button class="remove-btn" onclick="removeRestaurant(event, '${restaurant.id}')" aria-label="삭제">
-                                                <i class="fas fa-times"></i>
-                                            </button>
-                                        </div>
-                                        <div class="saved-card-body">
-                                            <h3 class="saved-card-name">${restaurant.name}</h3>
-                                            <div class="saved-card-info">
-                                                <i class="fas fa-map-marker-alt"></i>
-                                                <span>${restaurant.area} · ${restaurant.category}</span>
-                                            </div>
-                                            <p class="saved-card-desc">${restaurant.description || '맛있는 ' + restaurant.category + ' 맛집'}</p>
-                                            <div class="saved-card-footer">
-                                                <span class="saved-date">저장일: ${savedDate}</span>
-                                                <a href="#" onclick="showRestaurantDetail('${restaurant.id}'); return false;" class="view-detail-btn">
-                                                    자세히 보기
-                                                    <i class="fas fa-chevron-right"></i>
-                                                </a>
-                                            </div>
-                                        </div>
+                <div class="saved-grid">
+                    ${savedRestaurants.map(restaurant => {
+                        const emoji = categoryEmojis[restaurant.category] || '🍽️';
+                        const savedDate = restaurant.savedAt ? 
+                            new Date(restaurant.savedAt).toLocaleDateString('ko-KR') : 
+                            '최근';
+                        
+                        return `
+                            <div class="saved-card" onclick="showRestaurantDetail('${restaurant.id}')">
+                                <div class="saved-card-header">
+                                    ${emoji}
+                                    <button class="remove-btn" onclick="removeRestaurant(event, '${restaurant.id}')" aria-label="삭제">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                                <div class="saved-card-body">
+                                    <h3 class="saved-card-name">${restaurant.name}</h3>
+                                    <div class="saved-card-info">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                        <span>${restaurant.area} · ${restaurant.category}</span>
                                     </div>
-                                `;
-                            }).join('')}
-                        </div>
-                    </div>
-                    
-                    <div class="slider-dots">
-                        ${savedRestaurants.map((_, index) => `
-                            <div class="dot ${index === 0 ? 'active' : ''}" onclick="goToSlide(${index})"></div>
-                        `).join('')}
-                    </div>
+                                    <p class="saved-card-desc">${restaurant.description || '맛있는 ' + restaurant.category + ' 맛집'}</p>
+                                    <div class="saved-card-footer">
+                                        <span class="saved-date">저장일: ${savedDate}</span>
+                                        <a href="#" class="view-detail-btn">
+                                            자세히 보기
+                                            <i class="fas fa-chevron-right"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
                 </div>
             `;
             
             document.getElementById('savedContent').innerHTML = html;
-        }
-        
-        // 슬라이더 제어 함수들
-        function nextSlide() {
-            if (currentSlide < totalSlides - 1) {
-                currentSlide++;
-                updateSlider();
-            }
-        }
-        
-        function prevSlide() {
-            if (currentSlide > 0) {
-                currentSlide--;
-                updateSlider();
-            }
-        }
-        
-        function goToSlide(index) {
-            currentSlide = index;
-            updateSlider();
-        }
-        
-        function updateSlider() {
-            const track = document.getElementById('sliderTrack');
-            if (track) {
-                track.style.transform = `translateY(-${currentSlide * 100}%)`;
-                
-                // 도트 업데이트
-                document.querySelectorAll('.dot').forEach((dot, index) => {
-                    dot.classList.toggle('active', index === currentSlide);
-                });
-                
-                // 버튼 상태 업데이트
-                const prevBtn = document.querySelector('.slider-btn.prev');
-                const nextBtn = document.querySelector('.slider-btn.next');
-                if (prevBtn) prevBtn.disabled = currentSlide === 0;
-                if (nextBtn) nextBtn.disabled = currentSlide === totalSlides - 1;
-            }
         }
         
         // 맛집 삭제
