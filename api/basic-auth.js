@@ -1,6 +1,7 @@
 // 기본 인증 API (데이터베이스 연동)
-import { sql } from '@vercel/postgres';
-export default async function handler(req, res) {
+const { sql } = require('@vercel/postgres');
+
+module.exports = async function handler(req, res) {
     console.log('🚀 Simple Basic Auth API 시작:', { method: req.method, action: req.query?.action });
     
     try {

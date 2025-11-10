@@ -1,7 +1,7 @@
 // 사용자 저장 맛집 관리 API
-import { sql } from '@vercel/postgres';
+const { sql } = require('@vercel/postgres');
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
     console.log('🍽️ User Restaurants API 시작:', { method: req.method });
     
     try {
