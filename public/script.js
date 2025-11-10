@@ -400,6 +400,9 @@ ${restaurant.description}`;
         // 지도 초기화
         this.initializeMap(displayRestaurants);
         
+        // 터치 스와이프 기능 추가
+        this.addTouchSwipe(cardsSlider);
+        
         // 모달 표시
         overlay.style.display = 'flex';
         setTimeout(() => {
@@ -586,6 +589,86 @@ ${restaurant.description}`;
         dots.forEach((dot, index) => {
             dot.classList.toggle('active', index === this.currentSlide);
         });
+    }
+
+    addTouchSwipe(cardsSlider) {
+        if (!cardsSlider) return;
+        
+        let startX = 0;
+        let startY = 0;
+        let isDragging = false;
+        let startTime = 0;
+        
+        // 터치 시작
+        const handleTouchStart = (e) => {
+            const touch = e.touches[0];
+            startX = touch.clientX;
+            startY = touch.clientY;
+            startTime = Date.now();
+            isDragging = true;
+            
+            // 스와이프 중에는 기본 스크롤 방지
+            cardsSlider.style.transition = 'none';
+        };
+        
+        // 터치 움직임
+        const handleTouchMove = (e) => {
+            if (!isDragging) return;
+            
+            const touch = e.touches[0];
+            const deltaX = touch.clientX - startX;
+            const deltaY = touch.clientY - startY;
+            
+            // 수직 스크롤보다 수평 스와이프가 더 크면 기본 동작 방지
+            if (Math.abs(deltaX) > Math.abs(deltaY)) {
+                e.preventDefault();
+            }
+        };
+        
+        // 터치 종료
+        const handleTouchEnd = (e) => {
+            if (!isDragging) return;
+            isDragging = false;
+            
+            const touch = e.changedTouches[0];
+            const deltaX = touch.clientX - startX;
+            const deltaY = touch.clientY - startY;
+            const deltaTime = Date.now() - startTime;
+            
+            // 스와이프 감지 기준
+            const minSwipeDistance = 50; // 최소 스와이프 거리
+            const maxSwipeTime = 500; // 최대 스와이프 시간
+            
+            cardsSlider.style.transition = 'transform 0.3s ease';
+            
+            // 수평 스와이프가 수직보다 크고, 충분한 거리와 시간 내에서 발생했는지 확인
+            if (Math.abs(deltaX) > Math.abs(deltaY) && 
+                Math.abs(deltaX) > minSwipeDistance && 
+                deltaTime < maxSwipeTime) {
+                
+                if (deltaX > 0) {
+                    // 오른쪽 스와이프 - 이전 슬라이드
+                    this.currentSlide = Math.max(0, this.currentSlide - 1);
+                } else {
+                    // 왼쪽 스와이프 - 다음 슬라이드
+                    this.currentSlide = Math.min(this.totalSlides - 1, this.currentSlide + 1);
+                }
+                
+                this.updateSliderPosition();
+                this.updateSliderDots();
+                this.highlightMapMarker(this.currentSlide);
+            }
+        };
+        
+        // 이벤트 리스너 정리 (기존 것이 있다면 제거)
+        cardsSlider.removeEventListener('touchstart', handleTouchStart);
+        cardsSlider.removeEventListener('touchmove', handleTouchMove);
+        cardsSlider.removeEventListener('touchend', handleTouchEnd);
+        
+        // 새 이벤트 리스너 추가
+        cardsSlider.addEventListener('touchstart', handleTouchStart, { passive: false });
+        cardsSlider.addEventListener('touchmove', handleTouchMove, { passive: false });
+        cardsSlider.addEventListener('touchend', handleTouchEnd, { passive: true });
     }
 
     delayedShowArtifacts(restaurants, location) {

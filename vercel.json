@@ -11,6 +11,9 @@
     },
     "api/basic-auth.js": {
       "maxDuration": 10
+    },
+    "api/user-restaurants.js": {
+      "maxDuration": 15
     }
   },
   "rewrites": [
