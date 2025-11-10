@@ -1,0 +1,2 @@
+id,email,name,profile_picture,provider,created_at,updated_at
+1,test@example.com,테스트 사용자,https://example.com/avatar.jpg,google,2025-11-10T10:00:00Z,2025-11-10T10:00:00Z

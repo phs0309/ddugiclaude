@@ -1,0 +1,2 @@
+id,user_id,restaurant_data,saved_at
+1,test@example.com,"{""id"":""rest_001"",""name"":""테스트 맛집"",""category"":""한식"",""address"":""부산시 해운대구"",""rating"":4.5}",2025-11-10T10:00:00Z

@@ -143,7 +143,6 @@ class ApiClient {
         this.token = null;
         localStorage.removeItem('authToken');
         localStorage.removeItem('userInfo');
-        localStorage.removeItem('savedRestaurants'); // 로컬 저장소 정리
     }
 
     // 사용자 프로필 조회
