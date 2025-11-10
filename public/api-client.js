@@ -71,7 +71,7 @@ class ApiClient {
 
     // 게스트 로그인
     async loginAsGuest() {
-        const data = await this.request('/api/auth?action=guest-login', {
+        const data = await this.request('/api/basic-auth?action=guest-login', {
             method: 'POST'
         });
 
