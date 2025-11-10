@@ -1608,7 +1608,8 @@ async function toggleSaveRestaurant(event, restaurant) {
     try {
         // 현재 저장 상태 확인
         const savedData = await apiClient.getSavedRestaurants();
-        const isAlreadySaved = savedData.restaurants.some(saved => saved.id === restaurant.id);
+        const savedIds = savedData.restaurantIds || [];
+        const isAlreadySaved = savedIds.includes(restaurant.id);
         
         if (isAlreadySaved) {
             // 저장 해제
