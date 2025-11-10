@@ -1,7 +1,7 @@
 // 사용자 인증 API 엔드포인트
 import { sql } from '@vercel/postgres';
-import jwt from 'jsonwebtoken';
-import crypto from 'crypto';
+import * as jwt from 'jsonwebtoken';
+import { randomBytes } from 'crypto';
 
 export default async function handler(req, res) {
     // CORS 설정
@@ -308,7 +308,7 @@ async function initializeDatabase() {
 
 // JWT 토큰 생성
 function generateToken(user) {
-    const jwtSecret = process.env.JWT_SECRET || crypto.randomBytes(64).toString('hex');
+    const jwtSecret = process.env.JWT_SECRET || randomBytes(64).toString('hex');
     const payload = {
         userId: user.id,
         email: user.email,
@@ -367,7 +367,7 @@ async function upsertUser(userData) {
 
 // 게스트 토큰 생성
 function generateGuestToken() {
-    const jwtSecret = process.env.JWT_SECRET || crypto.randomBytes(64).toString('hex');
+    const jwtSecret = process.env.JWT_SECRET || randomBytes(64).toString('hex');
     const guestPayload = {
         userId: null,
         email: 'guest@ddugi.app',
