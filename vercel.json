@@ -1,9 +1,6 @@
 {
+  "regions": ["icn1"],
   "functions": {
-    "api/**/*.js": {
-      "runtime": "nodejs18.x",
-      "regions": ["icn1"]
-    },
     "api/chat.js": {
       "maxDuration": 30
     },
