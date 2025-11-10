@@ -163,8 +163,8 @@
         
         .google-signin-btn {
             width: 100%;
-            height: 50px;
-            border: 2px solid #E5E5E5;
+            height: 60px;
+            border: 2px solid #4285F4;
             border-radius: 12px;
             background: #FFFFFF;
             display: flex;
@@ -172,37 +172,17 @@
             justify-content: center;
             cursor: pointer;
             transition: all 0.3s ease;
-            font-size: 14px;
-            font-weight: 500;
-            gap: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            gap: 12px;
+            margin-bottom: 16px;
         }
         
         .google-signin-btn:hover {
-            border-color: #4285F4;
+            border-color: #1a73e8;
             background: #F8F9FF;
-        }
-        
-        .divider {
-            text-align: center;
-            margin: 24px 0;
-            position: relative;
-        }
-        
-        .divider::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background: #E5E5E5;
-        }
-        
-        .divider span {
-            background: #FFFFFF;
-            padding: 0 16px;
-            color: #8E8E8E;
-            font-size: 14px;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(66, 133, 244, 0.15);
         }
         
         .back-btn {
@@ -229,21 +209,28 @@
         
         .guest-login {
             text-align: center;
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 1px solid #E5E5E5;
+            margin-top: 24px;
         }
         
         .guest-btn {
-            color: #8E8E8E;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            background: #F5F5F5;
+            border-radius: 12px;
+            color: #5F5F5F;
             text-decoration: none;
-            font-size: 14px;
+            font-size: 15px;
             font-weight: 500;
-            transition: color 0.3s ease;
+            transition: all 0.3s ease;
         }
         
         .guest-btn:hover {
-            color: #FF6B35;
+            background: #FF6B35;
+            color: #FFFFFF;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 107, 53, 0.2);
         }
         
         @media (max-width: 768px) {
@@ -269,40 +256,7 @@
             <p class="login-subtitle">부산 최고의 맛집을 찾아드릴게요</p>
         </div>
         
-        <form class="login-form" onsubmit="handleLogin(event)">
-            <div class="form-group">
-                <label for="email" class="form-label">이메일</label>
-                <input 
-                    type="email" 
-                    id="email" 
-                    name="email" 
-                    class="form-input" 
-                    placeholder="이메일을 입력하세요"
-                    required
-                >
-            </div>
-            
-            <div class="form-group">
-                <label for="password" class="form-label">비밀번호</label>
-                <input 
-                    type="password" 
-                    id="password" 
-                    name="password" 
-                    class="form-input" 
-                    placeholder="비밀번호를 입력하세요"
-                    required
-                >
-            </div>
-            
-            <button type="submit" class="login-btn" id="loginBtn">
-                <i class="fas fa-sign-in-alt"></i>
-                로그인
-            </button>
-            
-            <div class="divider">
-                <span>또는</span>
-            </div>
-            
+        <div class="login-form">
             <div class="social-login">
                 <!-- Google Sign-In Button -->
                 <div id="g_id_onload"
@@ -314,19 +268,14 @@
                 </div>
                 
                 <div class="google-signin-btn" onclick="initGoogleSignIn()">
-                    <svg width="20" height="20" viewBox="0 0 24 24">
+                    <svg width="24" height="24" viewBox="0 0 24 24">
                         <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                         <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
                         <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
                         <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                     </svg>
-                    Google로 계속하기
+                    Google 계정으로 시작하기
                 </div>
-                
-                <button type="button" class="social-btn kakao-btn" onclick="loginWithKakao()">
-                    <i class="fas fa-comment"></i>
-                    카카오로 계속하기
-                </button>
             </div>
             
             <div class="guest-login">
@@ -335,36 +284,12 @@
                     게스트로 계속하기
                 </a>
             </div>
-        </form>
+        </div>
     </div>
     
     <script>
         function goBack() {
             history.back();
-        }
-        
-        function handleLogin(event) {
-            event.preventDefault();
-            
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const loginBtn = document.getElementById('loginBtn');
-            
-            // 로딩 상태
-            loginBtn.disabled = true;
-            loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 로그인 중...';
-            
-            // 임시 로그인 로직 (실제로는 서버와 통신)
-            setTimeout(() => {
-                alert('로그인 기능은 개발 중입니다! 😊\n곧 업데이트 예정이에요.');
-                
-                // 사용자 정보 저장 (임시)
-                localStorage.setItem('userEmail', email);
-                localStorage.setItem('isLoggedIn', 'true');
-                
-                // 메인 페이지로 이동
-                window.location.href = 'index.html';
-            }, 1500);
         }
         
         function initGoogleSignIn() {
@@ -440,10 +365,6 @@
         
         function loginWithGoogle() {
             initGoogleSignIn();
-        }
-        
-        function loginWithKakao() {
-            alert('카카오 로그인은 개발 중입니다! 🚧');
         }
         
         async function loginAsGuest() {
