@@ -30,11 +30,11 @@
         
         <div class="side-menu-content">
             <nav class="side-menu-nav">
-                <button class="side-menu-item" onclick="handleLogin()">
+                <button class="side-menu-item" id="loginMenuItem" onclick="handleLogin()">
                     <i class="fas fa-user"></i>
-                    <span>로그인</span>
+                    <span id="loginMenuText">로그인</span>
                 </button>
-                <button class="side-menu-item" onclick="showSavedRestaurants()">
+                <button class="side-menu-item" onclick="navigateToSavedRestaurants()">
                     <i class="fas fa-heart"></i>
                     <span>저장된 맛집</span>
                 </button>

@@ -1249,45 +1249,7 @@ function closeSideMenu() {
     }
 }
 
-// Side Menu Item Actions
-function handleLogin() {
-    closeSideMenu();
-    
-    // 로그인 상태 확인
-    const isLoggedIn = localStorage.getItem('isLoggedIn');
-    
-    if (isLoggedIn) {
-        // 이미 로그인된 경우 프로필 또는 로그아웃 옵션
-        if (confirm('이미 로그인되어 있습니다.\n로그아웃하시겠습니까?')) {
-            localStorage.removeItem('isLoggedIn');
-            localStorage.removeItem('userEmail');
-            alert('로그아웃되었습니다.');
-            location.reload();
-        }
-    } else {
-        // 로그인 페이지로 이동
-        window.location.href = 'login.html';
-    }
-}
-
-function showSavedRestaurants() {
-    closeSideMenu();
-    
-    // 임시 저장된 맛집 기능
-    const savedRestaurants = JSON.parse(localStorage.getItem('savedRestaurants') || '[]');
-    
-    const chatBot = window.instagramChatBot;
-    if (chatBot) {
-        if (savedRestaurants.length > 0) {
-            chatBot.addMessage(`저장된 맛집 ${savedRestaurants.length}곳을 찾았습니다! ❤️`, 'bot');
-            // 추후 저장된 맛집 표시 기능 구현
-        } else {
-            chatBot.addMessage('아직 저장된 맛집이 없습니다. 마음에 드는 맛집을 저장해보세요! 💫', 'bot');
-        }
-    }
-    
-    console.log('저장된 맛집 목록:', savedRestaurants);
-}
+// Side Menu Item Actions (replaced by newer versions at end of file)
 
 function showSettings() {
     closeSideMenu();
@@ -1634,10 +1596,77 @@ const cardObserver = new MutationObserver(() => {
     restoreSavedRestaurants();
 });
 
+// 메뉴 업데이트 함수
+function updateMenuForLoggedInUser() {
+    const loginMenuItem = document.getElementById('loginMenuItem');
+    const loginMenuText = document.getElementById('loginMenuText');
+    
+    if (!loginMenuItem || !loginMenuText) return;
+    
+    if (apiClient.isLoggedIn()) {
+        const user = apiClient.getCurrentUser();
+        if (user) {
+            // 사용자 이름 또는 이메일 표시
+            const displayName = user.name || user.email || '사용자';
+            loginMenuText.textContent = displayName;
+            
+            // 아이콘을 로그아웃 아이콘으로 변경
+            const icon = loginMenuItem.querySelector('i');
+            if (icon) {
+                icon.className = 'fas fa-sign-out-alt';
+            }
+        }
+    } else {
+        // 로그인되지 않은 경우 기본 상태로 복원
+        loginMenuText.textContent = '로그인';
+        const icon = loginMenuItem.querySelector('i');
+        if (icon) {
+            icon.className = 'fas fa-user';
+        }
+    }
+}
+
+// handleLogin 함수 업데이트
+function handleLogin() {
+    closeSideMenu();
+    
+    if (apiClient.isLoggedIn()) {
+        // 이미 로그인된 경우 로그아웃 확인
+        if (confirm('로그아웃 하시겠습니까?')) {
+            apiClient.logout();
+            updateMenuForLoggedInUser();
+            location.reload(); // 페이지 새로고침으로 상태 업데이트
+        }
+    } else {
+        // 로그인 페이지로 이동
+        window.location.href = 'login.html';
+    }
+}
+
+// 저장된 맛집 페이지로 이동하는 함수
+function navigateToSavedRestaurants() {
+    closeSideMenu();
+    
+    // 로그인 확인
+    if (!apiClient.isLoggedIn()) {
+        if (confirm('저장된 맛집을 보려면 로그인이 필요합니다.\n로그인 페이지로 이동하시겠습니까?')) {
+            window.location.href = 'login.html';
+        }
+        return;
+    }
+    
+    // 저장된 맛집 페이지로 이동
+    window.location.href = 'saved.html';
+}
+
 // DOM 변경 감시 시작
 document.addEventListener('DOMContentLoaded', () => {
+    // 카드 관찰자 시작
     cardObserver.observe(document.body, {
         childList: true,
         subtree: true
     });
+    
+    // 메뉴 상태 업데이트
+    updateMenuForLoggedInUser();
 });
