@@ -161,35 +161,10 @@ class ApiClient {
             currentUser: this.getCurrentUser()
         });
 
-        try {
-            const data = await this.request('/api/user-restaurants');
-            
-            console.log('📋 API 응답:', data);
-            
-            // 게스트 사용자는 localStorage 사용
-            if (data.isGuest) {
-                console.log('👤 게스트 사용자 - localStorage 사용');
-                const localSaved = JSON.parse(localStorage.getItem('savedRestaurants') || '[]');
-                return {
-                    restaurants: localSaved,
-                    count: localSaved.length,
-                    isGuest: true
-                };
-            }
-
-            console.log('🔐 로그인 사용자 - 데이터베이스 사용');
-            return data;
-        } catch (error) {
-            console.error('💥 저장된 맛집 조회 실패 - localStorage 폴백 사용:', error);
-            // 오류시 localStorage 폴백
-            const localSaved = JSON.parse(localStorage.getItem('savedRestaurants') || '[]');
-            return {
-                restaurants: localSaved,
-                count: localSaved.length,
-                isGuest: true,
-                fallback: true
-            };
-        }
+        const data = await this.request('/api/user-restaurants');
+        console.log('📋 API 응답:', data);
+        
+        return data;
     }
 
     // 맛집 저장
@@ -201,99 +176,22 @@ class ApiClient {
             isGuest: this.isGuest()
         });
 
-        try {
-            const data = await this.request('/api/user-restaurants', {
-                method: 'POST',
-                body: JSON.stringify({ restaurant })
-            });
+        const data = await this.request('/api/user-restaurants', {
+            method: 'POST',
+            body: JSON.stringify({ restaurant })
+        });
 
-            console.log('💾 저장 API 응답:', data);
-
-            // 게스트 사용자는 localStorage 사용
-            if (data.isGuest) {
-                console.log('👤 게스트 사용자 - localStorage에 저장');
-                const savedRestaurants = JSON.parse(localStorage.getItem('savedRestaurants') || '[]');
-                const restaurantToSave = {
-                    ...restaurant,
-                    savedAt: new Date().toISOString()
-                };
-                
-                if (!savedRestaurants.some(saved => saved.id === restaurant.id)) {
-                    savedRestaurants.push(restaurantToSave);
-                    localStorage.setItem('savedRestaurants', JSON.stringify(savedRestaurants));
-                }
-                
-                return {
-                    success: true,
-                    message: `"${restaurant.name}"을(를) 저장했습니다`,
-                    restaurant: restaurantToSave,
-                    isGuest: true
-                };
-            }
-
-            return data;
-        } catch (error) {
-            console.error('맛집 저장 실패:', error);
-            
-            // 오류시 localStorage 폴백
-            const savedRestaurants = JSON.parse(localStorage.getItem('savedRestaurants') || '[]');
-            if (!savedRestaurants.some(saved => saved.id === restaurant.id)) {
-                const restaurantToSave = {
-                    ...restaurant,
-                    savedAt: new Date().toISOString()
-                };
-                savedRestaurants.push(restaurantToSave);
-                localStorage.setItem('savedRestaurants', JSON.stringify(savedRestaurants));
-                
-                return {
-                    success: true,
-                    message: `"${restaurant.name}"을(를) 저장했습니다 (로컬)`,
-                    restaurant: restaurantToSave,
-                    fallback: true
-                };
-            }
-            
-            throw error;
-        }
+        console.log('💾 저장 API 응답:', data);
+        return data;
     }
 
     // 맛집 저장 해제
     async unsaveRestaurant(restaurantId) {
-        try {
-            const data = await this.request(`/api/user-restaurants?restaurantId=${restaurantId}`, {
-                method: 'DELETE'
-            });
+        const data = await this.request(`/api/user-restaurants?restaurantId=${restaurantId}`, {
+            method: 'DELETE'
+        });
 
-            // 게스트 사용자는 localStorage 사용
-            if (data.isGuest) {
-                const savedRestaurants = JSON.parse(localStorage.getItem('savedRestaurants') || '[]');
-                const filteredRestaurants = savedRestaurants.filter(saved => saved.id !== restaurantId);
-                localStorage.setItem('savedRestaurants', JSON.stringify(filteredRestaurants));
-                
-                return {
-                    success: true,
-                    message: '맛집을 저장 목록에서 제거했습니다',
-                    restaurantId: restaurantId,
-                    isGuest: true
-                };
-            }
-
-            return data;
-        } catch (error) {
-            console.error('맛집 저장 해제 실패:', error);
-            
-            // 오류시 localStorage 폴백
-            const savedRestaurants = JSON.parse(localStorage.getItem('savedRestaurants') || '[]');
-            const filteredRestaurants = savedRestaurants.filter(saved => saved.id !== restaurantId);
-            localStorage.setItem('savedRestaurants', JSON.stringify(filteredRestaurants));
-            
-            return {
-                success: true,
-                message: '맛집을 저장 목록에서 제거했습니다 (로컬)',
-                restaurantId: restaurantId,
-                fallback: true
-            };
-        }
+        return data;
     }
 
     // === 유틸리티 메소드 ===

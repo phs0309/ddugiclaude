@@ -26,13 +26,12 @@ export default async function handler(req, res) {
             }
         }
 
-        // 게스트 사용자는 로컬스토리지 사용하도록 안내
+        // 로그인하지 않은 사용자는 로그인 요구
         if (!user || user.isGuest) {
-            return res.status(200).json({
-                isGuest: true,
-                restaurants: [],
-                count: 0,
-                message: '게스트 사용자는 로컬스토리지를 사용합니다'
+            return res.status(401).json({
+                error: '로그인이 필요한 기능입니다',
+                code: 'AUTHENTICATION_REQUIRED',
+                message: 'Google 로그인 또는 회원가입 후 이용해주세요'
             });
         }
 
@@ -41,13 +40,12 @@ export default async function handler(req, res) {
             await initializeTables();
         } catch (dbError) {
             console.error('데이터베이스 초기화 실패:', dbError);
-            // 데이터베이스 연결 실패시 게스트 모드로 폴백
-            return res.status(200).json({
-                isGuest: true,
-                restaurants: [],
-                count: 0,
-                fallback: true,
-                message: '데이터베이스 연결 실패, 로컬스토리지를 사용해주세요'
+            // 데이터베이스 연결 실패
+            return res.status(503).json({
+                error: '데이터베이스 연결에 실패했습니다',
+                code: 'DATABASE_CONNECTION_FAILED',
+                message: '잠시 후 다시 시도해주세요. 문제가 지속되면 관리자에게 문의해주세요.',
+                details: process.env.NODE_ENV === 'development' ? dbError.message : undefined
             });
         }
 
@@ -74,13 +72,11 @@ export default async function handler(req, res) {
                 });
             } catch (dbError) {
                 console.error('저장된 맛집 조회 실패:', dbError);
-                // 데이터베이스 오류시 게스트 모드로 폴백
-                return res.status(200).json({
-                    isGuest: true,
-                    restaurants: [],
-                    count: 0,
-                    fallback: true,
-                    message: '데이터베이스 조회 실패, 로컬스토리지를 사용해주세요'
+                return res.status(500).json({
+                    error: '저장된 맛집 조회 중 오류가 발생했습니다',
+                    code: 'DATABASE_QUERY_FAILED',
+                    message: '잠시 후 다시 시도해주세요',
+                    details: process.env.NODE_ENV === 'development' ? dbError.message : undefined
                 });
             }
 
@@ -129,13 +125,11 @@ export default async function handler(req, res) {
                 });
             } catch (dbError) {
                 console.error('맛집 저장 실패:', dbError);
-                // 데이터베이스 오류시 게스트 모드로 폴백
-                return res.status(200).json({
-                    isGuest: true,
-                    success: true,
-                    message: `"${restaurant.name}"을(를) 로컬에 저장했습니다`,
-                    restaurant: { ...restaurant, savedAt: new Date().toISOString() },
-                    fallback: true
+                return res.status(500).json({
+                    error: '맛집 저장 중 오류가 발생했습니다',
+                    code: 'DATABASE_INSERT_FAILED',
+                    message: '잠시 후 다시 시도해주세요',
+                    details: process.env.NODE_ENV === 'development' ? dbError.message : undefined
                 });
             }
 
@@ -173,13 +167,11 @@ export default async function handler(req, res) {
                 });
             } catch (dbError) {
                 console.error('맛집 삭제 실패:', dbError);
-                // 데이터베이스 오류시 게스트 모드로 폴백
-                return res.status(200).json({
-                    isGuest: true,
-                    success: true,
-                    message: '로컬에서 맛집을 제거해주세요',
-                    restaurantId: restaurantId,
-                    fallback: true
+                return res.status(500).json({
+                    error: '맛집 삭제 중 오류가 발생했습니다',
+                    code: 'DATABASE_DELETE_FAILED',
+                    message: '잠시 후 다시 시도해주세요',
+                    details: process.env.NODE_ENV === 'development' ? dbError.message : undefined
                 });
             }
 
