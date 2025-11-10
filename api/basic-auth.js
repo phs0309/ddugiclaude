@@ -54,15 +54,24 @@ export default async function handler(req, res) {
             }
 
             try {
-                // Google ID 토큰 디코딩 (간단한 방법)
+                // Google ID 토큰 검증 및 디코딩
+                if (!idToken || typeof idToken !== 'string' || idToken.split('.').length !== 3) {
+                    throw new Error('유효하지 않은 Google ID 토큰 형식');
+                }
+
                 const base64Url = idToken.split('.')[1];
                 const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
                 const jsonPayload = JSON.parse(Buffer.from(base64, 'base64').toString());
 
-                // 데이터베이스에 사용자 정보 저장/업데이트
+                // 필수 필드 검증
+                if (!jsonPayload.sub || !jsonPayload.email || !jsonPayload.name) {
+                    throw new Error('Google 토큰에 필수 사용자 정보가 없습니다');
+                }
+
+                // 데이터베이스에 사용자 정보 저장/업데이트 (선택적)
                 let userId = jsonPayload.sub;
                 try {
-                    // 테이블 초기화
+                    // 테이블 초기화 시도
                     await initializeTables();
                     
                     // 사용자가 이미 존재하는지 확인
@@ -76,7 +85,7 @@ export default async function handler(req, res) {
                             INSERT INTO users (email, name, profile_picture, provider)
                             VALUES (${jsonPayload.email}, ${jsonPayload.name}, ${jsonPayload.picture}, 'google')
                         `;
-                        console.log('새 사용자 생성:', jsonPayload.email);
+                        console.log('✅ 새 사용자 생성:', jsonPayload.email);
                     } else {
                         // 기존 사용자 정보 업데이트
                         await sql`
@@ -86,10 +95,10 @@ export default async function handler(req, res) {
                                 updated_at = CURRENT_TIMESTAMP
                             WHERE email = ${jsonPayload.email}
                         `;
-                        console.log('기존 사용자 정보 업데이트:', jsonPayload.email);
+                        console.log('✅ 기존 사용자 정보 업데이트:', jsonPayload.email);
                     }
                 } catch (dbError) {
-                    console.error('데이터베이스 저장 실패:', dbError);
+                    console.error('⚠️ 데이터베이스 저장 실패 (로그인은 계속 진행):', dbError);
                     // 데이터베이스 오류여도 로그인은 계속 진행
                 }
 
@@ -143,6 +152,12 @@ export default async function handler(req, res) {
 // 데이터베이스 테이블 초기화
 async function initializeTables() {
     try {
+        // 데이터베이스 연결 확인
+        if (!process.env.POSTGRES_URL && !process.env.DATABASE_URL) {
+            console.warn('⚠️ PostgreSQL 환경변수가 설정되지 않았습니다');
+            return;
+        }
+
         // 사용자 테이블 생성 (존재하지 않으면)
         await sql`
             CREATE TABLE IF NOT EXISTS users (
@@ -156,9 +171,9 @@ async function initializeTables() {
             )
         `;
 
-        console.log('사용자 테이블 초기화 완료');
+        console.log('✅ 사용자 테이블 초기화 완료');
     } catch (error) {
-        console.error('테이블 초기화 오류:', error);
-        throw error;
+        console.error('❌ 테이블 초기화 오류:', error.message);
+        throw new Error(`데이터베이스 테이블 초기화 실패: ${error.message}`);
     }
 }
