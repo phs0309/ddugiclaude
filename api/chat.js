@@ -158,7 +158,7 @@ class RestaurantAI {
 
 // Claude API 호출 함수
 async function callClaudeAPI(prompt) {
-    const apiKey = process.env.claude_api_key;
+    const apiKey = process.env.CLAUDE_API_KEY || process.env.claude_api_key;
     
     if (!apiKey) {
         console.log('❌ Claude API 키가 설정되지 않음');
