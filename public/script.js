@@ -11,6 +11,7 @@ class InstagramStyleChatBot {
         this.initEventListeners();
         this.loadInitialRecommendations();
         this.updateTimestamps();
+        this.checkLocationAndShowNearbyRestaurants();
     }
 
     initEventListeners() {
@@ -67,6 +68,17 @@ class InstagramStyleChatBot {
 
         // 빠른 추천 숨기기
         this.hideQuickSuggestions();
+
+        // 주변 맛집 요청인지 확인
+        if (this.detectNearbyRequest(message)) {
+            this.addMessage(message, 'user');
+            this.userInput.value = '';
+            this.updateSendButton();
+            
+            // 주변 맛집 검색 실행
+            await this.handleNearbyRequest();
+            return;
+        }
 
         // 사용자 메시지 표시
         this.addMessage(message, 'user');
@@ -346,6 +358,227 @@ ${restaurant.description}`;
         }, 300000); // 5분
     }
 
+    // GPS 위치 확인 및 주변 맛집 추천
+    async checkLocationAndShowNearbyRestaurants() {
+        // 이미 위치 권한을 요청했는지 확인
+        if (localStorage.getItem('locationChecked')) {
+            return;
+        }
+
+        // 위치 서비스 지원 여부 확인
+        if (!navigator.geolocation) {
+            console.log('이 브라우저는 위치 서비스를 지원하지 않습니다');
+            return;
+        }
+
+        // 사용자에게 위치 권한 요청 전 안내 메시지
+        setTimeout(() => {
+            this.addMessage('현재 위치 기반으로 주변 맛집을 추천해드릴까요? 📍\n위치 권한을 허용해주시면 더 정확한 추천이 가능해요!', 'bot');
+            
+            // 위치 권한 요청 카드 추가
+            this.addLocationPermissionCard();
+        }, 2000); // 초기 메시지 후 2초 뒤
+    }
+
+    // 위치 권한 요청 카드 추가
+    addLocationPermissionCard() {
+        const cardContainer = document.createElement('div');
+        cardContainer.className = 'location-permission-container';
+        
+        const card = document.createElement('div');
+        card.className = 'location-permission-card';
+        card.innerHTML = `
+            <div class="location-card-content">
+                <div class="location-icon">📍</div>
+                <h3>주변 맛집 추천</h3>
+                <p>현재 위치를 기반으로<br>가까운 부산 맛집을 찾아드릴게요!</p>
+                <div class="location-actions">
+                    <button class="location-btn allow" onclick="window.instagramChatBot.requestLocation()">
+                        <i class="fas fa-location-arrow"></i>
+                        위치 허용하기
+                    </button>
+                    <button class="location-btn deny" onclick="window.instagramChatBot.denyLocation()">
+                        <i class="fas fa-times"></i>
+                        나중에
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        cardContainer.appendChild(card);
+        
+        // 마지막 봇 메시지에 카드 추가
+        const lastBotMessage = this.messagesContainer.querySelector('.bot-group:last-child .message-content');
+        if (lastBotMessage) {
+            lastBotMessage.appendChild(cardContainer);
+        }
+        
+        this.scrollToBottom();
+    }
+
+    // 위치 권한 허용 처리
+    async requestLocation() {
+        try {
+            // 위치 권한 카드 제거
+            const locationCard = document.querySelector('.location-permission-container');
+            if (locationCard) {
+                locationCard.remove();
+            }
+
+            this.addMessage('위치를 확인하는 중...', 'user');
+            this.showTyping();
+
+            const position = await this.getCurrentPosition();
+            const { latitude, longitude } = position.coords;
+
+            console.log('사용자 위치:', latitude, longitude);
+
+            // 주변 맛집 검색
+            const response = await fetch(`/api/nearby-restaurants?lat=${latitude}&lng=${longitude}&radius=3`);
+            const data = await response.json();
+
+            this.hideTyping();
+
+            if (data.success && data.restaurants.length > 0) {
+                this.addMessage(`현재 위치 주변 ${data.searchRadius}km 내에서 ${data.count}곳의 맛집을 찾았어요! 🎯`, 'bot');
+                
+                // 주변 맛집 카드 표시
+                setTimeout(() => {
+                    this.displayRestaurantCards(data.restaurants);
+                    this.delayedShowArtifacts(data.restaurants, '주변 맛집');
+                }, 500);
+                
+            } else if (data.isOutsideBusan) {
+                this.addMessage('현재 위치가 부산을 벗어나 있네요! 🌊\n부산 전체 맛집을 추천해드릴게요!', 'bot');
+                this.loadInitialRecommendations();
+                
+            } else {
+                this.addMessage(`주변 ${data.searchRadius}km 내에는 등록된 맛집이 없어요 😅\n부산 전체 맛집을 둘러보시는 건 어떨까요?`, 'bot');
+                this.loadInitialRecommendations();
+            }
+
+            // 위치 확인 완료 표시
+            localStorage.setItem('locationChecked', 'true');
+            localStorage.setItem('userLocation', JSON.stringify({ lat: latitude, lng: longitude }));
+
+        } catch (error) {
+            this.hideTyping();
+            console.error('위치 확인 오류:', error);
+            
+            if (error.code === error.PERMISSION_DENIED) {
+                this.addMessage('위치 권한이 거부되었어요 😊\n괜찮아요! 부산 전체 맛집을 추천해드릴게요!', 'bot');
+            } else if (error.code === error.POSITION_UNAVAILABLE) {
+                this.addMessage('현재 위치를 확인할 수 없어요 📍\n부산 전체 맛집을 추천해드릴게요!', 'bot');
+            } else {
+                this.addMessage('위치 확인 중 문제가 발생했어요 😅\n부산 전체 맛집을 추천해드릴게요!', 'bot');
+            }
+            
+            this.loadInitialRecommendations();
+            localStorage.setItem('locationChecked', 'true');
+        }
+    }
+
+    // 위치 권한 거부 처리
+    denyLocation() {
+        const locationCard = document.querySelector('.location-permission-container');
+        if (locationCard) {
+            locationCard.remove();
+        }
+        
+        this.addMessage('나중에 할게요', 'user');
+        this.addMessage('알겠어요! 언제든지 위치 기반 추천이 필요하시면 "주변 맛집" 이라고 말해주세요! 😊', 'bot');
+        
+        localStorage.setItem('locationChecked', 'true');
+    }
+
+    // GPS 위치 가져오기 (Promise 래퍼)
+    getCurrentPosition() {
+        return new Promise((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(resolve, reject, {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 300000 // 5분간 캐시 사용
+            });
+        });
+    }
+
+    // 주변 맛집 요청 처리
+    async handleNearbyRequest() {
+        this.showTyping();
+
+        try {
+            // 저장된 위치가 있는지 확인
+            const savedLocation = localStorage.getItem('userLocation');
+            let position = null;
+
+            if (savedLocation) {
+                const location = JSON.parse(savedLocation);
+                position = { coords: { latitude: location.lat, longitude: location.lng } };
+                console.log('저장된 위치 사용:', location);
+            } else {
+                // 새로 위치 요청
+                try {
+                    position = await this.getCurrentPosition();
+                    const { latitude, longitude } = position.coords;
+                    localStorage.setItem('userLocation', JSON.stringify({ lat: latitude, lng: longitude }));
+                    console.log('새 위치 확인:', latitude, longitude);
+                } catch (error) {
+                    this.hideTyping();
+                    console.error('위치 확인 실패:', error);
+                    this.addMessage('위치 정보를 가져올 수 없어요 😅\n대신 부산 전체 맛집을 추천해드릴게요!', 'bot');
+                    this.loadInitialRecommendations();
+                    return;
+                }
+            }
+
+            const { latitude, longitude } = position.coords;
+
+            // 주변 맛집 검색
+            const response = await fetch(`/api/nearby-restaurants?lat=${latitude}&lng=${longitude}&radius=3`);
+            const data = await response.json();
+
+            this.hideTyping();
+
+            if (data.success && data.restaurants.length > 0) {
+                this.addMessage(`현재 위치 주변에서 ${data.count}곳의 맛집을 찾았어요! 🎯`, 'bot');
+                
+                // 주변 맛집 카드 표시
+                setTimeout(() => {
+                    this.displayRestaurantCards(data.restaurants);
+                    this.delayedShowArtifacts(data.restaurants, '주변 맛집');
+                }, 500);
+                
+            } else if (data.isOutsideBusan) {
+                this.addMessage('현재 위치가 부산을 벗어나 있어서 주변 맛집을 찾을 수 없어요! 🌊\n부산 전체 맛집을 추천해드릴게요!', 'bot');
+                this.loadInitialRecommendations();
+                
+            } else {
+                this.addMessage(`주변에는 등록된 맛집이 없어요 😅\n조금 더 넓은 범위에서 찾아볼까요?`, 'bot');
+                
+                // 더 넓은 범위로 재검색
+                const widerResponse = await fetch(`/api/nearby-restaurants?lat=${latitude}&lng=${longitude}&radius=5`);
+                const widerData = await widerResponse.json();
+                
+                if (widerData.success && widerData.restaurants.length > 0) {
+                    this.addMessage(`5km 내에서 ${widerData.count}곳을 찾았어요! 🎯`, 'bot');
+                    setTimeout(() => {
+                        this.displayRestaurantCards(widerData.restaurants);
+                        this.delayedShowArtifacts(widerData.restaurants, '주변 맛집 (5km)');
+                    }, 500);
+                } else {
+                    this.addMessage('부산 전체 맛집을 추천해드릴게요!', 'bot');
+                    this.loadInitialRecommendations();
+                }
+            }
+
+        } catch (error) {
+            this.hideTyping();
+            console.error('주변 맛집 검색 오류:', error);
+            this.addMessage('주변 맛집 검색 중 오류가 발생했어요 😅\n부산 전체 맛집을 추천해드릴게요!', 'bot');
+            this.loadInitialRecommendations();
+        }
+    }
+
     detectLocationRequest(message) {
         const locationKeywords = [
             '해운대', '서면', '광안리', '남포동', '부산역', '송도', '태종대', '자갈치',
@@ -353,6 +586,20 @@ ${restaurant.description}`;
         ];
         
         return locationKeywords.some(keyword => message.includes(keyword));
+    }
+
+    // 주변 맛집 요청 감지
+    detectNearbyRequest(message) {
+        const nearbyKeywords = [
+            '주변', '근처', '가까운', '현재 위치', '여기서', '이 근처'
+        ];
+        
+        const foodKeywords = [
+            '맛집', '식당', '음식', '밥', '먹을', '추천'
+        ];
+        
+        return nearbyKeywords.some(keyword => message.includes(keyword)) && 
+               foodKeywords.some(keyword => message.includes(keyword));
     }
 
     showArtifacts(restaurants, location) {

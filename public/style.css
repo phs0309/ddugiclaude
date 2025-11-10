@@ -1151,6 +1151,106 @@ body {
     }
 }
 
+/* 위치 권한 요청 카드 스타일 */
+.location-permission-container {
+    margin: 16px 0;
+    display: flex;
+    justify-content: center;
+}
+
+.location-permission-card {
+    background: linear-gradient(135deg, #FF6B35 0%, #FFD166 100%);
+    border-radius: 16px;
+    padding: 24px;
+    color: white;
+    text-align: center;
+    box-shadow: 0 8px 24px rgba(255, 107, 53, 0.3);
+    max-width: 280px;
+    animation: fadeInUp 0.5s ease;
+}
+
+.location-card-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.location-icon {
+    font-size: 32px;
+    margin-bottom: 8px;
+}
+
+.location-permission-card h3 {
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0;
+    color: white;
+}
+
+.location-permission-card p {
+    font-size: 14px;
+    margin: 0;
+    opacity: 0.9;
+    line-height: 1.4;
+}
+
+.location-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+    margin-top: 8px;
+}
+
+.location-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 16px;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100%;
+}
+
+.location-btn.allow {
+    background: rgba(255, 255, 255, 0.9);
+    color: #FF6B35;
+}
+
+.location-btn.allow:hover {
+    background: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.location-btn.deny {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.location-btn.deny:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-1px);
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 /* Artifacts 카드 스타일 */
 .artifacts-card {
     background: #FFFFFF;
