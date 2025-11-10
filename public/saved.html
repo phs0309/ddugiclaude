@@ -112,23 +112,25 @@
             position: relative;
             max-width: 600px;
             margin: 20px auto;
-            padding: 0 60px;
+            padding: 60px 0;
         }
         
         .saved-slider {
             overflow: hidden;
             border-radius: 20px;
+            height: 400px;
         }
         
         .slider-track {
             display: flex;
+            flex-direction: column;
             transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
         
         .slider-btn {
             position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
+            left: 50%;
+            transform: translateX(-50%);
             width: 45px;
             height: 45px;
             border-radius: 50%;
@@ -148,15 +150,15 @@
         .slider-btn:hover {
             background: #FF6B35;
             color: white;
-            transform: translateY(-50%) scale(1.1);
+            transform: translateX(-50%) scale(1.1);
         }
         
         .slider-btn.prev {
-            left: 0;
+            top: 0;
         }
         
         .slider-btn.next {
-            right: 0;
+            bottom: 0;
         }
         
         .slider-btn:disabled {
@@ -305,13 +307,22 @@
 
         @media (max-width: 768px) {
             .slider-container {
-                padding: 0 40px;
+                padding: 50px 20px;
+            }
+            
+            .saved-slider {
+                height: 350px;
             }
             
             .slider-btn {
                 width: 35px;
                 height: 35px;
                 font-size: 14px;
+            }
+            
+            .saved-card {
+                height: 350px !important;
+                min-height: 350px !important;
             }
         }
     </style>
@@ -405,10 +416,10 @@
             const html = `
                 <div class="slider-container">
                     <button class="slider-btn prev" onclick="prevSlide()" ${totalSlides <= 1 ? 'disabled' : ''}>
-                        <i class="fas fa-chevron-left"></i>
+                        <i class="fas fa-chevron-up"></i>
                     </button>
                     <button class="slider-btn next" onclick="nextSlide()" ${totalSlides <= 1 ? 'disabled' : ''}>
-                        <i class="fas fa-chevron-right"></i>
+                        <i class="fas fa-chevron-down"></i>
                     </button>
                     
                     <div class="saved-slider">
@@ -420,7 +431,7 @@
                                     '최근';
                                 
                                 return `
-                                    <div class="saved-card" style="min-width: 100%;">
+                                    <div class="saved-card" style="min-height: 400px; height: 400px; flex-shrink: 0;">
                                         <div class="saved-card-header">
                                             ${emoji}
                                             <button class="remove-btn" onclick="removeRestaurant(event, '${restaurant.id}')" aria-label="삭제">
@@ -482,7 +493,7 @@
         function updateSlider() {
             const track = document.getElementById('sliderTrack');
             if (track) {
-                track.style.transform = `translateX(-${currentSlide * 100}%)`;
+                track.style.transform = `translateY(-${currentSlide * 100}%)`;
                 
                 // 도트 업데이트
                 document.querySelectorAll('.dot').forEach((dot, index) => {
