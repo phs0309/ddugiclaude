@@ -36,43 +36,19 @@ module.exports = async function handler(req, res) {
             });
         }
 
-        // 데이터베이스 테이블 초기화 (연결 실패시 임시 모드)
-        let dbConnected = false;
+        // 데이터베이스 테이블 초기화 (필수)
         try {
             console.log('🔧 데이터베이스 테이블 초기화 시도...');
             await initializeTables();
             console.log('✅ 테이블 초기화 완료');
-            dbConnected = true;
         } catch (dbError) {
             console.error('❌ 데이터베이스 초기화 실패:', dbError);
-            console.log('⚠️ 데이터베이스 연결 실패 - 임시 모드로 전환');
-            dbConnected = false;
-        }
-
-        // 데이터베이스 연결 실패시 임시 응답
-        if (!dbConnected) {
-            if (req.method === 'GET') {
-                return res.status(200).json({
-                    success: true,
-                    restaurants: [],
-                    count: 0,
-                    isGuest: false,
-                    tempMode: true,
-                    message: '데이터베이스 연결 문제로 저장된 맛집을 불러올 수 없습니다'
-                });
-            } else if (req.method === 'POST') {
-                return res.status(503).json({
-                    error: '데이터베이스 연결에 실패했습니다',
-                    code: 'DATABASE_CONNECTION_FAILED',
-                    message: '현재 맛집 저장 기능을 사용할 수 없습니다'
-                });
-            } else if (req.method === 'DELETE') {
-                return res.status(503).json({
-                    error: '데이터베이스 연결에 실패했습니다',
-                    code: 'DATABASE_CONNECTION_FAILED',
-                    message: '현재 맛집 삭제 기능을 사용할 수 없습니다'
-                });
-            }
+            return res.status(503).json({
+                error: '데이터베이스 연결에 실패했습니다',
+                code: 'DATABASE_CONNECTION_FAILED',
+                message: '데이터베이스 서비스에 연결할 수 없습니다. 관리자에게 문의해주세요.',
+                details: process.env.NODE_ENV === 'development' ? dbError.message : undefined
+            });
         }
 
         if (req.method === 'GET') {
@@ -211,12 +187,12 @@ module.exports = async function handler(req, res) {
     } catch (error) {
         console.error('사용자 맛집 API 오류:', error);
         
-        // 데이터베이스 연결 오류 처리 (로컬스토리지 언급 제거)
-        if (error.message && error.message.includes('connect')) {
+        // 데이터베이스 연결 오류 처리
+        if (error.message && (error.message.includes('connect') || error.message.includes('NeonDbError'))) {
             return res.status(503).json({
                 error: '데이터베이스 연결 실패',
                 code: 'DATABASE_CONNECTION_FAILED',
-                message: '데이터베이스 서비스에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.'
+                message: '데이터베이스 서비스에 연결할 수 없습니다. 환경설정을 확인해주세요.'
             });
         }
 
