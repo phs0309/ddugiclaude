@@ -171,6 +171,17 @@ async function callClaudeAPI(prompt) {
     console.log('🔑 API 키 길이:', apiKey ? apiKey.length : '없음');
     
     try {
+        const requestBody = {
+            model: 'claude-3-5-sonnet-20241022',
+            max_tokens: 300,
+            messages: [{
+                role: 'user',
+                content: prompt
+            }]
+        };
+        
+        console.log('📤 요청 데이터:', JSON.stringify(requestBody, null, 2));
+        
         const response = await fetch('https://api.anthropic.com/v1/messages', {
             method: 'POST',
             headers: {
@@ -178,14 +189,7 @@ async function callClaudeAPI(prompt) {
                 'x-api-key': apiKey,
                 'anthropic-version': '2023-06-01'
             },
-            body: JSON.stringify({
-                model: 'claude-3-5-sonnet-20241022',
-                max_tokens: 300,
-                messages: [{
-                    role: 'user',
-                    content: prompt
-                }]
-            })
+            body: JSON.stringify(requestBody)
         });
 
         console.log(`📡 Claude API 응답: ${response.status} ${response.statusText}`);
