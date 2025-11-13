@@ -332,73 +332,26 @@
                 
                 // 저장된 ID에 해당하는 맛집들만 필터링
                 savedRestaurants = savedIds.map(savedId => {
-                    // ID 타입 확인 및 정규화
-                    const normalizedSavedId = String(savedId).trim();
+                    const searchId = String(savedId).trim();
+                    console.log(`🔍 검색중: "${searchId}"`);
                     
-                    // 다양한 방법으로 맛집 찾기
-                    let restaurant = allRestaurants.find(r => String(r.id) === normalizedSavedId);
-                    
-                    // 정확한 매치가 없으면 부분 매치 시도
-                    if (!restaurant) {
-                        restaurant = allRestaurants.find(r => 
-                            String(r.id).includes(normalizedSavedId) || 
-                            normalizedSavedId.includes(String(r.id))
-                        );
-                    }
-                    
-                    // 여전히 못 찾으면 name이나 다른 필드로 찾기 시도
-                    if (!restaurant) {
-                        restaurant = allRestaurants.find(r => 
-                            r.name && r.name.includes(normalizedSavedId)
-                        );
-                    }
+                    // ID로 맛집 찾기 (정확한 매치)
+                    const restaurant = allRestaurants.find(r => r.id === searchId);
                     
                     if (restaurant) {
-                        console.log(`✅ 맛집 찾음: ${savedId} -> ${restaurant.name}`);
+                        console.log(`✅ 찾음: ${searchId} -> ${restaurant.name}`);
                         return {
                             ...restaurant,
-                            savedAt: new Date().toISOString() // 저장 날짜는 현재 시간으로 설정
+                            savedAt: new Date().toISOString()
                         };
                     } else {
-                        // 맛집을 찾을 수 없는 경우 기본값 반환
-                        console.warn(`❌ 맛집 ID "${savedId}"를 restaurants.json에서 찾을 수 없습니다`);
-                        console.warn(`타입: ${typeof savedId}, 길이: ${String(savedId).length}`);
-                        console.warn(`전체 ${allRestaurants.length}개 맛집 중에서 검색함`);
-                        
-                        // 처음 몇 개 맛집의 ID 타입과 형식 확인
-                        if (allRestaurants.length > 0) {
-                            console.warn('첫 번째 맛집 ID 샘플:', {
-                                id: allRestaurants[0].id,
-                                type: typeof allRestaurants[0].id,
-                                name: allRestaurants[0].name
-                            });
-                        }
-                        
-                        // 비슷한 ID가 있는지 확인
-                        const similarRestaurants = allRestaurants
-                            .filter(r => {
-                                const rId = String(r.id);
-                                const sId = String(savedId);
-                                return rId.includes(sId) || sId.includes(rId) || 
-                                       (r.name && (r.name.includes(sId) || sId.includes(r.name)));
-                            })
-                            .slice(0, 3);
-                        
-                        if (similarRestaurants.length > 0) {
-                            console.warn(`🔍 비슷한 맛집들:`, similarRestaurants.map(r => ({id: r.id, name: r.name})));
-                        } else {
-                            console.warn('🔍 전혀 비슷한 맛집을 찾을 수 없음');
-                            // 저장된 ID와 정확히 일치하는 것이 없는지 한번 더 확인
-                            const exactMatches = allRestaurants.filter(r => r.id === savedId || r.id === String(savedId) || String(r.id) === savedId);
-                            console.warn('🔍 정확한 매치 재확인:', exactMatches.map(r => ({id: r.id, name: r.name})));
-                        }
-                        
+                        console.warn(`❌ 못 찾음: ${searchId}`);
                         return {
                             id: savedId,
                             name: `미확인 맛집 (${savedId})`,
                             area: '알 수 없음',
                             category: '기타',
-                            description: '저장된 맛집 정보를 찾을 수 없습니다. 다시 저장해주세요.',
+                            description: '맛집 정보를 찾을 수 없습니다.',
                             savedAt: new Date().toISOString(),
                             isUnknown: true
                         };
@@ -618,7 +571,8 @@
                 
                 savedIds.forEach(savedId => {
                     const normalizedSavedId = String(savedId).trim();
-                    const exactMatch = restaurants.find(r => String(r.id) === normalizedSavedId);
+                    const exactMatch = restaurants.find(r => String(r.id).trim() === normalizedSavedId);
+                    const caseInsensitiveMatch = restaurants.find(r => String(r.id).toLowerCase().trim() === normalizedSavedId.toLowerCase());
                     const partialMatch = restaurants.find(r => 
                         String(r.id).includes(normalizedSavedId) || 
                         normalizedSavedId.includes(String(r.id))
@@ -629,6 +583,7 @@
                         type: typeof savedId,
                         normalized: normalizedSavedId,
                         exactMatch: exactMatch ? { id: exactMatch.id, name: exactMatch.name } : null,
+                        caseInsensitiveMatch: caseInsensitiveMatch ? { id: caseInsensitiveMatch.id, name: caseInsensitiveMatch.name } : null,
                         partialMatch: partialMatch ? { id: partialMatch.id, name: partialMatch.name } : null
                     });
                 });
