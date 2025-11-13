@@ -667,9 +667,14 @@ ${restaurant.description}`;
         
         if (!overlay || !cardsSlider) return;
         
-        // 제목 설정
+        // 제목 설정 - {지역} 맛집 {개수}곳 형식
         if (locationTitle) {
-            locationTitle.textContent = location;
+            const count = restaurants?.length || 0;
+            if (location && location !== '맛집 추천') {
+                locationTitle.textContent = `${location} 맛집 ${count}곳`;
+            } else {
+                locationTitle.textContent = `맛집 추천 ${count}곳`;
+            }
         }
         
         // 기존 카드들 제거
