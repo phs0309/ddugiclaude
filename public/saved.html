@@ -283,13 +283,63 @@
                 if (savedIds.length === 0) {
                     showEmptyState();
                 } else {
-                    // 저장된 ID들만 표시 (실제 데이터는 별도로 로드하지 않고)
-                    savedRestaurants = savedIds.map(id => ({ id: id, name: `맛집 ${id}` }));
+                    // restaurants.json에서 실제 맛집 데이터 로드
+                    await loadRestaurantDetails(savedIds);
                     displaySavedRestaurants();
                 }
             } catch (error) {
                 console.error('저장된 맛집 로드 실패:', error);
                 showEmptyState();
+            }
+        }
+        
+        // restaurants.json에서 실제 맛집 데이터 로드
+        async function loadRestaurantDetails(savedIds) {
+            try {
+                // restaurants.json 파일 가져오기
+                const response = await fetch('/restaurants.json');
+                if (!response.ok) {
+                    throw new Error('restaurants.json 로드 실패');
+                }
+                
+                const data = await response.json();
+                const allRestaurants = data.restaurants;
+                
+                // 저장된 ID에 해당하는 맛집들만 필터링
+                savedRestaurants = savedIds.map(savedId => {
+                    const restaurant = allRestaurants.find(r => r.id === savedId);
+                    if (restaurant) {
+                        return {
+                            ...restaurant,
+                            savedAt: new Date().toISOString() // 저장 날짜는 현재 시간으로 설정
+                        };
+                    } else {
+                        // 맛집을 찾을 수 없는 경우 기본값 반환
+                        console.warn(`맛집 ID ${savedId}를 찾을 수 없습니다`);
+                        return {
+                            id: savedId,
+                            name: `알 수 없는 맛집 (${savedId})`,
+                            area: '알 수 없음',
+                            category: '기타',
+                            description: '맛집 정보를 찾을 수 없습니다.',
+                            savedAt: new Date().toISOString()
+                        };
+                    }
+                }).filter(Boolean); // null/undefined 제거
+                
+                console.log(`📍 ${savedIds.length}개 중 ${savedRestaurants.length}개 맛집 데이터 로드 완료`);
+                
+            } catch (error) {
+                console.error('맛집 상세 정보 로드 실패:', error);
+                // 에러 발생 시 기본값으로 설정
+                savedRestaurants = savedIds.map(id => ({
+                    id: id,
+                    name: `맛집 ${id}`,
+                    area: '알 수 없음',
+                    category: '기타',
+                    description: '맛집 정보를 불러올 수 없습니다.',
+                    savedAt: new Date().toISOString()
+                }));
             }
         }
         
@@ -389,7 +439,18 @@
         function showRestaurantDetail(restaurantId) {
             const restaurant = savedRestaurants.find(r => r.id === restaurantId);
             if (restaurant) {
-                alert(`${restaurant.name}\n${restaurant.address || restaurant.area}\n${restaurant.phone || ''}\n${restaurant.description || ''}`);
+                const details = [
+                    `🍽️ ${restaurant.name}`,
+                    `📍 ${restaurant.address || restaurant.area}`,
+                    `📱 ${restaurant.phone || '전화번호 없음'}`,
+                    `⭐ ${restaurant.rating || '평점 없음'}`,
+                    `💰 ${restaurant.price_range || '가격대 없음'}`,
+                    `📝 ${restaurant.description || restaurant.specialties || '설명 없음'}`
+                ];
+                
+                alert(details.join('\n'));
+            } else {
+                alert('맛집 정보를 찾을 수 없습니다.');
             }
         }
         
