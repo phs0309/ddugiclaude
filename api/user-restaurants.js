@@ -71,13 +71,18 @@ module.exports = async function handler(req, res) {
 
                 const savedIds = userData?.saved_restaurant_ids || [];
                 console.log('📋 저장된 맛집 ID들:', savedIds);
+                console.log('📋 ID 타입들:', savedIds.map(id => ({ id, type: typeof id, length: String(id).length })));
 
                 return res.status(200).json({
                     success: true,
                     restaurantIds: savedIds,
                     count: savedIds.length,
                     isGuest: false,
-                    message: `${savedIds.length}개의 저장된 맛집이 있습니다`
+                    message: `${savedIds.length}개의 저장된 맛집이 있습니다`,
+                    debug: {
+                        savedIds: savedIds,
+                        idTypes: savedIds.map(id => ({ id, type: typeof id, length: String(id).length }))
+                    }
                 });
             } catch (dbError) {
                 console.error('저장된 맛집 조회 실패:', dbError);

@@ -292,6 +292,11 @@
                 const savedData = await apiClient.getSavedRestaurants();
                 const savedIds = savedData.restaurantIds || [];
                 
+                console.log('🔍 API 응답 전체:', savedData);
+                if (savedData.debug) {
+                    console.log('🔍 API 디버그 정보:', savedData.debug);
+                }
+                
                 document.getElementById('savedCount').textContent = savedIds.length;
                 
                 if (savedIds.length === 0) {
@@ -320,7 +325,10 @@
                 const allRestaurants = data.restaurants;
                 
                 console.log('📋 저장된 ID들:', savedIds);
-                console.log('📋 restaurants.json 첫 5개 ID들:', allRestaurants.slice(0, 5).map(r => r.id));
+                console.log('📋 저장된 ID 타입들:', savedIds.map(id => ({ id, type: typeof id, length: String(id).length })));
+                console.log('📋 restaurants.json 총 개수:', allRestaurants.length);
+                console.log('📋 restaurants.json 첫 10개 ID들:', allRestaurants.slice(0, 10).map(r => ({ id: r.id, name: r.name, type: typeof r.id })));
+                console.log('📋 restaurants.json 마지막 5개 ID들:', allRestaurants.slice(-5).map(r => ({ id: r.id, name: r.name })));
                 
                 // 저장된 ID에 해당하는 맛집들만 필터링
                 savedRestaurants = savedIds.map(savedId => {
@@ -378,6 +386,11 @@
                         
                         if (similarRestaurants.length > 0) {
                             console.warn(`🔍 비슷한 맛집들:`, similarRestaurants.map(r => ({id: r.id, name: r.name})));
+                        } else {
+                            console.warn('🔍 전혀 비슷한 맛집을 찾을 수 없음');
+                            // 저장된 ID와 정확히 일치하는 것이 없는지 한번 더 확인
+                            const exactMatches = allRestaurants.filter(r => r.id === savedId || r.id === String(savedId) || String(r.id) === savedId);
+                            console.warn('🔍 정확한 매치 재확인:', exactMatches.map(r => ({id: r.id, name: r.name})));
                         }
                         
                         return {
