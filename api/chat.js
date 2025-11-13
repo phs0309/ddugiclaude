@@ -1,5 +1,12 @@
 const path = require('path');
 const restaurants = require(path.join(process.cwd(), 'restaurants.json'));
+const { createClient } = require('@supabase/supabase-js');
+
+// Supabase 클라이언트 초기화
+const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_ROLE_KEY
+);
 
 // Restaurant AI 로직을 Vercel 함수에 맞게 구현
 class RestaurantAI {
@@ -154,6 +161,52 @@ class RestaurantAI {
     getRandomRecommendations(count = 3) {
         const shuffled = [...this.restaurants].sort(() => 0.5 - Math.random());
         return shuffled.slice(0, count);
+    }
+}
+
+// 대화 저장 함수
+async function saveConversationMessage(sessionId, userId, role, content, messageType = 'chat') {
+    try {
+        const { error } = await supabase
+            .from('conversations')
+            .insert({
+                session_id: sessionId,
+                user_id: userId,
+                role: role,
+                content: content,
+                message_type: messageType
+            });
+
+        if (error) {
+            console.error('💾 대화 저장 실패:', error);
+        } else {
+            console.log('💾 대화 저장 성공:', { sessionId, role, messageType });
+        }
+    } catch (error) {
+        console.error('💾 대화 저장 중 에러:', error);
+    }
+}
+
+// 대화 히스토리 불러오기 함수
+async function getConversationHistory(sessionId, limit = 10) {
+    try {
+        const { data, error } = await supabase
+            .from('conversations')
+            .select('role, content, created_at')
+            .eq('session_id', sessionId)
+            .order('created_at', { ascending: true })
+            .limit(limit);
+
+        if (error) {
+            console.error('📖 대화 히스토리 불러오기 실패:', error);
+            return [];
+        }
+
+        console.log('📖 대화 히스토리 불러오기 성공:', data?.length || 0, '개');
+        return data || [];
+    } catch (error) {
+        console.error('📖 대화 히스토리 불러오기 중 에러:', error);
+        return [];
     }
 }
 
@@ -461,7 +514,7 @@ module.exports = async function handler(req, res) {
         });
     }
 
-    const { message } = req.body || {};
+    const { message, sessionId, userId } = req.body || {};
 
     if (!message) {
         return res.status(400).json({ 
@@ -545,13 +598,26 @@ module.exports = async function handler(req, res) {
             aiGenerated = false;
         }
 
+        // 대화 저장 (비동기로 실행, 응답 차단하지 않음)
+        if (sessionId) {
+            // 사용자 메시지 저장
+            saveConversationMessage(sessionId, userId, 'user', message, 'chat')
+                .catch(err => console.error('사용자 메시지 저장 실패:', err));
+            
+            // AI 응답 저장
+            saveConversationMessage(sessionId, userId, 'assistant', aiResponse, hasLocationMention ? 'recommendation' : 'chat')
+                .catch(err => console.error('AI 응답 저장 실패:', err));
+        }
+
         // 응답 전송
         const response = {
             message: aiResponse,
             restaurants: hasLocationMention ? recommendations.restaurants : [],
             analysis: hasLocationMention ? recommendations.analysis : {},
             type: hasLocationMention ? 'recommendation' : 'chat',
-            aiGenerated: aiGenerated
+            aiGenerated: aiGenerated,
+            sessionId: sessionId,
+            userId: userId
         };
         
         // 개발 환경에서는 디버그 정보 추가

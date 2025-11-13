@@ -8,10 +8,46 @@ class InstagramStyleChatBot {
         this.typingIndicator = document.getElementById('typingIndicator');
         this.quickSuggestions = document.getElementById('quickSuggestions');
         
+        // 세션 ID 관리
+        this.sessionId = this.getOrCreateSessionId();
+        this.userId = this.getUserId();
+        
+        console.log('🔑 세션 ID:', this.sessionId);
+        
         this.initEventListeners();
         this.loadInitialRecommendations();
         this.updateTimestamps();
         this.checkLocationAndShowNearbyRestaurants();
+    }
+
+    // 세션 ID 생성 또는 가져오기
+    getOrCreateSessionId() {
+        let sessionId = sessionStorage.getItem('chatSessionId');
+        if (!sessionId) {
+            sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+            sessionStorage.setItem('chatSessionId', sessionId);
+        }
+        return sessionId;
+    }
+
+    // 사용자 ID 가져오기 (로그인된 경우)
+    getUserId() {
+        // apiClient가 있다면 사용자 ID 반환
+        if (typeof apiClient !== 'undefined' && apiClient.isLoggedIn()) {
+            return apiClient.getUser()?.id || null;
+        }
+        return null;
+    }
+
+    // 새로운 대화 시작 (세션 ID 재생성)
+    startNewConversation() {
+        sessionStorage.removeItem('chatSessionId');
+        this.sessionId = this.getOrCreateSessionId();
+        console.log('🔄 새로운 대화 시작:', this.sessionId);
+        
+        // 채팅 메시지 초기화
+        this.messagesContainer.innerHTML = '';
+        this.loadInitialRecommendations();
     }
 
     initEventListeners() {
@@ -294,7 +330,11 @@ ${restaurant.description}`;
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ message })
+            body: JSON.stringify({ 
+                message,
+                sessionId: this.sessionId,
+                userId: this.userId
+            })
         });
 
         if (!response.ok) {
