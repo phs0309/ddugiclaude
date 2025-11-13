@@ -305,6 +305,9 @@
                 const data = await response.json();
                 const allRestaurants = data.restaurants;
                 
+                console.log('📋 저장된 ID들:', savedIds);
+                console.log('📋 restaurants.json 첫 5개 ID들:', allRestaurants.slice(0, 5).map(r => r.id));
+                
                 // 저장된 ID에 해당하는 맛집들만 필터링
                 savedRestaurants = savedIds.map(savedId => {
                     const restaurant = allRestaurants.find(r => r.id === savedId);
@@ -315,7 +318,19 @@
                         };
                     } else {
                         // 맛집을 찾을 수 없는 경우 기본값 반환
-                        console.warn(`맛집 ID ${savedId}를 찾을 수 없습니다`);
+                        console.warn(`❌ 맛집 ID ${savedId}를 restaurants.json에서 찾을 수 없습니다`);
+                        console.warn(`전체 ${allRestaurants.length}개 맛집 중에서 검색함`);
+                        
+                        // 비슷한 ID가 있는지 확인
+                        const similarIds = allRestaurants
+                            .filter(r => r.id.includes(savedId) || savedId.includes(r.id))
+                            .map(r => r.id)
+                            .slice(0, 3);
+                        
+                        if (similarIds.length > 0) {
+                            console.warn(`🔍 비슷한 ID들: ${similarIds.join(', ')}`);
+                        }
+                        
                         return {
                             id: savedId,
                             name: `알 수 없는 맛집 (${savedId})`,
