@@ -37,7 +37,8 @@
       "WebFetch(domain:guidegeek.com)",
       "Bash(del publicguidegeek.html)",
       "WebFetch(domain:www.figma.com)",
-      "Bash(copy publicindex.html publicindex_backup.html)"
+      "Bash(copy publicindex.html publicindex_backup.html)",
+      "WebFetch(domain:docs.claude.com)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"
