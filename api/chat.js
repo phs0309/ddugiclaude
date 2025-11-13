@@ -221,7 +221,7 @@ async function callClaudeAPI(prompt) {
         try {
             // 요청 본문 준비
             const requestBody = {
-                model: 'claude-3-5-sonnet-20241022',
+                model: 'claude-3-5-haiku-20241022',
                 max_tokens: 300,
                 messages: [{
                     role: 'user',
