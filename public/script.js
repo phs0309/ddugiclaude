@@ -34,7 +34,7 @@ class InstagramStyleChatBot {
     getUserId() {
         // apiClient가 있다면 사용자 ID 반환
         if (typeof apiClient !== 'undefined' && apiClient.isLoggedIn()) {
-            return apiClient.getUser()?.id || null;
+            return apiClient.getCurrentUser()?.id || null;
         }
         return null;
     }
