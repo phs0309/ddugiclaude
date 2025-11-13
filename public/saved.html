@@ -245,9 +245,130 @@
             color: #AAAAAA;
         }
 
+        /* 모달 스타일 */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            animation: modalSlideIn 0.3s ease;
+        }
+        
+        .modal-header {
+            padding: 20px 20px 15px 20px;
+            border-bottom: 1px solid #E5E5E5;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(135deg, #FF6B35 0%, #FFD166 100%);
+            border-radius: 16px 16px 0 0;
+        }
+        
+        .modal-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: white;
+            margin: 0;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+        
+        .modal-close {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            transition: all 0.2s ease;
+        }
+        
+        .modal-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+        
+        .modal-body {
+            padding: 20px;
+        }
+        
+        .detail-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 16px;
+            padding: 12px;
+            background: #F8F9FA;
+            border-radius: 8px;
+        }
+        
+        .detail-icon {
+            font-size: 18px;
+            margin-right: 12px;
+            margin-top: 2px;
+            min-width: 20px;
+        }
+        
+        .detail-content {
+            flex: 1;
+        }
+        
+        .detail-label {
+            font-size: 12px;
+            color: #8E8E8E;
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .detail-value {
+            font-size: 14px;
+            color: #2F2F2F;
+            line-height: 1.4;
+        }
+        
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9) translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
         @media (max-width: 768px) {
             .saved-grid {
                 grid-template-columns: 1fr;
+            }
+            
+            .modal-content {
+                margin: 10px;
+            }
+            
+            .modal-title {
+                font-size: 18px;
             }
         }
     </style>
@@ -266,6 +387,20 @@
             <div class="loading-spinner">
                 <i class="fas fa-spinner fa-spin"></i>
                 <p>저장된 맛집을 불러오는 중...</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 맛집 상세 모달 -->
+    <div id="restaurantModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle" class="modal-title"></h2>
+                <button class="modal-close" onclick="closeRestaurantModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body" id="modalBody">
             </div>
         </div>
     </div>
@@ -473,21 +608,82 @@
         // 맛집 상세 보기
         function showRestaurantDetail(restaurantId) {
             const restaurant = savedRestaurants.find(r => r.id === restaurantId);
-            if (restaurant) {
-                const details = [
-                    `🍽️ ${restaurant.name}`,
-                    `📍 ${restaurant.address || restaurant.area}`,
-                    `📱 ${restaurant.phone || '전화번호 없음'}`,
-                    `⭐ ${restaurant.rating || '평점 없음'}`,
-                    `💰 ${restaurant.price_range || '가격대 없음'}`,
-                    `📝 ${restaurant.description || restaurant.specialties || '설명 없음'}`
-                ];
-                
-                alert(details.join('\n'));
-            } else {
+            if (!restaurant) {
                 alert('맛집 정보를 찾을 수 없습니다.');
+                return;
             }
+
+            // 모달 제목 설정 (맛집 이름)
+            document.getElementById('modalTitle').textContent = restaurant.name;
+
+            // 모달 내용 생성
+            const modalBody = document.getElementById('modalBody');
+            modalBody.innerHTML = `
+                <div class="detail-item">
+                    <div class="detail-icon">📍</div>
+                    <div class="detail-content">
+                        <div class="detail-label">위치</div>
+                        <div class="detail-value">${restaurant.address || restaurant.area}</div>
+                    </div>
+                </div>
+                
+                <div class="detail-item">
+                    <div class="detail-icon">📱</div>
+                    <div class="detail-content">
+                        <div class="detail-label">전화번호</div>
+                        <div class="detail-value">${restaurant.phone || '전화번호 없음'}</div>
+                    </div>
+                </div>
+                
+                <div class="detail-item">
+                    <div class="detail-icon">⭐</div>
+                    <div class="detail-content">
+                        <div class="detail-label">평점</div>
+                        <div class="detail-value">${restaurant.rating ? restaurant.rating + '점' : '평점 없음'}</div>
+                    </div>
+                </div>
+                
+                <div class="detail-item">
+                    <div class="detail-icon">💰</div>
+                    <div class="detail-content">
+                        <div class="detail-label">가격대</div>
+                        <div class="detail-value">${restaurant.priceRange || restaurant.price_range || '가격대 없음'}</div>
+                    </div>
+                </div>
+                
+                <div class="detail-item">
+                    <div class="detail-icon">📝</div>
+                    <div class="detail-content">
+                        <div class="detail-label">설명</div>
+                        <div class="detail-value">${restaurant.description || restaurant.specialties || '설명 없음'}</div>
+                    </div>
+                </div>
+                
+                <div class="detail-item">
+                    <div class="detail-icon">🏷️</div>
+                    <div class="detail-content">
+                        <div class="detail-label">카테고리</div>
+                        <div class="detail-value">${restaurant.category || '카테고리 없음'}</div>
+                    </div>
+                </div>
+            `;
+
+            // 모달 표시
+            document.getElementById('restaurantModal').style.display = 'flex';
         }
+
+        // 모달 닫기
+        function closeRestaurantModal() {
+            document.getElementById('restaurantModal').style.display = 'none';
+        }
+
+        // 모달 배경 클릭 시 닫기
+        document.addEventListener('click', function(event) {
+            const modal = document.getElementById('restaurantModal');
+            if (event.target === modal) {
+                closeRestaurantModal();
+            }
+        });
         
         // 토스트 메시지
         function showToast(message, type = 'info') {
