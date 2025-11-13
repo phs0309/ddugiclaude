@@ -574,6 +574,74 @@
         function goToMain() {
             window.location.href = 'index.html';
         }
+        
+        // 디버깅용 함수들 (콘솔에서 직접 호출 가능)
+        window.debugSavedRestaurants = {
+            // 저장된 맛집 데이터 직접 확인
+            async checkSavedData() {
+                try {
+                    const savedData = await apiClient.getSavedRestaurants();
+                    console.log('💾 저장된 데이터 전체:', savedData);
+                    return savedData;
+                } catch (error) {
+                    console.error('💾 저장된 데이터 확인 실패:', error);
+                    return null;
+                }
+            },
+            
+            // restaurants.json 데이터 확인
+            async checkRestaurantsJson() {
+                try {
+                    const response = await fetch('/restaurants.json');
+                    const data = await response.json();
+                    console.log('📋 restaurants.json 데이터:', {
+                        총개수: data.restaurants.length,
+                        첫10개: data.restaurants.slice(0, 10).map(r => ({ id: r.id, name: r.name })),
+                        마지막10개: data.restaurants.slice(-10).map(r => ({ id: r.id, name: r.name }))
+                    });
+                    return data.restaurants;
+                } catch (error) {
+                    console.error('📋 restaurants.json 확인 실패:', error);
+                    return null;
+                }
+            },
+            
+            // 저장된 ID와 restaurants.json ID 매칭 테스트
+            async testMatching() {
+                const savedData = await this.checkSavedData();
+                const restaurants = await this.checkRestaurantsJson();
+                
+                if (!savedData || !restaurants) return;
+                
+                const savedIds = savedData.restaurantIds || [];
+                console.log('🔍 매칭 테스트 시작...');
+                
+                savedIds.forEach(savedId => {
+                    const normalizedSavedId = String(savedId).trim();
+                    const exactMatch = restaurants.find(r => String(r.id) === normalizedSavedId);
+                    const partialMatch = restaurants.find(r => 
+                        String(r.id).includes(normalizedSavedId) || 
+                        normalizedSavedId.includes(String(r.id))
+                    );
+                    
+                    console.log(`🔍 ID "${savedId}" 매칭 결과:`, {
+                        savedId,
+                        type: typeof savedId,
+                        normalized: normalizedSavedId,
+                        exactMatch: exactMatch ? { id: exactMatch.id, name: exactMatch.name } : null,
+                        partialMatch: partialMatch ? { id: partialMatch.id, name: partialMatch.name } : null
+                    });
+                });
+            }
+        };
+        
+        // 페이지 로드 완료 시 디버깅 도구 안내
+        window.addEventListener('load', () => {
+            console.log('🔧 디버깅 도구 사용법:');
+            console.log('- window.debugSavedRestaurants.checkSavedData(): 저장된 데이터 확인');
+            console.log('- window.debugSavedRestaurants.checkRestaurantsJson(): restaurants.json 확인');
+            console.log('- window.debugSavedRestaurants.testMatching(): ID 매칭 테스트');
+        });
     </script>
 </body>
 </html>
