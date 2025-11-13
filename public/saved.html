@@ -231,6 +231,20 @@
             to { transform: rotate(360deg); }
         }
 
+        .unknown-restaurant {
+            opacity: 0.7;
+            border: 2px dashed #CCCCCC;
+        }
+        
+        .unknown-restaurant .saved-card-name {
+            color: #8E8E8E;
+        }
+        
+        .unknown-restaurant .saved-card-desc {
+            font-style: italic;
+            color: #AAAAAA;
+        }
+
         @media (max-width: 768px) {
             .saved-grid {
                 grid-template-columns: 1fr;
@@ -310,34 +324,70 @@
                 
                 // 저장된 ID에 해당하는 맛집들만 필터링
                 savedRestaurants = savedIds.map(savedId => {
-                    const restaurant = allRestaurants.find(r => r.id === savedId);
+                    // ID 타입 확인 및 정규화
+                    const normalizedSavedId = String(savedId).trim();
+                    
+                    // 다양한 방법으로 맛집 찾기
+                    let restaurant = allRestaurants.find(r => String(r.id) === normalizedSavedId);
+                    
+                    // 정확한 매치가 없으면 부분 매치 시도
+                    if (!restaurant) {
+                        restaurant = allRestaurants.find(r => 
+                            String(r.id).includes(normalizedSavedId) || 
+                            normalizedSavedId.includes(String(r.id))
+                        );
+                    }
+                    
+                    // 여전히 못 찾으면 name이나 다른 필드로 찾기 시도
+                    if (!restaurant) {
+                        restaurant = allRestaurants.find(r => 
+                            r.name && r.name.includes(normalizedSavedId)
+                        );
+                    }
+                    
                     if (restaurant) {
+                        console.log(`✅ 맛집 찾음: ${savedId} -> ${restaurant.name}`);
                         return {
                             ...restaurant,
                             savedAt: new Date().toISOString() // 저장 날짜는 현재 시간으로 설정
                         };
                     } else {
                         // 맛집을 찾을 수 없는 경우 기본값 반환
-                        console.warn(`❌ 맛집 ID ${savedId}를 restaurants.json에서 찾을 수 없습니다`);
+                        console.warn(`❌ 맛집 ID "${savedId}"를 restaurants.json에서 찾을 수 없습니다`);
+                        console.warn(`타입: ${typeof savedId}, 길이: ${String(savedId).length}`);
                         console.warn(`전체 ${allRestaurants.length}개 맛집 중에서 검색함`);
                         
+                        // 처음 몇 개 맛집의 ID 타입과 형식 확인
+                        if (allRestaurants.length > 0) {
+                            console.warn('첫 번째 맛집 ID 샘플:', {
+                                id: allRestaurants[0].id,
+                                type: typeof allRestaurants[0].id,
+                                name: allRestaurants[0].name
+                            });
+                        }
+                        
                         // 비슷한 ID가 있는지 확인
-                        const similarIds = allRestaurants
-                            .filter(r => r.id.includes(savedId) || savedId.includes(r.id))
-                            .map(r => r.id)
+                        const similarRestaurants = allRestaurants
+                            .filter(r => {
+                                const rId = String(r.id);
+                                const sId = String(savedId);
+                                return rId.includes(sId) || sId.includes(rId) || 
+                                       (r.name && (r.name.includes(sId) || sId.includes(r.name)));
+                            })
                             .slice(0, 3);
                         
-                        if (similarIds.length > 0) {
-                            console.warn(`🔍 비슷한 ID들: ${similarIds.join(', ')}`);
+                        if (similarRestaurants.length > 0) {
+                            console.warn(`🔍 비슷한 맛집들:`, similarRestaurants.map(r => ({id: r.id, name: r.name})));
                         }
                         
                         return {
                             id: savedId,
-                            name: `알 수 없는 맛집 (${savedId})`,
+                            name: `미확인 맛집 (${savedId})`,
                             area: '알 수 없음',
                             category: '기타',
-                            description: '맛집 정보를 찾을 수 없습니다.',
-                            savedAt: new Date().toISOString()
+                            description: '저장된 맛집 정보를 찾을 수 없습니다. 다시 저장해주세요.',
+                            savedAt: new Date().toISOString(),
+                            isUnknown: true
                         };
                     }
                 }).filter(Boolean); // null/undefined 제거
@@ -390,13 +440,17 @@
                             new Date(restaurant.savedAt).toLocaleDateString('ko-KR') : 
                             '최근';
                         
+                        const cardClass = restaurant.isUnknown ? 'saved-card unknown-restaurant' : 'saved-card';
+                        const headerStyle = restaurant.isUnknown ? 'background: linear-gradient(135deg, #8E8E8E 0%, #CCCCCC 100%);' : '';
+                        
                         return `
-                            <div class="saved-card" onclick="showRestaurantDetail('${restaurant.id}')">
-                                <div class="saved-card-header">
+                            <div class="${cardClass}" onclick="showRestaurantDetail('${restaurant.id}')">
+                                <div class="saved-card-header" style="${headerStyle}">
                                     ${emoji}
                                     <button class="remove-btn" onclick="removeRestaurant(event, '${restaurant.id}')" aria-label="삭제">
                                         <i class="fas fa-times"></i>
                                     </button>
+                                    ${restaurant.isUnknown ? '<div style="position: absolute; top: 8px; left: 8px; background: rgba(255,255,255,0.9); padding: 2px 6px; border-radius: 4px; font-size: 10px; color: #666;">미확인</div>' : ''}
                                 </div>
                                 <div class="saved-card-body">
                                     <h3 class="saved-card-name">${restaurant.name}</h3>
