@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>뚜기의 부산 맛집</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- 네이버 지도 API는 동적으로 로드됩니다 -->
+</head>
+<body>
+    <!-- Side Menu Overlay -->
+    <div class="side-menu-overlay" id="sideMenuOverlay" onclick="closeSideMenu()"></div>
+    
+    <!-- Side Menu -->
+    <div class="side-menu" id="sideMenu">
+        <div class="side-menu-header">
+            <div class="side-menu-profile">
+                <div class="side-menu-avatar">🐧</div>
+                <div class="side-menu-info">
+                    <h3>뚜기</h3>
+                    <p>부산 맛집 가이드</p>
+                </div>
+            </div>
+            <button class="side-menu-close" onclick="closeSideMenu()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="side-menu-content">
+            <nav class="side-menu-nav">
+                <button class="side-menu-item" id="loginMenuItem" onclick="handleLogin()">
+                    <i class="fas fa-user"></i>
+                    <span id="loginMenuText">로그인</span>
+                </button>
+                <button class="side-menu-item" onclick="navigateToSavedRestaurants()">
+                    <i class="fas fa-heart"></i>
+                    <span>저장된 맛집</span>
+                </button>
+                <button class="side-menu-item" onclick="showSettings()">
+                    <i class="fas fa-cog"></i>
+                    <span>설정</span>
+                </button>
+            </nav>
+        </div>
+    </div>
+
+    <div class="instagram-dm-container">
+        <!-- Instagram-style header -->
+        <div class="dm-header">
+            <div class="dm-header-left">
+                <button class="menu-btn" aria-label="메뉴" onclick="toggleSideMenu()">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="profile-info">
+                    <div class="profile-avatar">
+                        <div class="avatar-image">🐧</div>
+                        <div class="online-indicator"></div>
+                    </div>
+                    <div class="profile-details">
+                        <h2 class="profile-name">뚜기</h2>
+                        <p class="profile-status">부산 맛집 가이드 • 활성</p>
+                    </div>
+                </div>
+            </div>
+            <div class="dm-header-right">
+                <button class="header-action-btn" aria-label="정보">
+                    <i class="fas fa-info-circle"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Chat messages area -->
+        <div class="dm-chat-area">
+            <div class="dm-messages" id="chatMessages">
+                <div class="message-group bot-group">
+                    <div class="message-avatar">
+                        <div class="avatar-image">🐧</div>
+                    </div>
+                    <div class="message-content">
+                        <div class="message-bubble bot-bubble">
+                            <p>마! 뚜기다이가! 🐧</p>
+                            <p>부산 토박이 맛집 가이드 뚜기입니다!</p>
+                            <p>어떤 맛있는 거 찾고 있노? 😊</p>
+                        </div>
+                        <div class="message-time">방금 전</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick suggestions -->
+            <div class="quick-suggestions" id="quickSuggestions">
+                <div class="suggestions-container">
+                    <button class="suggestion-pill" onclick="sendQuickMessage('해운대 맛집 추천해줘')">
+                        <i class="fas fa-map-marker-alt"></i>
+                        해운대 맛집
+                    </button>
+                    <button class="suggestion-pill" onclick="sendQuickMessage('돼지국밥 맛집 알려줘')">
+                        <i class="fas fa-bowl-hot"></i>
+                        돼지국밥
+                    </button>
+                    <button class="suggestion-pill" onclick="sendQuickMessage('회 먹을 만한 곳')">
+                        <i class="fas fa-fish"></i>
+                        회 맛집
+                    </button>
+                    <button class="suggestion-pill" onclick="sendQuickMessage('서면 저렴한 맛집')">
+                        <i class="fas fa-won-sign"></i>
+                        서면 저렴한 곳
+                    </button>
+                    <button class="suggestion-pill" onclick="sendQuickMessage('카페 추천해줘')">
+                        <i class="fas fa-coffee"></i>
+                        카페 추천
+                    </button>
+                </div>
+            </div>
+
+            <!-- Typing indicator -->
+            <div class="typing-indicator" id="typingIndicator" style="display: none;">
+                <div class="message-group bot-group">
+                    <div class="message-avatar">
+                        <div class="avatar-image">🐧</div>
+                    </div>
+                    <div class="message-content">
+                        <div class="typing-bubble">
+                            <div class="typing-dots">
+                                <span></span>
+                                <span></span>
+                                <span></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Input area -->
+        <div class="dm-input-area">
+            <div class="input-container">
+                <div class="input-wrapper">
+                    <div class="text-input-container">
+                        <input type="text" id="userInput" placeholder="메시지 보내기..." />
+                        <button class="emoji-btn" aria-label="이모지">
+                            <i class="far fa-smile"></i>
+                        </button>
+                    </div>
+                    <button id="sendButton" class="send-btn" aria-label="보내기">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Claude AI Artifacts 스타일 동적 콘텐츠 창 -->
+    <div class="artifacts-overlay" id="artifactsOverlay" style="display: none;">
+        <div class="artifacts-container">
+            <div class="artifacts-header">
+                <div class="artifacts-title">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span id="artifactsLocation">맛집 추천</span>
+                </div>
+                <button class="artifacts-close" onclick="closeArtifacts()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="artifacts-content">
+                <!-- 상단: 맛집 카드 슬라이더 -->
+                <div class="artifacts-cards-section">
+                    <div class="artifacts-cards-wrapper">
+                        <div class="artifacts-cards-slider" id="artifactsCardsSlider">
+                            <!-- 맛집 카드들이 동적으로 추가됩니다 -->
+                        </div>
+                    </div>
+                    <div class="artifacts-slider-dots" id="artifactsSliderDots">
+                        <!-- 슬라이더 점들이 동적으로 추가됩니다 -->
+                    </div>
+                </div>
+                
+                <!-- 하단: 지도 -->
+                <div class="artifacts-map-section">
+                    <div class="artifacts-map" id="artifactsMap">
+                        <div class="map-placeholder">
+                            <i class="fas fa-map-marked-alt"></i>
+                            <p>맛집 위치</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="api-client.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

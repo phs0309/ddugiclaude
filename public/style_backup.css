@@ -1,4 +1,4 @@
-/* Flat Design Style - 부산 맛집 뚜기 */
+/* Instagram DM Style - 부산 맛집 뚜기 */
 
 * {
     margin: 0;
@@ -7,16 +7,16 @@
 }
 
 body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    background: #F8F9FA;
-    color: #212529;
+    font-family: 'SF Pro Display', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background: #FFFFFF;
+    color: #2F2F2F;
     overflow: hidden;
     height: 100vh;
     margin: 0;
     padding: 0;
 }
 
-/* Main Container - Flat Design */
+/* Main Instagram DM Container */
 .instagram-dm-container {
     display: flex;
     flex-direction: column;
@@ -25,6 +25,8 @@ body {
     max-width: 100%;
     margin: 0;
     background: #FFFFFF;
+    border-radius: 0;
+    box-shadow: none;
     overflow: hidden;
 }
 
@@ -34,18 +36,17 @@ body {
         max-width: 480px;
         margin: 0 auto;
         height: 100vh;
-        box-shadow: 0 0 60px rgba(0, 0, 0, 0.05);
     }
 }
 
-/* Header - Flat Design */
+/* Header - Instagram DM Style */
 .dm-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 20px 24px;
     background: #FFFFFF;
-    border-bottom: 2px solid #E9ECEF;
+    border-bottom: 1px solid #F0F0F0;
     position: relative;
     z-index: 100;
 }
@@ -57,35 +58,33 @@ body {
 }
 
 .back-btn, .menu-btn {
-    background: transparent;
-    border: 2px solid #DEE2E6;
-    color: #495057;
-    width: 42px;
-    height: 42px;
-    border-radius: 12px;
+    background: #F5F5F5;
+    border: none;
+    color: #2F2F2F;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 18px;
     cursor: pointer;
-    transition: all 0.2s ease;
+    padding: 8px;
+    transition: background-color 0.2s ease;
 }
 
 .back-btn:hover, .menu-btn:hover {
-    background: linear-gradient(135deg, #FF6B35 0%, #FFD166 100%);
-    border-color: transparent;
-    color: #FFFFFF;
-    transform: translateY(-2px);
+    background: rgba(0, 0, 0, 0.1);
 }
 
-/* Side Menu - Flat Design */
+/* Side Menu Styles */
 .side-menu-overlay {
     position: fixed;
     top: 0;
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: rgba(0, 0, 0, 0.3);
+    background: rgba(0, 0, 0, 0.5);
     z-index: 999;
     opacity: 0;
     visibility: hidden;
@@ -108,6 +107,7 @@ body {
     transition: transform 0.3s ease;
     display: flex;
     flex-direction: column;
+    box-shadow: 2px 0 20px rgba(0, 0, 0, 0.15);
 }
 
 .side-menu.active {
@@ -128,7 +128,7 @@ body {
 
 .side-menu-header {
     padding: 30px 24px 20px;
-    border-bottom: 2px solid #E9ECEF;
+    border-bottom: 1px solid #F0F0F0;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -141,43 +141,41 @@ body {
 }
 
 .side-menu-avatar {
-    width: 50px;
-    height: 50px;
-    border-radius: 16px;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
     background: linear-gradient(135deg, #FF6B35 0%, #FFD166 100%);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 24px;
-    color: #FFFFFF;
 }
 
 .side-menu-info h3 {
     font-size: 18px;
-    font-weight: 700;
-    color: #212529;
+    font-weight: 600;
+    color: #2F2F2F;
     margin-bottom: 2px;
 }
 
 .side-menu-info p {
     font-size: 14px;
-    color: #6C757D;
+    color: #8E8E8E;
 }
 
 .side-menu-close {
-    background: transparent;
+    background: none;
     border: none;
-    color: #6C757D;
+    color: #8E8E8E;
     font-size: 20px;
     cursor: pointer;
     padding: 8px;
-    border-radius: 8px;
-    transition: all 0.2s ease;
+    border-radius: 50%;
+    transition: background-color 0.2s ease;
 }
 
 .side-menu-close:hover {
-    background: #F8F9FA;
-    color: #212529;
+    background: #F5F5F5;
 }
 
 .side-menu-content {
@@ -199,37 +197,23 @@ body {
     border: none;
     text-align: left;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease;
     font-size: 16px;
-    color: #495057;
-    position: relative;
+    color: #2F2F2F;
 }
 
 .side-menu-item:hover {
-    background: #F8F9FA;
-    color: #212529;
-}
-
-.side-menu-item:hover::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 4px;
-    height: 24px;
-    background: linear-gradient(135deg, #FF6B35 0%, #FFD166 100%);
-    border-radius: 0 2px 2px 0;
+    background: #F8F8F8;
 }
 
 .side-menu-item i {
     width: 20px;
-    color: #6C757D;
+    color: #8E8E8E;
     font-size: 18px;
 }
 
 .side-menu-item span {
-    font-weight: 600;
+    font-weight: 500;
 }
 
 .profile-info {
@@ -243,38 +227,39 @@ body {
 }
 
 .avatar-image {
-    width: 36px;
-    height: 36px;
-    border-radius: 12px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
     background: linear-gradient(135deg, #FF6B35 0%, #FFD166 100%);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 16px;
-    color: #FFFFFF;
+    border: 2px solid transparent;
+    background-clip: padding-box;
 }
 
 .online-indicator {
     position: absolute;
-    bottom: -2px;
-    right: -2px;
+    bottom: 0;
+    right: 0;
     width: 12px;
     height: 12px;
-    background: #28A745;
+    background: #4CAF50;
     border: 2px solid #FFFFFF;
     border-radius: 50%;
 }
 
 .profile-details h2 {
     font-size: 18px;
-    font-weight: 700;
-    color: #212529;
+    font-weight: 600;
+    color: #2F2F2F;
     margin: 0;
 }
 
 .profile-status {
     font-size: 13px;
-    color: #6C757D;
+    color: #999999;
     margin: 0;
     margin-top: 2px;
 }
@@ -285,15 +270,15 @@ body {
 }
 
 .header-action-btn {
-    background: transparent;
-    border: 2px solid #DEE2E6;
-    color: #495057;
+    background: #F5F5F5;
+    border: none;
+    color: #2F2F2F;
     font-size: 18px;
     cursor: pointer;
     padding: 10px;
-    width: 42px;
-    height: 42px;
-    border-radius: 12px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
     transition: all 0.2s ease;
     display: flex;
     align-items: center;
@@ -301,33 +286,30 @@ body {
 }
 
 .header-action-btn:hover {
-    background: linear-gradient(135deg, #FF6B35 0%, #FFD166 100%);
-    border-color: transparent;
-    color: #FFFFFF;
-    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.2);
 }
 
-/* Chat Area - Flat Design */
+/* Chat Area */
 .dm-chat-area {
     flex: 1;
     overflow-y: auto;
-    padding: 24px 16px;
+    padding: 16px;
     display: flex;
     flex-direction: column;
-    gap: 20px;
-    background: #F8F9FA;
+    gap: 16px;
+    background: #FFFFFF;
 }
 
 .dm-messages {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 16px;
 }
 
 /* Message Groups */
 .message-group {
     display: flex;
-    gap: 12px;
+    gap: 8px;
     align-items: flex-end;
 }
 
@@ -340,10 +322,9 @@ body {
 }
 
 .message-avatar .avatar-image {
-    width: 32px;
-    height: 32px;
+    width: 28px;
+    height: 28px;
     font-size: 14px;
-    border-radius: 10px;
 }
 
 .message-content {
@@ -357,33 +338,34 @@ body {
     align-items: flex-end;
 }
 
-/* Message Bubbles - Flat Design */
+/* Message Bubbles - Instagram Style */
 .message-bubble {
-    padding: 14px 18px;
-    border-radius: 20px;
+    padding: 12px 16px;
+    border-radius: 18px;
     font-size: 14px;
-    line-height: 1.5;
+    line-height: 1.4;
     word-wrap: break-word;
     position: relative;
 }
 
 .bot-bubble {
-    background: #FFFFFF;
-    color: #212529;
-    border: 2px solid #E9ECEF;
+    background: #F5F7FB;
+    color: #2F2F2F;
+    border: none;
     margin-left: 4px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
 }
 
 .user-bubble {
     background: linear-gradient(135deg, #FF6B35 0%, #FFD166 100%);
     color: #FFFFFF;
     margin-right: 4px;
-    border: none;
+    box-shadow: 0 2px 8px rgba(255, 107, 53, 0.2);
 }
 
 .message-time {
     font-size: 11px;
-    color: #6C757D;
+    color: #999999;
     margin-top: 4px;
     margin-left: 16px;
 }
@@ -394,7 +376,7 @@ body {
     text-align: right;
 }
 
-/* Quick Suggestions - Flat Design */
+/* Quick Suggestions */
 .quick-suggestions {
     margin-top: auto;
     padding: 16px 0;
@@ -402,7 +384,7 @@ body {
 
 .suggestions-container {
     display: flex;
-    gap: 10px;
+    gap: 8px;
     overflow-x: auto;
     padding: 0 4px;
     scrollbar-width: none;
@@ -416,14 +398,14 @@ body {
 .suggestion-pill {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 10px 16px;
-    background: #FFFFFF;
-    border: 2px solid #DEE2E6;
-    border-radius: 24px;
-    color: #495057;
+    gap: 6px;
+    padding: 8px 12px;
+    background: #F5F5F5;
+    border: 1px solid #E5E5E5;
+    border-radius: 20px;
+    color: #2F2F2F;
     font-size: 13px;
-    font-weight: 600;
+    font-weight: 400;
     cursor: pointer;
     transition: all 0.2s ease;
     white-space: nowrap;
@@ -431,28 +413,26 @@ body {
 }
 
 .suggestion-pill:hover {
-    background: linear-gradient(135deg, #FF6B35 0%, #FFD166 100%);
-    border-color: transparent;
-    color: #FFFFFF;
-    transform: translateY(-2px);
+    background: #E5E5E5;
+    border-color: #D0D0D0;
+    transform: translateY(-1px);
 }
 
 .suggestion-pill i {
-    font-size: 14px;
+    font-size: 12px;
+    opacity: 0.8;
 }
 
-/* Typing Indicator - Flat Design */
+/* Typing Indicator */
 .typing-indicator {
     margin-bottom: 8px;
 }
 
 .typing-bubble {
-    background: #FFFFFF;
-    padding: 14px 18px;
-    border-radius: 20px;
+    background: #F7F7F7;
+    padding: 12px 16px;
+    border-radius: 18px;
     margin-left: 4px;
-    border: 2px solid #E9ECEF;
-    display: inline-block;
 }
 
 .typing-dots {
@@ -462,10 +442,10 @@ body {
 }
 
 .typing-dots span {
-    width: 8px;
-    height: 8px;
+    width: 6px;
+    height: 6px;
     border-radius: 50%;
-    background: #6C757D;
+    background: #999999;
     animation: typing 1.4s infinite ease-in-out;
 }
 
@@ -483,11 +463,11 @@ body {
     }
 }
 
-/* Input Area - Flat Design */
+/* Input Area - Instagram Style */
 .dm-input-area {
-    padding: 16px;
+    padding: 8px 12px 12px;
     background: #FFFFFF;
-    border-top: 2px solid #E9ECEF;
+    border-top: 1px solid #E5E5E5;
 }
 
 .input-container {
@@ -497,40 +477,41 @@ body {
 .input-wrapper {
     display: flex;
     align-items: center;
-    gap: 10px;
-    background: #F8F9FA;
-    border-radius: 28px;
-    padding: 10px 16px;
-    border: 2px solid #DEE2E6;
+    gap: 8px;
+    background: #F5F5F5;
+    border-radius: 24px;
+    padding: 8px 12px;
+    border: 1px solid #E5E5E5;
     transition: all 0.2s ease;
 }
 
 /* Mobile optimized input */
 @media (max-width: 768px) {
     .dm-input-area {
-        padding: 12px;
-        padding-bottom: env(safe-area-inset-bottom, 12px);
+        padding: 8px;
+        padding-bottom: env(safe-area-inset-bottom, 8px);
     }
     
     .input-wrapper {
-        padding: 8px 14px;
+        padding: 6px 10px;
+        gap: 6px;
     }
 }
 
 .input-wrapper:focus-within {
-    border-color: #FF6B35;
-    background: #FFFFFF;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+    transform: translateY(-1px);
 }
 
 .input-action-btn {
     background: none;
     border: none;
-    color: #6C757D;
-    font-size: 18px;
+    color: #999999;
+    font-size: 16px;
     cursor: pointer;
     padding: 4px;
-    border-radius: 8px;
-    transition: all 0.2s ease;
+    border-radius: 50%;
+    transition: color 0.2s ease;
 }
 
 .input-action-btn:hover {
@@ -548,7 +529,7 @@ body {
     flex: 1;
     background: none;
     border: none;
-    color: #212529;
+    color: #2F2F2F;
     font-size: 14px;
     outline: none;
     padding: 8px 0;
@@ -556,18 +537,18 @@ body {
 }
 
 #userInput::placeholder {
-    color: #6C757D;
+    color: #999999;
 }
 
 .emoji-btn {
     background: none;
     border: none;
-    color: #6C757D;
-    font-size: 18px;
+    color: #999999;
+    font-size: 16px;
     cursor: pointer;
     padding: 4px;
-    border-radius: 8px;
-    transition: all 0.2s ease;
+    border-radius: 50%;
+    transition: color 0.2s ease;
 }
 
 .emoji-btn:hover {
@@ -578,15 +559,15 @@ body {
     background: linear-gradient(135deg, #FF6B35 0%, #FFD166 100%);
     border: none;
     color: #FFFFFF;
-    width: 36px;
-    height: 36px;
-    border-radius: 12px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 14px;
-    transition: all 0.2s ease;
+    font-size: 12px;
+    transition: transform 0.2s ease, opacity 0.2s ease;
 }
 
 .send-btn:hover {
@@ -599,7 +580,7 @@ body {
     transform: none;
 }
 
-/* Restaurant Cards - Flat Design */
+/* Restaurant Cards - Instagram Story Style */
 .restaurant-cards-container {
     margin-top: 12px;
     padding: 0 4px;
@@ -607,7 +588,7 @@ body {
 
 .restaurant-cards-wrapper {
     display: flex;
-    gap: 14px;
+    gap: 12px;
     overflow-x: auto;
     padding: 8px 0;
     scrollbar-width: none;
@@ -621,17 +602,18 @@ body {
 .restaurant-card {
     min-width: 280px;
     background: #FFFFFF;
-    border-radius: 16px;
+    border-radius: 20px;
     overflow: hidden;
     cursor: pointer;
-    transition: all 0.2s ease;
-    border: 2px solid #E9ECEF;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: none;
     flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .restaurant-card:hover {
-    transform: translateY(-4px);
-    border-color: #FF6B35;
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
 }
 
 .restaurant-card-image {
@@ -641,35 +623,34 @@ body {
     align-items: center;
     justify-content: center;
     font-size: 48px;
-    color: #FFFFFF;
     position: relative;
 }
 
 .restaurant-card-content {
-    padding: 20px;
+    padding: 16px;
 }
 
 .restaurant-name {
     font-size: 16px;
-    font-weight: 700;
+    font-weight: 600;
     margin-bottom: 8px;
-    color: #212529;
+    color: #2F2F2F;
 }
 
 .restaurant-area {
-    color: #6C757D;
-    margin-bottom: 12px;
+    color: #999999;
+    margin-bottom: 10px;
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 4px;
     font-size: 13px;
 }
 
 .restaurant-description {
-    color: #495057;
+    color: #666666;
     font-size: 13px;
-    line-height: 1.5;
-    margin-bottom: 14px;
+    line-height: 1.4;
+    margin-bottom: 12px;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
@@ -677,34 +658,33 @@ body {
 }
 
 .restaurant-specialties {
-    margin-bottom: 14px;
+    margin-bottom: 12px;
 }
 
 .specialty-tag {
     display: inline-block;
-    background: #FFF3E0;
-    color: #FF6B35;
-    padding: 6px 12px;
-    border-radius: 8px;
+    background: rgba(240, 148, 51, 0.2);
+    color: #f09433;
+    padding: 4px 8px;
+    border-radius: 12px;
     font-size: 11px;
-    font-weight: 600;
-    margin-right: 6px;
-    margin-bottom: 6px;
-    border: 2px solid #FFE0B2;
+    margin-right: 4px;
+    margin-bottom: 4px;
+    border: 1px solid rgba(240, 148, 51, 0.3);
 }
 
 .restaurant-rating {
     display: flex;
     align-items: center;
-    gap: 6px;
-    color: #FFC107;
-    font-weight: 600;
+    gap: 4px;
+    color: #ffd700;
+    font-weight: 500;
     font-size: 13px;
 }
 
 .restaurant-rating i {
-    color: #FFC107;
-    font-size: 14px;
+    color: #ffd700;
+    font-size: 12px;
 }
 
 /* Animations */
@@ -725,12 +705,17 @@ body {
 
 /* Responsive Design */
 @media (max-width: 768px) {
+    .instagram-dm-container {
+        border-left: none;
+        border-right: none;
+    }
+    
     .dm-header {
-        padding: 12px 16px;
+        padding: 8px 12px;
     }
     
     .dm-chat-area {
-        padding: 16px 12px;
+        padding: 12px;
     }
     
     .restaurant-card {
@@ -743,7 +728,7 @@ body {
     
     .suggestion-pill {
         font-size: 12px;
-        padding: 8px 14px;
+        padding: 6px 10px;
     }
 }
 
@@ -757,11 +742,11 @@ body {
     }
     
     .dm-header {
-        padding: 10px 12px;
+        padding: 6px 8px;
     }
     
     .profile-details h2 {
-        font-size: 16px;
+        font-size: 14px;
     }
     
     .profile-status {
@@ -769,14 +754,15 @@ body {
     }
 }
 
-/* === Artifacts Modal - Flat Design === */
+/* === Claude AI Artifacts 스타일 동적 콘텐츠 창 === */
 .artifacts-overlay {
     position: fixed;
     top: 0;
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: rgba(0, 0, 0, 0.4);
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
     z-index: 1000;
     display: flex;
     align-items: center;
@@ -787,9 +773,11 @@ body {
 @keyframes fadeInOverlay {
     from {
         opacity: 0;
+        backdrop-filter: blur(0px);
     }
     to {
         opacity: 1;
+        backdrop-filter: blur(4px);
     }
 }
 
@@ -798,10 +786,12 @@ body {
     height: 100vh;
     background: #FFFFFF;
     border: none;
+    border-radius: 0;
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    animation: slideInArtifacts 0.3s ease;
+    animation: slideInArtifacts 0.4s ease;
+    box-shadow: none;
 }
 
 /* Desktop view for modal */
@@ -810,14 +800,15 @@ body {
         width: 90vw;
         max-width: 1000px;
         height: 85vh;
-        border-radius: 20px;
-        border: 3px solid #E9ECEF;
+        border: 1px solid #FFD166;
+        border-radius: 16px;
+        box-shadow: 0 20px 40px rgba(255, 107, 53, 0.3);
     }
 }
 
 @keyframes slideInArtifacts {
     from {
-        transform: scale(0.95) translateY(10px);
+        transform: scale(0.9) translateY(20px);
         opacity: 0;
     }
     to {
@@ -830,46 +821,38 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 20px 24px;
+    padding: 16px 20px;
     background: #FFFFFF;
-    border-bottom: 2px solid #E9ECEF;
+    border-bottom: 1px solid #FFD166;
 }
 
 .artifacts-title {
     display: flex;
     align-items: center;
-    gap: 10px;
-    color: #212529;
-    font-size: 18px;
-    font-weight: 700;
+    gap: 8px;
+    color: #2F2F2F;
+    font-size: 16px;
+    font-weight: 600;
 }
 
 .artifacts-title i {
-    color: #FF6B35;
-    font-size: 20px;
+    color: #f09433;
 }
 
 .artifacts-close {
-    background: transparent;
-    border: 2px solid #DEE2E6;
-    color: #6C757D;
+    background: none;
+    border: none;
+    color: #999999;
     font-size: 16px;
     cursor: pointer;
     padding: 8px;
-    width: 36px;
-    height: 36px;
-    border-radius: 10px;
-    transition: all 0.2s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s;
 }
 
 .artifacts-close:hover {
-    background: linear-gradient(135deg, #FF6B35 0%, #FFD166 100%);
-    border-color: transparent;
-    color: #FFFFFF;
-    transform: rotate(90deg);
+    color: #2F2F2F;
+    background: #FFD166;
 }
 
 .artifacts-content {
@@ -879,15 +862,17 @@ body {
     overflow: hidden;
 }
 
-/* Restaurant Cards Section - Flat Design */
+/* 상단: 맛집 카드 섹션 */
 .artifacts-cards-section {
     height: 52%;
-    background: #F8F9FA;
-    border-bottom: 2px solid #E9ECEF;
+    background: #F7F7F7;
+    border-bottom: 1px solid #FFD166;
     display: flex;
     flex-direction: column;
-    padding: 24px;
+    padding: 16px 20px;
 }
+
+/* .artifacts-cards-section h3 removed - no title needed */
 
 .artifacts-cards-wrapper {
     overflow: hidden;
@@ -899,22 +884,36 @@ body {
     display: flex;
     transition: transform 0.3s ease;
     gap: 0;
+    touch-action: pan-x;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+.artifacts-cards-slider::-webkit-scrollbar {
+    display: none;
 }
 
 .artifacts-restaurant-card {
     min-width: 280px;
     background: #FFFFFF;
-    border: 2px solid #E9ECEF;
-    border-radius: 16px;
+    border: 1px solid #FFD166;
+    border-radius: 12px;
     overflow: hidden;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
     flex-shrink: 0;
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
 }
 
 .artifacts-restaurant-card:hover {
     transform: translateY(-4px);
-    border-color: #FF6B35;
+    border-color: #f09433;
+    box-shadow: 0 8px 25px rgba(240, 148, 51, 0.2);
 }
 
 .artifacts-card-image {
@@ -923,62 +922,65 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 36px;
+    font-size: 32px;
     color: #FFFFFF;
     position: relative;
 }
 
-/* Heart Button - Flat Design */
+/* Heart Button Styles */
 .heart-btn {
     position: absolute;
     top: 12px;
     right: 12px;
-    width: 40px;
-    height: 40px;
-    border: 2px solid #FFFFFF;
-    border-radius: 12px;
-    background: rgba(255, 255, 255, 0.95);
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(8px);
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
     z-index: 10;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .heart-btn:hover {
-    background: #FFFFFF;
+    background: rgba(255, 255, 255, 1);
     transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .heart-btn i {
-    font-size: 18px;
-    color: #E91E63;
-    transition: all 0.2s ease;
-}
-
-.heart-btn.saved {
-    background: #FFE4EC;
-    border-color: #E91E63;
+    font-size: 16px;
+    color: #FF4757;
+    transition: all 0.3s ease;
 }
 
 .heart-btn.saved i {
-    color: #E91E63;
+    color: #FF4757;
+    transform: scale(1.2);
+}
+
+.heart-btn.saved {
+    background: rgba(255, 71, 87, 0.1);
 }
 
 .heart-btn:active {
     transform: scale(0.95);
 }
 
-/* Heart animation */
+/* Heart animation when saving */
 @keyframes heartBeat {
     0% { transform: scale(1); }
-    50% { transform: scale(1.2); }
+    50% { transform: scale(1.3); }
     100% { transform: scale(1); }
 }
 
 .heart-btn.animate {
-    animation: heartBeat 0.5s ease;
+    animation: heartBeat 0.6s ease;
 }
 
 .artifacts-card-content {
@@ -986,74 +988,76 @@ body {
     bottom: 0;
     left: 0;
     right: 0;
-    padding: 20px;
-    background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%);
+    padding: 24px;
+    background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.6) 60%, transparent 100%);
+    z-index: 2;
 }
 
 .artifacts-card-title {
     font-size: 16px;
-    font-weight: 700;
+    font-weight: 600;
     margin-bottom: 8px;
-    color: #FFFFFF;
+    color: #2F2F2F;
 }
 
 .artifacts-card-location {
-    color: rgba(255, 255, 255, 0.9);
+    color: #999999;
     font-size: 12px;
     margin-bottom: 8px;
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 4px;
 }
 
 .artifacts-card-rating {
     display: flex;
     align-items: center;
-    gap: 6px;
-    color: #FFC107;
+    gap: 4px;
+    color: #ffd700;
     font-size: 12px;
 }
 
 .artifacts-slider-dots {
     display: flex;
     justify-content: center;
-    gap: 10px;
-    margin-top: 20px;
+    gap: 8px;
+    margin-top: 16px;
 }
 
 .artifacts-dot {
-    width: 10px;
-    height: 10px;
+    width: 8px;
+    height: 8px;
     border-radius: 50%;
-    background: #DEE2E6;
+    background: #FFD166;
     cursor: pointer;
     transition: all 0.2s;
-    border: none;
 }
 
 .artifacts-dot.active {
-    background: linear-gradient(135deg, #FF6B35 0%, #FFD166 100%);
-    transform: scale(1.3);
+    background: #FF6B35;
+    transform: scale(1.2);
 }
 
-/* Map Section - Flat Design */
+/* 하단: 지도 섹션 */
 .artifacts-map-section {
     height: 48%;
     background: #FFFFFF;
     display: flex;
     flex-direction: column;
-    padding: 24px;
+    padding: 16px 20px;
 }
+
+/* .artifacts-map-section h3 removed - no title needed */
 
 .artifacts-map {
     flex: 1;
-    background: #F8F9FA;
-    border: 2px solid #E9ECEF;
-    border-radius: 12px;
+    background: #FFFFFF;
+    border: 1px solid #FFD166;
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #6C757D;
+    color: #999999;
 }
 
 .artifacts-map .map-placeholder {
@@ -1062,57 +1066,59 @@ body {
 
 .artifacts-map .map-placeholder i {
     font-size: 48px;
-    margin-bottom: 12px;
+    margin-bottom: 8px;
     display: block;
-    color: #FF6B35;
 }
 
 .artifacts-map .map-placeholder p {
     font-size: 16px;
-    font-weight: 600;
 }
 
-/* Location Card - Flat Design */
+/* 위치 카드 버튼 스타일 */
 .location-trigger-card {
     background: linear-gradient(135deg, #FF6B35 0%, #FFD166 100%);
     border: none;
-    border-radius: 14px;
-    padding: 14px 20px;
+    border-radius: 12px;
+    padding: 12px 16px;
     color: #FFFFFF;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
     display: inline-flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     font-size: 14px;
-    font-weight: 600;
+    font-weight: 500;
     margin: 8px 0;
 }
 
 .location-trigger-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(255, 107, 53, 0.25);
+    box-shadow: 0 8px 20px rgba(240, 148, 51, 0.3);
 }
 
 .location-trigger-card i {
-    font-size: 18px;
+    font-size: 16px;
 }
 
-/* Mobile Responsive */
+/* 모바일 반응형 */
 @media (max-width: 768px) {
     .artifacts-container {
         width: 95vw;
         height: 90vh;
     }
     
+    .artifacts-content {
+        flex-direction: column;
+    }
+    
     .artifacts-cards-section {
         height: 62%;
-        padding: 16px;
+        padding: 12px 16px;
     }
     
     .artifacts-map-section {
         height: 38%;
-        padding: 16px;
+        padding: 12px 16px;
     }
     
     .artifacts-restaurant-card {
@@ -1124,15 +1130,15 @@ body {
     .artifacts-container {
         width: 98vw;
         height: 95vh;
-        border-radius: 12px;
+        border-radius: 8px;
     }
     
     .artifacts-header {
-        padding: 14px 16px;
+        padding: 12px 16px;
     }
     
     .artifacts-title {
-        font-size: 16px;
+        font-size: 14px;
     }
     
     .artifacts-cards-section,
@@ -1145,37 +1151,38 @@ body {
     }
 }
 
-/* Location Permission Card - Flat Design */
+/* 위치 권한 요청 카드 스타일 */
 .location-permission-container {
-    margin: 20px 0;
+    margin: 16px 0;
     display: flex;
     justify-content: center;
 }
 
 .location-permission-card {
     background: linear-gradient(135deg, #FF6B35 0%, #FFD166 100%);
-    border-radius: 20px;
-    padding: 28px;
+    border-radius: 16px;
+    padding: 24px;
     color: white;
     text-align: center;
+    box-shadow: 0 8px 24px rgba(255, 107, 53, 0.3);
     max-width: 280px;
-    animation: fadeInUp 0.4s ease;
+    animation: fadeInUp 0.5s ease;
 }
 
 .location-card-content {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 14px;
+    gap: 12px;
 }
 
 .location-icon {
-    font-size: 36px;
+    font-size: 32px;
     margin-bottom: 8px;
 }
 
 .location-permission-card h3 {
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 700;
     margin: 0;
     color: white;
@@ -1184,16 +1191,16 @@ body {
 .location-permission-card p {
     font-size: 14px;
     margin: 0;
-    opacity: 0.95;
-    line-height: 1.5;
+    opacity: 0.9;
+    line-height: 1.4;
 }
 
 .location-actions {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
     width: 100%;
-    margin-top: 10px;
+    margin-top: 8px;
 }
 
 .location-btn {
@@ -1201,59 +1208,75 @@ body {
     align-items: center;
     justify-content: center;
     gap: 8px;
-    padding: 14px 20px;
-    border: 2px solid transparent;
-    border-radius: 12px;
+    padding: 12px 16px;
+    border: none;
+    border-radius: 10px;
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
     width: 100%;
 }
 
 .location-btn.allow {
-    background: #FFFFFF;
+    background: rgba(255, 255, 255, 0.9);
     color: #FF6B35;
 }
 
 .location-btn.allow:hover {
-    transform: translateY(-2px);
+    background: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .location-btn.deny {
-    background: transparent;
+    background: rgba(255, 255, 255, 0.2);
     color: white;
-    border: 2px solid rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 .location-btn.deny:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-1px);
 }
 
-/* Artifacts Card - Flat Design */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Artifacts 카드 스타일 */
 .artifacts-card {
     background: #FFFFFF;
-    border-radius: 20px;
+    border-radius: 16px;
     padding: 0;
     min-width: 100%;
     max-width: 100%;
-    border: 2px solid #E9ECEF;
-    transition: all 0.2s ease;
+    border: none;
+    transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
     flex-shrink: 0;
     height: 400px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .artifacts-card:hover {
     transform: translateY(-4px);
-    border-color: #FF6B35;
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
 }
 
 .artifacts-card-image {
     width: 100%;
     height: 60%;
     position: relative;
+    border-radius: 16px 16px 0 0;
     overflow: hidden;
     background: linear-gradient(135deg, #FF6B35 0%, #FFD166 100%);
 }
@@ -1268,6 +1291,7 @@ body {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    border-radius: 16px 16px 0 0;
 }
 
 .artifacts-card-image .image-loading {
@@ -1285,19 +1309,19 @@ body {
 }
 
 .artifacts-card-image .image-loading .loading-spinner {
-    width: 28px;
-    height: 28px;
-    border: 3px solid #ffffff;
-    border-top: 3px solid transparent;
+    width: 24px;
+    height: 24px;
+    border: 2px solid #ffffff;
+    border-top: 2px solid transparent;
     border-radius: 50%;
     animation: spin 1s linear infinite;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
 }
 
 .artifacts-card-image .image-loading p {
-    font-size: 13px;
+    font-size: 12px;
     margin: 0;
-    opacity: 0.95;
+    opacity: 0.9;
 }
 
 .artifacts-card-image .emoji-fallback {
@@ -1313,25 +1337,26 @@ body {
     background: linear-gradient(135deg, #FF6B35 0%, #FFD166 100%);
     color: white;
     text-align: center;
-    padding: 24px;
+    padding: 20px;
 }
 
 .artifacts-card-image .emoji-fallback .emoji-icon {
-    font-size: 52px;
-    margin-bottom: 14px;
+    font-size: 48px;
+    margin-bottom: 12px;
 }
 
 .artifacts-card-image .emoji-fallback h3 {
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 700;
-    margin: 0 0 10px 0;
+    margin: 0 0 8px 0;
     color: white;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
 }
 
 .artifacts-card-image .emoji-fallback p {
-    font-size: 13px;
+    font-size: 12px;
     margin: 0;
-    opacity: 0.95;
+    opacity: 0.9;
 }
 
 .artifacts-card-image .image-overlay {
@@ -1340,24 +1365,25 @@ body {
     left: 0;
     right: 0;
     background: linear-gradient(transparent, rgba(0,0,0,0.7));
-    padding: 24px;
+    padding: 20px;
     color: white;
 }
 
 .artifacts-card-image .image-overlay .overlay-content h3 {
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 700;
-    margin: 0 0 6px 0;
+    margin: 0 0 4px 0;
     color: white;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
 }
 
 .artifacts-card-image .image-overlay .artifacts-card-location {
-    font-size: 13px;
+    font-size: 12px;
     margin: 0;
     display: flex;
     align-items: center;
-    gap: 6px;
-    opacity: 0.95;
+    gap: 4px;
+    opacity: 0.9;
 }
 
 .artifacts-card-image .image-overlay .artifacts-card-location i {
@@ -1370,41 +1396,43 @@ body {
 }
 
 .artifacts-card-content {
-    padding: 24px;
+    padding: 20px;
     height: 40%;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     background: #FFFFFF;
+    border-radius: 0 0 16px 16px;
 }
 
 .artifacts-card-description {
-    color: #495057;
+    color: #333333;
     font-size: 13px;
-    line-height: 1.6;
-    margin: 0 0 14px 0;
+    line-height: 1.5;
+    margin: 0 0 12px 0;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
+    opacity: 0.95;
 }
 
 .artifacts-card-rating {
     display: flex;
     align-items: center;
     gap: 8px;
-    margin-bottom: 14px;
+    margin-bottom: 12px;
     font-size: 13px;
-    color: #495057;
+    color: #333333;
 }
 
 .rating-stars {
-    color: #FFC107;
-    font-size: 15px;
+    color: #ffc107;
+    font-size: 14px;
 }
 
 .artifacts-card-rating span {
-    color: #6C757D;
+    color: #666666;
     font-size: 12px;
 }
 
@@ -1412,44 +1440,73 @@ body {
     display: inline-block;
     background: linear-gradient(135deg, #FF6B35 0%, #FFD166 100%);
     color: #FFFFFF;
-    padding: 8px 14px;
-    border-radius: 10px;
+    padding: 6px 12px;
+    border-radius: 16px;
     font-size: 12px;
     font-weight: 600;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
 }
 
 .artifacts-card-address,
 .artifacts-card-phone {
     display: flex;
     align-items: center;
-    gap: 8px;
-    font-size: 12px;
-    color: #6C757D;
-    margin-bottom: 6px;
+    gap: 6px;
+    font-size: 11px;
+    color: #666666;
+    margin-bottom: 4px;
 }
 
 .artifacts-card-address i,
 .artifacts-card-phone i {
     color: #FF6B35;
-    font-size: 12px;
-    width: 14px;
+    font-size: 10px;
+    width: 12px;
 }
 
-/* Map View Card - Flat Design */
+/* 슬라이더 점 스타일 */
+.artifacts-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #FFD166;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.artifacts-dot.active {
+    background: linear-gradient(135deg, #FF6B35 0%, #FFD166 100%);
+    transform: scale(1.2);
+}
+
+.artifacts-dot:hover {
+    background: linear-gradient(135deg, #FF6B35 0%, #FFD166 100%);
+    opacity: 0.7;
+}
+
+/* 모달 버튼 스타일 */
+.modal-button-container {
+    margin-top: 12px;
+    display: flex;
+    justify-content: center;
+}
+
+/* 지도 보기 카드 스타일 */
 .map-view-card {
     background: #FFFFFF;
-    border: 2px solid #E9ECEF;
-    border-radius: 16px;
+    border: 1px solid #F7F7F7;
+    border-radius: 12px;
     overflow: hidden;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
     width: 100%;
     max-width: 320px;
+    box-shadow: 0 2px 8px rgba(255, 209, 102, 0.3);
 }
 
 .map-view-card:hover {
     transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 107, 53, 0.3);
     border-color: #FF6B35;
 }
 
@@ -1465,7 +1522,7 @@ body {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    opacity: 0.9;
+    opacity: 0.8;
 }
 
 .map-card-overlay {
@@ -1474,40 +1531,41 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(135deg, rgba(255, 107, 53, 0.7) 0%, rgba(255, 209, 102, 0.7) 100%);
+    background: rgba(255, 209, 102, 0.4);
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
 .map-card-overlay i {
-    font-size: 42px;
+    font-size: 40px;
     color: #FFFFFF;
+    text-shadow: 0 2px 8px rgba(255, 107, 53, 0.3);
 }
 
 .map-card-content {
-    padding: 20px;
+    padding: 16px;
 }
 
 .map-card-title {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     font-size: 16px;
-    font-weight: 700;
-    color: #212529;
-    margin-bottom: 10px;
+    font-weight: 600;
+    color: #2F2F2F;
+    margin-bottom: 8px;
 }
 
 .map-card-title i {
     color: #FF6B35;
-    font-size: 20px;
+    font-size: 18px;
 }
 
 .map-card-subtitle {
-    color: #6C757D;
+    color: #999999;
     font-size: 13px;
-    margin-bottom: 14px;
+    margin-bottom: 12px;
 }
 
 .map-card-preview {
@@ -1518,90 +1576,149 @@ body {
 }
 
 .preview-restaurant {
-    color: #495057;
+    color: #2F2F2F;
     font-size: 12px;
-    background: #FFF3E0;
-    padding: 6px 10px;
-    border-radius: 8px;
-    font-weight: 600;
+    background: #FFD166;
+    padding: 4px 8px;
+    border-radius: 4px;
 }
 
 .preview-more {
     color: #FF6B35;
     font-size: 12px;
-    font-weight: 600;
+    font-weight: 500;
 }
 
-/* Map Simulation - Flat Design */
+/* 기존 modal-open-button 삭제하고 위 카드 스타일로 대체 */
+.modal-open-button {
+    display: none;
+}
+
+.modal-open-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 149, 246, 0.4);
+}
+
+.modal-open-button:active {
+    transform: translateY(0);
+}
+
+.modal-open-button i {
+    font-size: 16px;
+}
+
+.modal-open-button .fa-arrow-right {
+    transition: transform 0.3s ease;
+}
+
+.modal-open-button:hover .fa-arrow-right {
+    transform: translateX(3px);
+}
+
+/* 버튼 애니메이션 효과 */
+.modal-open-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.modal-open-button:hover::before {
+    left: 100%;
+}
+
+/* 카드 추가 정보 스타일 */
+.artifacts-card-address,
+.artifacts-card-phone {
+    color: #666666;
+    font-size: 12px;
+    margin: 4px 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    opacity: 0.85;
+}
+
+.artifacts-card-address i,
+.artifacts-card-phone i {
+    color: #FFD166;
+    font-size: 12px;
+}
+
+/* 지도 시뮬레이션 스타일 */
 .map-simulation {
     width: 100%;
     height: 100%;
     background: #FFFFFF;
-    border-radius: 16px;
-    border: 2px solid #E9ECEF;
+    border-radius: 12px;
+    border: 1px solid #FFD166;
     overflow: hidden;
     display: flex;
     flex-direction: column;
 }
 
 .map-header {
-    background: #F8F9FA;
-    padding: 14px 20px;
-    border-bottom: 2px solid #E9ECEF;
+    background: #F7F7F7;
+    padding: 12px 16px;
+    border-bottom: 1px solid #FFD166;
     display: flex;
     align-items: center;
     justify-content: space-between;
 }
 
 .map-header i {
-    color: #FF6B35;
-    margin-right: 10px;
+    color: #0095f6;
+    margin-right: 8px;
 }
 
 .map-header span {
-    color: #212529;
-    font-weight: 700;
+    color: #2F2F2F;
+    font-weight: 600;
     font-size: 14px;
 }
 
 .map-coords {
-    color: #6C757D;
+    color: #999999;
     font-size: 11px;
-    font-family: 'Courier New', monospace;
+    font-family: monospace;
 }
 
 .map-markers {
     flex: 1;
-    padding: 20px;
+    padding: 16px;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: 12px;
 }
 
 .map-marker {
-    background: #F8F9FA;
-    border: 2px solid #E9ECEF;
-    border-radius: 12px;
-    padding: 14px;
+    background: #F7F7F7;
+    border: 1px solid #FFD166;
+    border-radius: 8px;
+    padding: 12px;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 12px;
 }
 
 .map-marker:hover,
 .map-marker.active {
-    border-color: #FF6B35;
-    background: #FFF3E0;
+    border-color: #0095f6;
+    background: rgba(255, 107, 53, 0.06);
     transform: translateX(4px);
 }
 
 .marker-pin {
-    color: #FF6B35;
-    font-size: 18px;
-    min-width: 24px;
+    color: #0095f6;
+    font-size: 16px;
+    min-width: 20px;
 }
 
 .marker-info {
@@ -1609,144 +1726,148 @@ body {
 }
 
 .marker-name {
-    color: #212529;
-    font-weight: 700;
+    color: #2F2F2F;
+    font-weight: 600;
     font-size: 14px;
     margin-bottom: 4px;
 }
 
 .marker-area {
-    color: #6C757D;
+    color: #999999;
     font-size: 12px;
     margin-bottom: 2px;
 }
 
 .marker-coords {
-    color: #6C757D;
+    color: #999999;
     font-size: 10px;
-    font-family: 'Courier New', monospace;
+    font-family: monospace;
 }
 
 .map-actions {
-    padding: 14px 20px;
-    border-top: 2px solid #E9ECEF;
-    background: #F8F9FA;
+    padding: 12px 16px;
+    border-top: 1px solid #FFD166;
+    background: #F7F7F7;
 }
 
 .map-action-btn {
     width: 100%;
     background: linear-gradient(135deg, #FF6B35 0%, #FFD166 100%);
     border: none;
-    border-radius: 12px;
-    padding: 12px 20px;
+    border-radius: 8px;
+    padding: 10px 16px;
     color: #FFFFFF;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
-    transition: all 0.2s ease;
+    gap: 8px;
+    transition: all 0.3s ease;
 }
 
 .map-action-btn:hover {
-    transform: translateY(-2px);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 149, 246, 0.3);
 }
 
 .map-action-btn i {
-    font-size: 14px;
+    font-size: 11px;
 }
 
-/* Map Loading - Flat Design */
+/* 지도 로딩 스타일 */
 .map-loading {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     height: 100%;
-    color: #6C757D;
+    color: #999999;
     text-align: center;
 }
 
 .map-loading i {
-    font-size: 36px;
-    color: #FF6B35;
-    margin-bottom: 14px;
+    font-size: 32px;
+    color: #0095f6;
+    margin-bottom: 12px;
 }
 
 .map-loading p {
-    margin: 10px 0;
+    margin: 8px 0;
     font-size: 14px;
 }
 
 .loading-spinner {
-    width: 24px;
-    height: 24px;
-    border: 3px solid #E9ECEF;
-    border-top: 3px solid #FF6B35;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #FFD166;
+    border-top: 2px solid #0095f6;
     border-radius: 50%;
     animation: spin 1s linear infinite;
-    margin-top: 14px;
+    margin-top: 12px;
 }
 
-/* Map Fallback - Flat Design */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Fallback 지도 스타일 */
 .map-fallback {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     height: 100%;
-    padding: 24px;
+    padding: 20px;
     text-align: center;
-    background: #F8F9FA;
-    border-radius: 16px;
+    background: #F7F7F7;
+    border-radius: 12px;
 }
 
 .map-fallback .map-header {
     display: flex;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 16px;
 }
 
 .map-fallback .map-header i {
-    color: #FF6B35;
-    font-size: 28px;
-    margin-right: 10px;
+    color: #0095f6;
+    font-size: 24px;
+    margin-right: 8px;
 }
 
 .map-fallback .map-header span {
-    color: #212529;
-    font-size: 18px;
-    font-weight: 700;
+    color: #2F2F2F;
+    font-size: 16px;
+    font-weight: 600;
 }
 
 .map-center {
-    margin: 20px 0;
-    color: #6C757D;
+    margin: 16px 0;
+    color: #ccc;
 }
 
 .map-center p {
-    margin: 6px 0;
-    font-size: 13px;
+    margin: 4px 0;
+    font-size: 12px;
 }
 
-/* Naver Map Container - Flat Design */
+/* 네이버 지도 컨테이너 스타일 */
 #naverMap {
-    border-radius: 16px;
-    border: 2px solid #E9ECEF;
+    border-radius: 12px;
+    border: 1px solid #FFD166;
     overflow: hidden;
 }
 
-/* Naver Map Controls - Flat Design */
+/* 네이버 지도 내부 컨트롤 스타일 조정 */
 #naverMap .nmap_control_button {
-    background: #FFFFFF !important;
-    border: 2px solid #E9ECEF !important;
-    color: #495057 !important;
+    background: rgba(28, 28, 28, 0.8) !important;
+    border: 1px solid #FFD166 !important;
+    color: #ffffff !important;
 }
 
 #naverMap .nmap_control_button:hover {
-    background: linear-gradient(135deg, #FF6B35 0%, #FFD166 100%) !important;
-    border-color: transparent !important;
-    color: #FFFFFF !important;
+    background: rgba(0, 149, 246, 0.8) !important;
 }

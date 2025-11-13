@@ -32,7 +32,12 @@
       "Bash(nslookup:*)",
       "Bash(curl:*)",
       "WebSearch",
-      "Bash(jq:*)"
+      "Bash(jq:*)",
+      "WebFetch(domain:ddugiclaude.vercel.app)",
+      "WebFetch(domain:guidegeek.com)",
+      "Bash(del publicguidegeek.html)",
+      "WebFetch(domain:www.figma.com)",
+      "Bash(copy publicindex.html publicindex_backup.html)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"
