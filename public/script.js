@@ -111,6 +111,9 @@ class InstagramStyleChatBot {
             this.userInput.value = '';
             this.updateSendButton();
             
+            // 추천 시스템에 메시지 전달
+            suggestionManager.onUserMessage(message);
+            
             // 주변 맛집 검색 실행
             await this.handleNearbyRequest();
             return;
@@ -120,6 +123,9 @@ class InstagramStyleChatBot {
         this.addMessage(message, 'user');
         this.userInput.value = '';
         this.updateSendButton();
+        
+        // 추천 시스템에 메시지 전달
+        suggestionManager.onUserMessage(message);
 
         // 타이핑 인디케이터 표시
         this.showTypingIndicator();
@@ -1020,12 +1026,12 @@ ${restaurant.description}`;
             delay = Math.max(500, Math.min(1000, messageLength * 30));
         }
         
-        setTimeout(() => {
-            // 사용자가 여전히 페이지에 있고 스크롤이 하단 근처에 있는 경우에만 모달 표시
-            if (document.hasFocus() && this.isScrollNearBottom()) {
-                this.showArtifacts(restaurants, location);
-            }
-        }, delay);
+        // 자동 모달 팝업 제거 - 사용자가 필요할 때만 수동으로 열도록
+        // setTimeout(() => {
+        //     if (document.hasFocus() && this.isScrollNearBottom()) {
+        //         this.showArtifacts(restaurants, location);
+        //     }
+        // }, delay);
     }
 
     isScrollNearBottom() {
@@ -1454,6 +1460,9 @@ function sendQuickMessage(message) {
     if (chatBot) {
         chatBot.userInput.value = message;
         chatBot.sendMessage();
+        
+        // 추천 시스템에 메시지 전달
+        suggestionManager.onUserMessage(message);
     }
 }
 
@@ -1567,6 +1576,9 @@ function checkNaverMaps() {
 // 페이지 로드 시 초기화
 document.addEventListener('DOMContentLoaded', () => {
     window.instagramChatBot = new InstagramStyleChatBot();
+    
+    // 추천 시스템 초기화
+    suggestionManager.init();
     
     // 추가 Instagram 스타일 효과
     addInstagramEffects();
@@ -2523,6 +2535,129 @@ function findConversationById(sessionId) {
     
     return allConversations.find(conv => conv.session_id === sessionId);
 }
+
+// ============ Suggestion Management ============
+
+// 상황별 추천 목록 관리
+class SuggestionManager {
+    constructor() {
+        this.container = null;
+        this.currentContext = 'initial';
+        this.lastQuery = '';
+        this.messageCount = 0;
+        
+        // 상황별 추천 세트
+        this.suggestions = {
+            initial: [
+                { text: '해운대 맛집 추천해줘', icon: 'fa-map-marker-alt' },
+                { text: '돼지국밥 맛집 알려줘', icon: 'fa-bowl-hot' },
+                { text: '회 먹을 만한 곳', icon: 'fa-fish' },
+                { text: '서면 저렴한 맛집', icon: 'fa-won-sign' },
+                { text: '카페 추천해줘', icon: 'fa-coffee' }
+            ],
+            afterLocation: [
+                { text: '여기서 가까운 곳', icon: 'fa-location-arrow' },
+                { text: '주차 편한 곳', icon: 'fa-parking' },
+                { text: '혼밥 가능한 곳', icon: 'fa-user' },
+                { text: '가성비 좋은 곳', icon: 'fa-dollar-sign' },
+                { text: '현지인 맛집', icon: 'fa-star' }
+            ],
+            afterFood: [
+                { text: '비슷한 다른 맛집', icon: 'fa-utensils' },
+                { text: '디저트 맛집', icon: 'fa-ice-cream' },
+                { text: '술집 추천', icon: 'fa-beer' },
+                { text: '근처 카페', icon: 'fa-coffee' },
+                { text: '영업시간 알려줘', icon: 'fa-clock' }
+            ],
+            morning: [
+                { text: '브런치 맛집', icon: 'fa-bacon' },
+                { text: '아침식사 좋은 곳', icon: 'fa-egg' },
+                { text: '24시간 맛집', icon: 'fa-clock' },
+                { text: '해장국 맛집', icon: 'fa-bowl-hot' },
+                { text: '카페 추천', icon: 'fa-coffee' }
+            ],
+            evening: [
+                { text: '회 맛집', icon: 'fa-fish' },
+                { text: '고기 맛집', icon: 'fa-drumstick-bite' },
+                { text: '술집 추천', icon: 'fa-beer' },
+                { text: '야식 배달', icon: 'fa-moon' },
+                { text: '포장마차', icon: 'fa-store' }
+            ]
+        };
+    }
+    
+    init() {
+        this.container = document.getElementById('suggestionsContainer');
+        this.updateSuggestions();
+        
+        // 시간대별 자동 업데이트
+        setInterval(() => this.updateByTimeOfDay(), 60000); // 1분마다 체크
+    }
+    
+    updateSuggestions(context = null) {
+        if (!this.container) return;
+        
+        // 컨텍스트 결정
+        if (!context) {
+            context = this.determineContext();
+        }
+        
+        this.currentContext = context;
+        const suggestionsList = this.suggestions[context] || this.suggestions.initial;
+        
+        // HTML 생성
+        this.container.innerHTML = suggestionsList.map(suggestion => `
+            <button class="suggestion-pill" onclick="sendQuickMessage('${suggestion.text}')">
+                <i class="fas ${suggestion.icon}"></i>
+                ${suggestion.text}
+            </button>
+        `).join('');
+    }
+    
+    determineContext() {
+        const hour = new Date().getHours();
+        
+        // 시간대별 추천
+        if (hour >= 6 && hour < 11) {
+            return 'morning';
+        } else if (hour >= 17 && hour < 22) {
+            return 'evening';
+        }
+        
+        // 최근 메시지 분석
+        if (this.lastQuery.includes('해운대') || this.lastQuery.includes('서면') || 
+            this.lastQuery.includes('광안리') || this.lastQuery.includes('남포동')) {
+            return 'afterLocation';
+        }
+        
+        if (this.lastQuery.includes('국밥') || this.lastQuery.includes('회') || 
+            this.lastQuery.includes('치킨') || this.lastQuery.includes('피자')) {
+            return 'afterFood';
+        }
+        
+        return 'initial';
+    }
+    
+    updateByTimeOfDay() {
+        const newContext = this.determineContext();
+        if (newContext !== this.currentContext) {
+            this.updateSuggestions(newContext);
+        }
+    }
+    
+    onUserMessage(message) {
+        this.lastQuery = message;
+        this.messageCount++;
+        
+        // 메시지 후 추천 업데이트
+        setTimeout(() => {
+            this.updateSuggestions();
+        }, 500);
+    }
+}
+
+// 전역 추천 매니저 인스턴스
+const suggestionManager = new SuggestionManager();
 
 // ============ API Helper Functions ============
 
