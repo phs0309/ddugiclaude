@@ -218,15 +218,26 @@
         .loading-spinner {
             text-align: center;
             padding: 40px;
+            background: white;
+            border-radius: 16px;
+            margin-top: 20px;
         }
         
-        .loading-spinner i {
+        .loading-spinner .spinner-icon {
             font-size: 32px;
             color: #FF6B35;
-            animation: spin 1s linear infinite;
+            animation: rotate-spinner 1s linear infinite;
+            display: inline-block;
+            margin-bottom: 16px;
         }
         
-        @keyframes spin {
+        .loading-spinner p {
+            color: #666;
+            font-size: 16px;
+            margin: 0;
+        }
+        
+        @keyframes rotate-spinner {
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
         }
@@ -385,7 +396,7 @@
     <div class="saved-container">
         <div class="saved-content" id="savedContent">
             <div class="loading-spinner">
-                <i class="fas fa-spinner fa-spin"></i>
+                <i class="fas fa-spinner spinner-icon"></i>
                 <p>저장된 맛집을 불러오는 중...</p>
             </div>
         </div>
