@@ -2359,10 +2359,8 @@ window.loadConversation = async function loadConversation(sessionId) {
         const data = await response.json();
         console.log('📊 응답 데이터:', data);
         
-        if (data.success && data.messages && data.messages.length > 0) {
-            console.log(`📝 메시지 ${data.messages.length}개 로드됨`);
-            
-            // 채팅창 완전 클리어 후 초기 인사말 다시 추가
+        if (data.success) {
+            // 항상 채팅창 클리어 및 초기 인사말 복원
             const messagesContainer = document.getElementById('chatMessages');
             if (messagesContainer) {
                 console.log('🧹 채팅창 완전 클리어 시작...');
@@ -2388,31 +2386,33 @@ window.loadConversation = async function loadConversation(sessionId) {
                 console.log('✅ 초기 인사말 복원 완료');
             }
             
-            // 메시지 복원
-            data.messages.forEach((message, index) => {
-                if (window.instagramChatBot) {
-                    window.instagramChatBot.addMessage(message.content, message.role);
-                    console.log(`➕ 메시지 ${index + 1} 추가: ${message.role} - ${message.content.substring(0, 50)}...`);
-                } else {
-                    console.error('❌ instagramChatBot 인스턴스 없음');
+            if (data.messages && data.messages.length > 0) {
+                console.log(`📝 메시지 ${data.messages.length}개 로드됨`);
+                
+                // 메시지 복원
+                data.messages.forEach((message, index) => {
+                    if (window.instagramChatBot) {
+                        window.instagramChatBot.addMessage(message.content, message.role);
+                        console.log(`➕ 메시지 ${index + 1} 추가: ${message.role} - ${message.content.substring(0, 50)}...`);
+                    } else {
+                        console.error('❌ instagramChatBot 인스턴스 없음');
+                    }
+                });
+                
+                // 스크롤을 맨 아래로
+                if (messagesContainer) {
+                    setTimeout(() => {
+                        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                        console.log('📜 스크롤 하단으로 이동');
+                    }, 100);
                 }
-            });
-            
-            // 스크롤을 맨 아래로
-            if (messagesContainer) {
-                setTimeout(() => {
-                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
-                    console.log('📜 스크롤 하단으로 이동');
-                }, 100);
+                
+                console.log('✅ 대화 로드 완료 (메시지 ${data.messages.length}개)');
+            } else {
+                console.log('📝 새 대화 - 메시지 없음 (초기 인사말만 표시)');
             }
-            
-            console.log('✅ 대화 로드 완료');
         } else {
-            console.log('⚠️ 메시지 없음 또는 실패:', data);
-            // 메시지가 없어도 성공인 경우 (새 대화)
-            if (data.success) {
-                console.log('📝 새 대화 - 메시지 없음');
-            }
+            console.log('⚠️ 대화 로드 실패:', data);
         }
     } catch (error) {
         console.error('💥 대화 로드 실패:', error);
@@ -2836,19 +2836,30 @@ document.addEventListener('DOMContentLoaded', function() {
         const conversationItem = e.target.closest('.conversation-item');
         if (!conversationItem) return;
         
+        console.log('🎯 대화 항목 클릭됨:', conversationItem);
+        
         e.preventDefault();
         e.stopPropagation();
         
         const sessionId = conversationItem.getAttribute('data-session-id');
         const title = conversationItem.getAttribute('data-title');
         
-        console.log('🔘 대화 항목 클릭 감지:', { sessionId, title });
+        console.log('🔘 대화 항목 클릭 감지:', { 
+            sessionId, 
+            title, 
+            hasLoadFunction: !!window.loadConversation,
+            element: conversationItem.outerHTML.substring(0, 200) + '...'
+        });
         
         if (sessionId && window.loadConversation) {
-            console.log('📞 loadConversation 호출');
+            console.log('📞 loadConversation 호출 시작');
             window.loadConversation(sessionId);
         } else {
-            console.error('❌ sessionId 또는 loadConversation 함수 없음:', { sessionId, hasFunction: !!window.loadConversation });
+            console.error('❌ sessionId 또는 loadConversation 함수 없음:', { 
+                sessionId, 
+                hasFunction: !!window.loadConversation,
+                windowKeys: Object.keys(window).filter(key => key.includes('load'))
+            });
         }
     });
     
