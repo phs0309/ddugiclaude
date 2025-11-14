@@ -1997,4 +1997,559 @@ document.addEventListener('DOMContentLoaded', () => {
             restoreSavedRestaurants();
         }, 1000);
     }
+    
+    // 대화 관리 시스템 초기화
+    initializeConversationSystem();
+});
+
+// ==================== 대화 관리 시스템 ==================== 
+
+// 전역 변수들
+let conversationManager = null;
+let currentConversationId = null;
+let conversations = [];
+let isLoadingConversations = false;
+
+// 대화 관리 시스템 초기화
+function initializeConversationSystem() {
+    conversationManager = new ConversationManager();
+    
+    // 대화 목록 로드
+    loadConversations();
+    
+    // 사용자 정보 업데이트
+    updateSidebarUserInfo();
+}
+
+// 대화 관리자 클래스
+class ConversationManager {
+    constructor() {
+        this.conversations = [];
+        this.currentConversationId = null;
+        this.searchTerm = '';
+    }
+
+    // 대화 목록 로드
+    async loadConversations() {
+        if (!apiClient.isLoggedIn()) {
+            this.showNoConversationsState();
+            return;
+        }
+
+        const conversationList = document.getElementById('conversationList');
+        conversationList.innerHTML = `
+            <div class="loading-conversations">
+                <i class="fas fa-spinner fa-spin"></i>
+                <span>대화 목록 로딩 중...</span>
+            </div>
+        `;
+
+        try {
+            const userId = apiClient.getCurrentUser()?.id;
+            const response = await fetch('/api/conversations', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-User-Id': userId
+                }
+            });
+
+            const data = await response.json();
+            
+            if (data.success) {
+                this.conversations = data.sessions;
+                this.renderConversations();
+            } else {
+                throw new Error(data.error);
+            }
+        } catch (error) {
+            console.error('대화 목록 로드 실패:', error);
+            this.showNoConversationsState();
+        }
+    }
+
+    // 대화 목록 렌더링
+    renderConversations() {
+        const conversationList = document.getElementById('conversationList');
+        
+        if (!this.conversations || this.hasNoConversations()) {
+            this.showNoConversationsState();
+            return;
+        }
+
+        let html = '';
+        
+        // 날짜별 그룹핑된 대화들 렌더링
+        const groups = [
+            { key: 'today', title: '오늘', conversations: this.conversations.today || [] },
+            { key: 'yesterday', title: '어제', conversations: this.conversations.yesterday || [] },
+            { key: 'thisWeek', title: '이번 주', conversations: this.conversations.thisWeek || [] },
+            { key: 'older', title: '오래된 대화', conversations: this.conversations.older || [] }
+        ];
+
+        groups.forEach(group => {
+            if (group.conversations.length > 0) {
+                html += `<div class="conversation-group">`;
+                html += `<div class="conversation-group-title">${group.title}</div>`;
+                
+                group.conversations.forEach(conv => {
+                    html += this.renderConversationItem(conv);
+                });
+                
+                html += `</div>`;
+            }
+        });
+
+        conversationList.innerHTML = html;
+    }
+
+    // 개별 대화 아이템 렌더링
+    renderConversationItem(conversation) {
+        const isActive = this.currentConversationId === conversation.session_id;
+        const time = this.formatTime(new Date(conversation.last_message_at));
+        const preview = this.generatePreview(conversation.title);
+        
+        return `
+            <div class="conversation-item ${isActive ? 'active' : ''}" 
+                 onclick="loadConversation('${conversation.session_id}')" 
+                 data-session-id="${conversation.session_id}">
+                <div class="conversation-content">
+                    <div class="conversation-title">${conversation.title}</div>
+                    <div class="conversation-preview">${preview}</div>
+                </div>
+                <div class="conversation-time">${time}</div>
+                <div class="conversation-actions">
+                    <button class="conversation-action-btn ${conversation.is_favorite ? 'favorite' : ''}" 
+                            onclick="event.stopPropagation(); toggleFavorite('${conversation.session_id}')"
+                            title="즐겨찾기">
+                        <i class="fas fa-star"></i>
+                    </button>
+                    <button class="conversation-action-btn" 
+                            onclick="event.stopPropagation(); editConversation('${conversation.session_id}', '${conversation.title}')"
+                            title="제목 수정">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="conversation-action-btn" 
+                            onclick="event.stopPropagation(); deleteConversation('${conversation.session_id}')"
+                            title="삭제">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+
+    // 시간 포맷팅
+    formatTime(date) {
+        const now = new Date();
+        const diff = now - date;
+        
+        if (diff < 60000) return '방금전';
+        if (diff < 3600000) return `${Math.floor(diff/60000)}분전`;
+        if (diff < 86400000) return `${Math.floor(diff/3600000)}시간전`;
+        
+        return date.toLocaleDateString();
+    }
+
+    // 미리보기 텍스트 생성
+    generatePreview(title) {
+        const previews = {
+            '해운대 맛집': '해운대 지역 맛집 추천',
+            '서면 카페': '서면 카페 추천',
+            '부산 여행': '부산 여행 맛집 가이드',
+            '새 대화': '새로운 대화'
+        };
+        
+        return previews[title] || `${title} 관련 대화`;
+    }
+
+    // 대화가 없는 상태 표시
+    showNoConversationsState() {
+        const conversationList = document.getElementById('conversationList');
+        conversationList.innerHTML = `
+            <div class="no-conversations">
+                <i class="fas fa-comments"></i>
+                <h3>대화가 없습니다</h3>
+                <p>새 대화를 시작해서<br>부산 맛집을 추천받아보세요!</p>
+            </div>
+        `;
+    }
+
+    // 대화가 비어있는지 확인
+    hasNoConversations() {
+        if (!this.conversations) return true;
+        return (this.conversations.today?.length || 0) + 
+               (this.conversations.yesterday?.length || 0) + 
+               (this.conversations.thisWeek?.length || 0) + 
+               (this.conversations.older?.length || 0) === 0;
+    }
+
+    // 대화 검색
+    searchConversations(term) {
+        this.searchTerm = term.toLowerCase();
+        
+        if (!this.searchTerm) {
+            this.renderConversations();
+            return;
+        }
+
+        // 검색된 대화만 필터링하여 표시
+        const filteredConversations = this.filterConversationsBySearch(this.conversations);
+        this.renderFilteredConversations(filteredConversations);
+    }
+
+    // 검색어로 대화 필터링
+    filterConversationsBySearch(conversations) {
+        const filtered = {
+            today: [],
+            yesterday: [],
+            thisWeek: [],
+            older: []
+        };
+
+        Object.keys(conversations).forEach(period => {
+            if (conversations[period]) {
+                filtered[period] = conversations[period].filter(conv => 
+                    conv.title.toLowerCase().includes(this.searchTerm) ||
+                    this.generatePreview(conv.title).toLowerCase().includes(this.searchTerm)
+                );
+            }
+        });
+
+        return filtered;
+    }
+
+    // 필터링된 대화 목록 렌더링
+    renderFilteredConversations(filteredConversations) {
+        const conversationList = document.getElementById('conversationList');
+        
+        if (this.hasNoConversations.call({ conversations: filteredConversations })) {
+            conversationList.innerHTML = `
+                <div class="no-conversations">
+                    <i class="fas fa-search"></i>
+                    <h3>검색 결과가 없습니다</h3>
+                    <p>'${this.searchTerm}' 과 일치하는<br>대화를 찾을 수 없습니다.</p>
+                </div>
+            `;
+            return;
+        }
+
+        let html = '';
+        
+        // 검색 결과 표시
+        const groups = [
+            { key: 'today', title: '오늘', conversations: filteredConversations.today || [] },
+            { key: 'yesterday', title: '어제', conversations: filteredConversations.yesterday || [] },
+            { key: 'thisWeek', title: '이번 주', conversations: filteredConversations.thisWeek || [] },
+            { key: 'older', title: '오래된 대화', conversations: filteredConversations.older || [] }
+        ];
+
+        // 검색 결과 헤더
+        const totalResults = groups.reduce((sum, group) => sum + group.conversations.length, 0);
+        html += `
+            <div class="search-results-header">
+                <div class="search-results-title">
+                    <i class="fas fa-search"></i>
+                    검색 결과 ${totalResults}개
+                </div>
+                <button class="clear-search-btn" onclick="clearSearch()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        `;
+
+        groups.forEach(group => {
+            if (group.conversations.length > 0) {
+                html += `<div class="conversation-group">`;
+                html += `<div class="conversation-group-title">${group.title}</div>`;
+                
+                group.conversations.forEach(conv => {
+                    html += this.renderConversationItem(conv);
+                });
+                
+                html += `</div>`;
+            }
+        });
+
+        conversationList.innerHTML = html;
+    }
+}
+
+// 새 대화 시작
+async function startNewConversation() {
+    try {
+        if (!apiClient.isLoggedIn()) {
+            // 게스트 모드에서는 기존 방식 사용
+            if (window.instagramChatBot) {
+                window.instagramChatBot.startNewConversation();
+            }
+            return;
+        }
+
+        const userId = apiClient.getCurrentUser()?.id;
+        const response = await fetch('/api/conversations', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-User-Id': userId
+            },
+            body: JSON.stringify({ title: '새 대화' })
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+            // 새 세션 ID 설정
+            const newSessionId = data.session.session_id;
+            sessionStorage.setItem('chatSessionId', newSessionId);
+            
+            // 기존 채팅 인스턴스 업데이트
+            if (window.instagramChatBot) {
+                window.instagramChatBot.sessionId = newSessionId;
+                window.instagramChatBot.startNewConversation();
+            }
+            
+            // 대화 목록 새로고침
+            conversationManager.currentConversationId = newSessionId;
+            await conversationManager.loadConversations();
+            
+            console.log('🔄 새 대화 시작:', newSessionId);
+        }
+    } catch (error) {
+        console.error('새 대화 생성 실패:', error);
+    }
+}
+
+// 기존 대화 로드
+async function loadConversation(sessionId) {
+    try {
+        if (!apiClient.isLoggedIn()) return;
+        
+        // 활성 대화 표시 업데이트
+        document.querySelectorAll('.conversation-item').forEach(item => {
+            item.classList.remove('active');
+        });
+        
+        const clickedItem = document.querySelector(`[data-session-id="${sessionId}"]`);
+        if (clickedItem) {
+            clickedItem.classList.add('active');
+        }
+
+        // 세션 ID 업데이트
+        sessionStorage.setItem('chatSessionId', sessionId);
+        conversationManager.currentConversationId = sessionId;
+        
+        if (window.instagramChatBot) {
+            window.instagramChatBot.sessionId = sessionId;
+        }
+
+        // 메시지 로드
+        const userId = apiClient.getCurrentUser()?.id;
+        const response = await fetch(`/api/conversations?sessionId=${sessionId}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-User-Id': userId
+            }
+        });
+
+        const data = await response.json();
+        
+        if (data.success && data.messages) {
+            // 채팅창 클리어
+            const messagesContainer = document.getElementById('chatMessages');
+            messagesContainer.innerHTML = '';
+            
+            // 메시지 복원
+            data.messages.forEach(message => {
+                if (window.instagramChatBot) {
+                    window.instagramChatBot.addMessage(message.content, message.role);
+                }
+            });
+        }
+    } catch (error) {
+        console.error('대화 로드 실패:', error);
+    }
+}
+
+// 즐겨찾기 토글
+async function toggleFavorite(sessionId) {
+    try {
+        const userId = apiClient.getCurrentUser()?.id;
+        const conversation = findConversationById(sessionId);
+        const newFavoriteStatus = !conversation?.is_favorite;
+
+        const response = await fetch(`/api/conversations?sessionId=${sessionId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-User-Id': userId
+            },
+            body: JSON.stringify({ is_favorite: newFavoriteStatus })
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+            // 즐겨찾기 상태 업데이트
+            await conversationManager.loadConversations();
+        }
+    } catch (error) {
+        console.error('즐겨찾기 업데이트 실패:', error);
+    }
+}
+
+// 대화 제목 수정
+function editConversation(sessionId, currentTitle) {
+    const newTitle = prompt('새 제목을 입력하세요:', currentTitle);
+    
+    if (newTitle && newTitle.trim() && newTitle !== currentTitle) {
+        updateConversationTitle(sessionId, newTitle.trim());
+    }
+}
+
+// 대화 제목 업데이트
+async function updateConversationTitle(sessionId, newTitle) {
+    try {
+        const userId = apiClient.getCurrentUser()?.id;
+        const response = await fetch(`/api/conversations?sessionId=${sessionId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-User-Id': userId
+            },
+            body: JSON.stringify({ title: newTitle })
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+            await conversationManager.loadConversations();
+        }
+    } catch (error) {
+        console.error('제목 업데이트 실패:', error);
+    }
+}
+
+// 대화 삭제
+async function deleteConversation(sessionId) {
+    if (!confirm('이 대화를 삭제하시겠습니까?')) {
+        return;
+    }
+
+    try {
+        const userId = apiClient.getCurrentUser()?.id;
+        const response = await fetch(`/api/conversations?sessionId=${sessionId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-User-Id': userId
+            }
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+            // 현재 대화가 삭제된 대화면 새 대화 시작
+            if (conversationManager.currentConversationId === sessionId) {
+                startNewConversation();
+            } else {
+                await conversationManager.loadConversations();
+            }
+        }
+    } catch (error) {
+        console.error('대화 삭제 실패:', error);
+    }
+}
+
+// 대화 검색
+function searchConversations() {
+    const searchInput = document.getElementById('conversationSearch');
+    const term = searchInput.value;
+    
+    if (conversationManager) {
+        conversationManager.searchConversations(term);
+    }
+}
+
+// 검색 클리어
+function clearSearch() {
+    const searchInput = document.getElementById('conversationSearch');
+    searchInput.value = '';
+    
+    if (conversationManager) {
+        conversationManager.searchTerm = '';
+        conversationManager.renderConversations();
+    }
+}
+
+// 사이드바 토글
+function toggleSidebar() {
+    const sidebar = document.getElementById('conversationSidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    
+    if (window.innerWidth <= 768) {
+        // 모바일에서는 오버레이 모드
+        sidebar.classList.toggle('open');
+        overlay.classList.toggle('show');
+    } else {
+        // 데스크톱에서는 숨김/보임 토글
+        sidebar.style.display = sidebar.style.display === 'none' ? 'flex' : 'none';
+    }
+}
+
+// 사이드바 닫기
+function closeSidebar() {
+    const sidebar = document.getElementById('conversationSidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    
+    sidebar.classList.remove('open');
+    overlay.classList.remove('show');
+}
+
+// 대화 목록 로드 (전역 함수)
+async function loadConversations() {
+    if (conversationManager) {
+        await conversationManager.loadConversations();
+    }
+}
+
+// 사이드바 사용자 정보 업데이트
+function updateSidebarUserInfo() {
+    const userNameElement = document.getElementById('sidebarUserName');
+    const loginActionBtn = document.getElementById('loginActionBtn');
+    
+    if (apiClient.isLoggedIn()) {
+        const user = apiClient.getCurrentUser();
+        if (userNameElement) {
+            userNameElement.textContent = user.name || user.email || '사용자';
+        }
+        if (loginActionBtn) {
+            loginActionBtn.innerHTML = '<i class="fas fa-sign-out-alt"></i>';
+            loginActionBtn.title = '로그아웃';
+        }
+    } else {
+        if (userNameElement) {
+            userNameElement.textContent = '게스트';
+        }
+        if (loginActionBtn) {
+            loginActionBtn.innerHTML = '<i class="fas fa-user"></i>';
+            loginActionBtn.title = '로그인';
+        }
+    }
+}
+
+// 유틸리티 함수들
+function findConversationById(sessionId) {
+    if (!conversationManager.conversations) return null;
+    
+    const allConversations = [
+        ...(conversationManager.conversations.today || []),
+        ...(conversationManager.conversations.yesterday || []),
+        ...(conversationManager.conversations.thisWeek || []),
+        ...(conversationManager.conversations.older || [])
+    ];
+    
+    return allConversations.find(conv => conv.session_id === sessionId);
+}
 });

@@ -1,6 +1,7 @@
 const path = require('path');
 const restaurants = require(path.join(process.cwd(), 'restaurants.json'));
 const { createClient } = require('@supabase/supabase-js');
+const { createOrUpdateSession, updateConversationTitle } = require('./conversations');
 
 // Supabase 클라이언트 초기화
 const supabase = createClient(
@@ -543,15 +544,38 @@ module.exports = async function handler(req, res) {
         // 맛집 추천 여부 확인 (AI가 판단)
         const hasRestaurantRecommendation = recommendations.restaurants.length > 0;
         
-        // 대화 저장 (비동기로 실행, 응답 차단하지 않음)
-        if (sessionId) {
-            // 사용자 메시지 저장
-            saveConversationMessage(sessionId, userId, 'user', message, 'chat')
-                .catch(err => console.error('사용자 메시지 저장 실패:', err));
-            
-            // AI 응답 저장
-            saveConversationMessage(sessionId, userId, 'assistant', aiResponse, hasRestaurantRecommendation ? 'recommendation' : 'chat')
-                .catch(err => console.error('AI 응답 저장 실패:', err));
+        // 대화 세션 관리 및 저장
+        if (sessionId && userId) {
+            try {
+                // 대화 세션 생성 또는 업데이트
+                await createOrUpdateSession(sessionId, userId, true);
+                
+                // 사용자 메시지 저장
+                await saveConversationMessage(sessionId, userId, 'user', message, 'chat');
+                
+                // AI 응답 저장
+                await saveConversationMessage(sessionId, userId, 'assistant', aiResponse, hasRestaurantRecommendation ? 'recommendation' : 'chat');
+                
+                // 세션의 메시지가 3개 이상이 되면 AI로 제목 생성
+                const { data: messageCount } = await supabase
+                    .from('conversations')
+                    .select('id', { count: 'exact' })
+                    .eq('session_id', sessionId);
+                
+                if (messageCount && messageCount.length >= 4) { // 사용자 2개 + AI 2개 = 4개 이상
+                    // AI 제목 생성 (비동기로 실행, 응답 차단 안함)
+                    updateConversationTitle(sessionId)
+                        .catch(err => console.error('제목 업데이트 실패:', err));
+                }
+                
+            } catch (error) {
+                console.error('대화 관리 실패:', error);
+                // 에러가 발생해도 메시지 저장은 시도
+                saveConversationMessage(sessionId, userId, 'user', message, 'chat')
+                    .catch(err => console.error('사용자 메시지 저장 실패:', err));
+                saveConversationMessage(sessionId, userId, 'assistant', aiResponse, hasRestaurantRecommendation ? 'recommendation' : 'chat')
+                    .catch(err => console.error('AI 응답 저장 실패:', err));
+            }
         }
 
         // 응답 전송
