@@ -396,7 +396,13 @@ ${restaurant.description}`;
             const headers = getAuthHeaders();
             headers['Content-Type'] = 'application/json';
             
-            await fetch('/api/conversations', {
+            console.log('🚀 저장 요청 전송:', {
+                sessionId: this.sessionId,
+                userMsg: userMessage.substring(0, 30),
+                botMsg: botMessage.substring(0, 30)
+            });
+            
+            const response = await fetch('/api/conversations', {
                 method: 'POST',
                 headers: headers,
                 body: JSON.stringify({
@@ -407,8 +413,15 @@ ${restaurant.description}`;
                     ]
                 })
             });
+            
+            const data = await response.json();
+            console.log('📥 저장 응답:', data);
+            
+            if (!response.ok) {
+                console.error('❌ 저장 실패:', response.status, data);
+            }
         } catch (error) {
-            console.error('대화 저장 오류:', error);
+            console.error('💥 대화 저장 오류:', error);
         }
     }
 

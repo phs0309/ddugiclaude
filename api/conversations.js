@@ -276,11 +276,17 @@ module.exports = async function handler(req, res) {
                 
                 if (messages && messageSessionId) {
                     // 대화 세트 저장 (사용자 메시지 + 봇 응답)
-                    console.log('💾 대화 세트 저장 요청:', { sessionId: messageSessionId, messageCount: messages.length });
+                    console.log('💾 대화 세트 저장 요청:', { 
+                        sessionId: messageSessionId, 
+                        messageCount: messages.length,
+                        userId: userId,
+                        messages: messages.map(m => ({ role: m.role, contentPreview: m.content.substring(0, 50) }))
+                    });
                     
                     // 세션 존재 여부 확인 및 생성
                     const session = await createOrUpdateSession(messageSessionId, userId, true);
                     if (!session) {
+                        console.error('❌ 세션 생성/업데이트 실패');
                         return res.status(500).json({
                             success: false,
                             error: '세션 생성/업데이트 실패'
@@ -295,13 +301,19 @@ module.exports = async function handler(req, res) {
                         content: msg.content
                     }));
                     
+                    console.log('📝 저장할 메시지들:', messagesToInsert.map(m => ({ 
+                        role: m.role, 
+                        contentLength: m.content.length,
+                        preview: m.content.substring(0, 30) 
+                    })));
+                    
                     const { data: savedMessages, error: messageError } = await supabase
                         .from('conversations')
                         .insert(messagesToInsert)
                         .select();
 
                     if (messageError) {
-                        console.error('대화 세트 저장 에러:', messageError);
+                        console.error('❌ 대화 세트 저장 에러:', messageError);
                         return res.status(500).json({
                             success: false,
                             error: '대화 세트 저장 실패',
@@ -309,7 +321,10 @@ module.exports = async function handler(req, res) {
                         });
                     }
 
-                    console.log('✅ 대화 세트 저장 성공:', { count: savedMessages.length });
+                    console.log('✅ 대화 세트 저장 성공:', { 
+                        count: savedMessages.length,
+                        savedRoles: savedMessages.map(m => m.role)
+                    });
                     
                     res.json({
                         success: true,
