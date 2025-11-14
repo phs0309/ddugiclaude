@@ -1760,26 +1760,40 @@ body {
 
 /* Chat Management Section in Side Menu */
 .chat-management-section {
+    padding: 0 24px;
     margin-bottom: 20px;
 }
 
 .new-chat-item {
+    width: 100%;
     background: linear-gradient(135deg, #FF6B35 0%, #FFD166 100%) !important;
     color: white !important;
-    margin-bottom: 16px;
+    margin-bottom: 20px;
     font-weight: 600;
+    border-radius: 12px;
+    border: none;
+    box-shadow: 0 2px 8px rgba(255, 107, 53, 0.2);
 }
 
 .new-chat-item:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+    box-shadow: 0 4px 12px rgba(255, 107, 53, 0.4);
+    background: linear-gradient(135deg, #FF7A45 0%, #FFD975 100%) !important;
+}
+
+.new-chat-item:hover::before {
+    display: none; /* 기본 hover 효과 제거 */
+}
+
+.new-chat-item i {
+    color: white !important;
 }
 
 .chat-history-section {
     background: #F8F9FA;
     border-radius: 12px;
     padding: 16px;
-    margin-bottom: 16px;
+    margin: 0 24px 16px;
 }
 
 .chat-history-header {
@@ -1787,10 +1801,12 @@ body {
 }
 
 .chat-history-header h4 {
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
     color: #495057;
-    margin: 0 0 8px 0;
+    margin: 0 0 10px 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .chat-search-container {
@@ -1800,68 +1816,91 @@ body {
 
 .chat-search-container input {
     width: 100%;
-    padding: 8px 12px 8px 32px;
-    border: 1px solid #DEE2E6;
-    border-radius: 8px;
-    font-size: 12px;
+    padding: 10px 12px 10px 32px;
+    border: 2px solid #E9ECEF;
+    border-radius: 10px;
+    font-size: 13px;
     background: white;
     outline: none;
-    transition: border-color 0.2s;
+    transition: all 0.2s;
 }
 
 .chat-search-container input:focus {
     border-color: #FF6B35;
+    box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
 }
 
 .chat-search-container i {
     position: absolute;
-    left: 10px;
+    left: 12px;
     top: 50%;
     transform: translateY(-50%);
     color: #ADB5BD;
-    font-size: 12px;
+    font-size: 13px;
 }
 
 .conversation-list {
-    max-height: 200px;
+    max-height: 180px;
     overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #DEE2E6 transparent;
+}
+
+.conversation-list::-webkit-scrollbar {
+    width: 4px;
+}
+
+.conversation-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.conversation-list::-webkit-scrollbar-thumb {
+    background: #DEE2E6;
+    border-radius: 2px;
 }
 
 .loading-conversations {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 16px;
+    padding: 20px;
     color: #6C757D;
-    font-size: 12px;
+    font-size: 13px;
     justify-content: center;
 }
 
 .conversation-group-title {
-    padding: 8px 0;
-    font-size: 11px;
+    padding: 6px 0;
+    font-size: 10px;
     font-weight: 600;
     color: #6C757D;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    border-bottom: 1px solid #E9ECEF;
+    margin-bottom: 6px;
 }
 
 .conversation-item {
-    padding: 8px 12px;
+    padding: 10px 12px;
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: all 0.2s;
     border-radius: 8px;
-    margin-bottom: 4px;
+    margin-bottom: 2px;
     position: relative;
+    background: white;
+    border: 1px solid transparent;
 }
 
 .conversation-item:hover {
-    background-color: #E9ECEF;
+    background-color: #F8F9FA;
+    border-color: #E9ECEF;
+    transform: translateX(2px);
 }
 
 .conversation-item.active {
     background-color: #FFF3E0;
-    border-left: 3px solid #FF6B35;
+    border-color: #FF6B35;
+    box-shadow: 0 2px 4px rgba(255, 107, 53, 0.1);
 }
 
 .conversation-content {
@@ -1873,10 +1912,11 @@ body {
     font-size: 13px;
     font-weight: 500;
     color: #212529;
-    margin-bottom: 2px;
+    margin-bottom: 3px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    line-height: 1.3;
 }
 
 .conversation-preview {
@@ -1885,26 +1925,25 @@ body {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    line-height: 1.2;
 }
 
 .conversation-time {
-    font-size: 10px;
+    font-size: 9px;
     color: #ADB5BD;
-    margin-left: 8px;
+    margin-top: 2px;
     white-space: nowrap;
 }
 
 .conversation-actions {
-    opacity: 0;
     display: flex;
+    opacity: 0;
     align-items: center;
-    gap: 4px;
-    margin-left: 8px;
+    gap: 2px;
     transition: opacity 0.2s;
     position: absolute;
     right: 8px;
-    top: 50%;
-    transform: translateY(-50%);
+    top: 8px;
 }
 
 .conversation-item:hover .conversation-actions {
@@ -1912,27 +1951,37 @@ body {
 }
 
 .conversation-action-btn {
-    width: 20px;
-    height: 20px;
+    width: 24px;
+    height: 24px;
     border: none;
-    background: none;
-    border-radius: 4px;
+    background: white;
+    border-radius: 6px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     color: #6C757D;
-    font-size: 10px;
+    font-size: 11px;
     transition: all 0.2s;
+    border: 1px solid #E9ECEF;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
 }
 
 .conversation-action-btn:hover {
-    background-color: #DEE2E6;
+    background-color: #F8F9FA;
     color: #495057;
+    transform: scale(1.05);
+    border-color: #DEE2E6;
 }
 
 .conversation-action-btn.favorite {
     color: #FF6B35;
+    background-color: #FFF3E0;
+    border-color: #FFCC82;
+}
+
+.conversation-action-btn.favorite:hover {
+    background-color: #FFE0B2;
 }
 
 .side-menu-divider {
@@ -1942,26 +1991,32 @@ body {
 }
 
 .no-conversations {
-    padding: 20px;
+    padding: 24px 16px;
     text-align: center;
     color: #6C757D;
+    background: white;
+    border-radius: 8px;
+    border: 1px solid #E9ECEF;
 }
 
 .no-conversations i {
-    font-size: 32px;
+    font-size: 28px;
     margin-bottom: 8px;
-    opacity: 0.5;
+    opacity: 0.4;
+    color: #FF6B35;
 }
 
 .no-conversations h3 {
-    font-size: 14px;
-    margin-bottom: 4px;
+    font-size: 13px;
+    margin-bottom: 6px;
     color: #495057;
+    font-weight: 600;
 }
 
 .no-conversations p {
-    font-size: 12px;
+    font-size: 11px;
     line-height: 1.4;
+    color: #6C757D;
 }
 
 /* Search Results in Side Menu */
