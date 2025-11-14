@@ -3003,12 +3003,17 @@ window.confirmDeleteConversation = async function confirmDeleteConversation() {
         
         if (data.success) {
             console.log('✅ 삭제 성공');
-            hideDeleteModal();
+            if (window.hideDeleteModal) {
+                window.hideDeleteModal();
+            }
             
             // 대화 목록 새로고침
-            if (window.conversationManager) {
+            if (conversationManager) {
+                console.log('🔄 대화 목록 새로고침 시작...');
                 await conversationManager.loadConversations();
                 console.log('🔄 대화 목록 새로고침 완료');
+            } else {
+                console.error('❌ conversationManager가 없습니다');
             }
             
             // 현재 삭제된 대화가 활성 대화인 경우 새 대화 시작
