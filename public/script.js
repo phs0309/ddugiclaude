@@ -160,6 +160,9 @@ class InstagramStyleChatBot {
             // 봇 응답 저장 (로그인한 경우에만)
             if (apiClient.isLoggedIn()) {
                 await this.saveMessage(response.message, 'bot');
+                
+                // 첫 번째 봇 응답 시 AI 주제로 제목 업데이트
+                await this.updateConversationTitle(response.message);
             }
             
             // 맛집 데이터가 있으면 모달 버튼과 모달 표시
@@ -419,6 +422,72 @@ ${restaurant.description}`;
         } catch (error) {
             console.error('💥 메시지 저장 오류:', error);
         }
+    }
+
+    // AI 응답 기반으로 대화 제목 업데이트
+    async updateConversationTitle(aiResponse) {
+        try {
+            console.log('📝 제목 업데이트 시작:', { sessionId: this.sessionId, response: aiResponse.substring(0, 100) + '...' });
+            
+            // AI 응답에서 주제 키워드 추출
+            let title = this.extractTopicFromResponse(aiResponse);
+            
+            const headers = getAuthHeaders();
+            headers['Content-Type'] = 'application/json';
+            
+            const response = await fetch(`/api/conversations?sessionId=${this.sessionId}`, {
+                method: 'PUT',
+                headers: headers,
+                body: JSON.stringify({
+                    title: title
+                })
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                console.log('✅ 제목 업데이트 성공:', { title });
+                
+                // 대화 목록 새로고침
+                if (conversationManager) {
+                    await conversationManager.loadConversations();
+                }
+            } else {
+                console.error('❌ 제목 업데이트 실패:', response.status);
+            }
+        } catch (error) {
+            console.error('💥 제목 업데이트 오류:', error);
+        }
+    }
+
+    // AI 응답에서 주제 추출 (간단한 키워드 매칭)
+    extractTopicFromResponse(response) {
+        const text = response.toLowerCase();
+        
+        // 지역명 매칭
+        const areas = ['해운대', '서면', '광안리', '남포동', '부산역', '중앙동', '동래', '수영', '사상', '기장'];
+        for (const area of areas) {
+            if (text.includes(area)) {
+                return `${area} 맛집`;
+            }
+        }
+        
+        // 음식 종류 매칭  
+        const foods = ['돼지국밥', '밀면', '회', '아구찜', '갈비', '곰탕', '냉면', '삼겹살', '치킨', '피자', '햄버거', '카페', '디저트', '술집'];
+        for (const food of foods) {
+            if (text.includes(food)) {
+                return `${food} 맛집`;
+            }
+        }
+        
+        // 맛집 관련 키워드
+        if (text.includes('맛집') || text.includes('음식') || text.includes('식당')) {
+            if (text.includes('추천')) return '맛집 추천';
+            if (text.includes('검색')) return '맛집 검색';
+            return '부산 맛집';
+        }
+        
+        // 기본값
+        return '새 대화';
     }
 
     showTypingIndicator() {

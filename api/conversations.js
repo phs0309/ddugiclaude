@@ -310,11 +310,6 @@ module.exports = async function handler(req, res) {
 
                     console.log('✅ 메시지 저장 성공:', { messageId: message.id });
                     
-                    // 첫 번째 메시지인 경우 제목 자동 생성
-                    if (role === 'user') {
-                        updateConversationTitle(messageSessionId);
-                    }
-                    
                     res.json({
                         success: true,
                         message: '메시지가 저장되었습니다',
