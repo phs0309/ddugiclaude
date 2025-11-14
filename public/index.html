@@ -91,8 +91,9 @@
                 </div>
             </div>
             <div class="dm-header-right">
-                <button class="header-action-btn" aria-label="정보">
-                    <i class="fas fa-info-circle"></i>
+                <button class="header-action-btn user-profile-btn" id="userProfileBtn" aria-label="사용자 프로필" onclick="showUserProfile()">
+                    <i class="fas fa-user" id="userProfileIcon"></i>
+                    <img id="userProfileImage" class="profile-image" style="display: none;" alt="프로필">
                 </button>
             </div>
         </div>
@@ -213,6 +214,37 @@
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 로그아웃 확인 모달 -->
+    <div class="logout-modal-overlay" id="logoutModalOverlay" style="display: none;">
+        <div class="logout-modal">
+            <div class="logout-modal-header">
+                <h3>로그아웃 확인</h3>
+                <button class="logout-modal-close" onclick="hideLogoutModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="logout-modal-content">
+                <div class="logout-user-info" id="logoutUserInfo">
+                    <img id="logoutUserImage" class="logout-user-avatar" alt="프로필">
+                    <div class="logout-user-details">
+                        <div class="logout-user-name" id="logoutUserName"></div>
+                        <div class="logout-user-email" id="logoutUserEmail"></div>
+                    </div>
+                </div>
+                <p>정말 로그아웃 하시겠습니까?</p>
+                <p class="logout-warning">저장된 대화는 계정에 연결되어 있어 다시 로그인하면 복구됩니다.</p>
+            </div>
+            <div class="logout-modal-actions">
+                <button class="logout-btn-cancel" onclick="hideLogoutModal()">
+                    취소
+                </button>
+                <button class="logout-btn-confirm" onclick="confirmLogout()">
+                    로그아웃
+                </button>
             </div>
         </div>
     </div>

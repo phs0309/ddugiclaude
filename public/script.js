@@ -2547,3 +2547,104 @@ function findConversationById(sessionId) {
     
     return allConversations.find(conv => conv.session_id === sessionId);
 }
+
+// ============ User Profile & Logout Functions ============
+
+// 사용자 프로필 표시 및 업데이트
+function updateUserProfile() {
+    const userProfileBtn = document.getElementById('userProfileBtn');
+    const userProfileIcon = document.getElementById('userProfileIcon');
+    const userProfileImage = document.getElementById('userProfileImage');
+    
+    if (apiClient.isLoggedIn()) {
+        const user = apiClient.getCurrentUser();
+        
+        if (user.picture) {
+            // 구글 프로필 이미지가 있는 경우
+            userProfileIcon.style.display = 'none';
+            userProfileImage.style.display = 'block';
+            userProfileImage.src = user.picture;
+        } else {
+            // 프로필 이미지가 없는 경우 아이콘 사용
+            userProfileIcon.style.display = 'block';
+            userProfileImage.style.display = 'none';
+        }
+        
+        // 툴팁 업데이트
+        userProfileBtn.title = user.name || user.email || '사용자 프로필';
+    } else {
+        // 로그인되지 않은 경우
+        userProfileIcon.style.display = 'block';
+        userProfileImage.style.display = 'none';
+        userProfileBtn.title = '로그인';
+    }
+}
+
+// 사용자 프로필 버튼 클릭
+function showUserProfile() {
+    if (apiClient.isLoggedIn()) {
+        // 로그인된 경우 로그아웃 모달 표시
+        showLogoutModal();
+    } else {
+        // 로그인되지 않은 경우 로그인 페이지로 이동
+        handleLogin();
+    }
+}
+
+// 로그아웃 모달 표시
+function showLogoutModal() {
+    const user = apiClient.getCurrentUser();
+    const overlay = document.getElementById('logoutModalOverlay');
+    const userImage = document.getElementById('logoutUserImage');
+    const userName = document.getElementById('logoutUserName');
+    const userEmail = document.getElementById('logoutUserEmail');
+    
+    // 사용자 정보 채우기
+    if (user.picture) {
+        userImage.src = user.picture;
+        userImage.style.display = 'block';
+    } else {
+        userImage.style.display = 'none';
+    }
+    
+    userName.textContent = user.name || '사용자';
+    userEmail.textContent = user.email || '';
+    
+    // 모달 표시
+    overlay.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
+// 로그아웃 모달 숨기기
+function hideLogoutModal() {
+    const overlay = document.getElementById('logoutModalOverlay');
+    overlay.style.display = 'none';
+    document.body.style.overflow = '';
+}
+
+// 로그아웃 확인
+async function confirmLogout() {
+    try {
+        // API를 통한 로그아웃 처리
+        await apiClient.logout();
+        
+        // 모달 숨기기
+        hideLogoutModal();
+        
+        // 페이지 새로고침하여 상태 업데이트
+        window.location.reload();
+    } catch (error) {
+        console.error('로그아웃 실패:', error);
+        alert('로그아웃 중 오류가 발생했습니다.');
+    }
+}
+
+// 초기화 시 프로필 업데이트
+document.addEventListener('DOMContentLoaded', function() {
+    updateUserProfile();
+});
+
+// 로그인 상태 변경 시 프로필 업데이트
+document.addEventListener('loginStateChanged', function() {
+    updateUserProfile();
+});
