@@ -150,45 +150,21 @@ class InstagramStyleChatBot {
             if (response.restaurants && response.restaurants.length > 0) {
                 // 모달 버튼 추가
                 setTimeout(() => {
-                    // 분석 결과에 따라 제목 결정
-                    let title = '맛집 추천';
-                    if (response.analysis?.area && response.analysis?.food) {
-                        title = `${response.analysis.area} ${response.analysis.food}`;
-                    } else if (response.analysis?.area) {
-                        title = response.analysis.area;
-                    } else if (response.analysis?.food) {
-                        title = response.analysis.food;
-                    }
+                    // AI 추천 이유를 제목으로 사용
+                    let title = response.analysis?.aiReasoning || '맛집 추천';
                     this.addModalButton(response.restaurants, title);
                 }, 300);
                 
-                // 위치 또는 음식 키워드가 포함된 경우 자동으로 모달 표시
-                if (this.detectRestaurantRequest(message)) {
-                    // 분석 결과에 따라 제목 결정
-                    let title = '맛집 추천';
-                    if (response.analysis?.area && response.analysis?.food) {
-                        title = `${response.analysis.area} ${response.analysis.food}`;
-                    } else if (response.analysis?.area) {
-                        title = response.analysis.area;
-                    } else if (response.analysis?.food) {
-                        title = response.analysis.food;
-                    }
+                // AI가 맛집을 추천한 경우 자동으로 모달 표시
+                if (this.detectRestaurantRequest(response)) {
+                    // AI 추천 이유를 제목으로 사용
+                    let title = response.analysis?.aiReasoning || '맛집 추천';
                     this.delayedShowArtifacts(response.restaurants, title);
                 }
-            } else if (this.detectRestaurantRequest(message) && response.type === 'recommendation') {
-                // 맛집을 검색했지만 결과가 없는 경우
-                let searchDescription = '';
-                if (response.analysis?.area && response.analysis?.food) {
-                    searchDescription = `${response.analysis.area}에 ${response.analysis.food} 맛집`;
-                } else if (response.analysis?.area) {
-                    searchDescription = `${response.analysis.area} 맛집`;
-                } else if (response.analysis?.food) {
-                    searchDescription = `${response.analysis.food} 맛집`;
-                }
-                
-                // 데이터 없음 메시지 추가
+            } else if (response.type === 'recommendation' && response.restaurants.length === 0) {
+                // AI가 맛집 요청으로 판단했지만 추천할 맛집이 없는 경우
                 setTimeout(() => {
-                    this.addMessage(`😅 ${searchDescription} 데이터가 없어요!\n다른 지역이나 음식으로 검색해보세요.`, 'bot');
+                    this.addMessage(`😅 요청하신 조건에 맞는 맛집 데이터가 없어요!\n다른 조건으로 검색해보세요.`, 'bot');
                 }, 500);
             }
             
@@ -684,38 +660,10 @@ ${restaurant.description}`;
         }
     }
 
-    detectLocationRequest(message) {
-        const locationKeywords = [
-            '해운대', '서면', '광안리', '남포동', '부산역', '송도', '태종대', '자갈치',
-            '센텀', '부산대', '경성대', '동래', '온천장', '서동', '사상', '덕천', 
-            '화명', '구포', '다대포', '국제시장', '용호동', '대연동', '남천동', '수영',
-            '민락동', '광안동', '전포동', '부전동', '연산동', '거제동', '문현동',
-            '감천동', '영도', '오륙도', '이기대', '동백섬', '마린시티', '벡스코', 
-            '부산항', '김해공항', '노포동', '사직동', '송정', '기장'
-        ];
-        
-        return locationKeywords.some(keyword => message.includes(keyword));
-    }
-
-    detectFoodRequest(message) {
-        const foodKeywords = [
-            '돼지국밥', '밀면', '회', '씨앗호떡', '비빔당면', '파전', '동래파전',
-            '아구찜', '곰장어', '대게', '멸치', '어묵', '붕어빵', '팥빙수',
-            '냉면', '갈비', '삼겹살', '곱창', '막창', '족발', '보쌈', '치킨',
-            '피자', '파스타', '스테이크', '초밥', '라멘', '우동', '돈까스',
-            '김밥', '떡볶이', '순대', '튀김', '만두', '칼국수', '국수', '짬뽕',
-            '짜장면', '탕수육', '깐풍기', '마라탕', '훠궈', '쌀국수', '분짜',
-            '반미', '타코', '부리또', '햄버거', '샌드위치', '브런치', '베이글',
-            '커피', '카페', '디저트', '케이크', '빵', '크로플', '와플', '아이스크림',
-            '맛집', '음식', '먹을', '추천', '가볼만한'
-        ];
-        
-        return foodKeywords.some(keyword => message.toLowerCase().includes(keyword));
-    }
-
-    detectRestaurantRequest(message) {
-        // 지역 또는 음식 키워드가 포함되어 있으면 맛집 요청으로 판단
-        return this.detectLocationRequest(message) || this.detectFoodRequest(message);
+    // AI가 맛집 요청 여부를 판단하므로 키워드 감지 불필요
+    detectRestaurantRequest(response) {
+        // API 응답에서 맛집 데이터 유무로 판단
+        return response.restaurants && response.restaurants.length > 0;
     }
 
     // 주변 맛집 요청 감지

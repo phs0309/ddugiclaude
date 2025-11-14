@@ -8,174 +8,111 @@ const supabase = createClient(
     process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-// Restaurant AI 로직을 Vercel 함수에 맞게 구현
+// AI 기반 맛집 추천 시스템 
 class RestaurantAI {
     constructor() {
         this.restaurants = restaurants.restaurants;
     }
 
-    analyzeUserMessage(message) {
-        const lowerMessage = message.toLowerCase();
+    // AI가 직접 맛집을 선별하는 새로운 메서드
+    async recommendRestaurants(userMessage) {
+        console.log('🤖 AI 기반 맛집 추천 시작:', userMessage);
         
-        // 지역 키워드 매핑
-        const areaMap = {
-            '해운대': ['해운대', '해운대구', '센텀'],
-            '서면': ['서면', '부산진구'],
-            '광안리': ['광안리', '수영구'],
-            '남포동': ['남포동', '중구', '자갈치'],
-            '동래': ['동래', '동래구', '온천'],
-            '기장': ['기장', '기장군'],
-            '부산대': ['부산대', '금정구', '장전'],
-            '태종대': ['태종대', '영도구', '영도'],
-            '감천': ['감천', '사하구', '감천문화마을']
-        };
-
-        // 음식 카테고리 키워드
-        const categoryMap = {
-            '한식': ['한식', '국밥', '밀면', '파전', '족발', '보쌈'],
-            '해산물': ['해산물', '회', '횟집', '아구찜', '곰장어', '멸치'],
-            '간식': ['간식', '호떡', '씨앗호떡', '디저트'],
-            '카페': ['카페', '커피', '아메리카노', '케이크']
-        };
-
-        // 특정 음식 키워드
-        const foodKeywords = [
-            '돼지국밥', '밀면', '회', '아구찜', '곰장어', '파전', 
-            '족발', '보쌈', '멸치국수', '호떡', '커피'
-        ];
-
-        const analysis = {
-            area: null,
-            category: null,
-            food: null,
-            priceRange: null,
-            rating: null
-        };
-
-        // 지역 분석 (매칭된 키워드들을 모두 저장)
-        for (const [area, keywords] of Object.entries(areaMap)) {
-            if (keywords.some(keyword => lowerMessage.includes(keyword))) {
-                analysis.area = area;
-                analysis.areaKeywords = keywords; // 필터링에 사용할 키워드들
-                break;
+        try {
+            // Claude AI에게 맛집 선별 요청
+            const aiResponse = await this.getAIRecommendations(userMessage);
+            
+            if (aiResponse.isRestaurantRequest && aiResponse.recommendedRestaurants) {
+                const recommendedIds = aiResponse.recommendedRestaurants;
+                const recommendedRestaurants = this.getRestaurantsByIds(recommendedIds);
+                
+                console.log(`🎯 AI 추천: ${recommendedIds.length}개 → 실제 ${recommendedRestaurants.length}개 찾음`);
+                
+                return {
+                    analysis: { aiReasoning: aiResponse.reasoning },
+                    restaurants: recommendedRestaurants,
+                    total: recommendedRestaurants.length,
+                    aiGenerated: true
+                };
+            } else {
+                console.log('🚫 맛집 요청이 아님');
+                return {
+                    analysis: {},
+                    restaurants: [],
+                    total: 0,
+                    aiGenerated: false
+                };
             }
+        } catch (error) {
+            console.error('❌ AI 추천 실패:', error);
+            // 에러 시 빈 결과 반환
+            return {
+                analysis: {},
+                restaurants: [],
+                total: 0,
+                aiGenerated: false
+            };
         }
-
-        // 카테고리 분석
-        for (const [category, keywords] of Object.entries(categoryMap)) {
-            if (keywords.some(keyword => lowerMessage.includes(keyword))) {
-                analysis.category = category;
-                break;
-            }
-        }
-
-        // 특정 음식 키워드
-        for (const food of foodKeywords) {
-            if (lowerMessage.includes(food)) {
-                analysis.food = food;
-                break;
-            }
-        }
-
-        // 가격대 분석
-        if (lowerMessage.includes('저렴') || lowerMessage.includes('싸') || lowerMessage.includes('학생')) {
-            analysis.priceRange = 'low';
-        } else if (lowerMessage.includes('비싸') || lowerMessage.includes('고급') || lowerMessage.includes('특별')) {
-            analysis.priceRange = 'high';
-        }
-
-        // 평점 관련
-        if (lowerMessage.includes('맛있') || lowerMessage.includes('유명') || lowerMessage.includes('평점')) {
-            analysis.rating = 4.0;
-        }
-
-        return analysis;
     }
 
-    recommendRestaurants(userMessage) {
-        const analysis = this.analyzeUserMessage(userMessage);
-        let candidates = [...this.restaurants];
+    // Claude AI에게 맛집 추천 요청
+    async getAIRecommendations(userMessage) {
+        const prompt = this.buildRecommendationPrompt(userMessage);
+        const response = await callClaudeAPI(prompt);
         
-        console.log('🔍 분석 결과:', {
-            area: analysis.area,
-            food: analysis.food,
-            category: analysis.category,
-            totalRestaurants: candidates.length
-        });
-
-        // 지역 필터링
-        if (analysis.area && analysis.areaKeywords) {
-            const beforeCount = candidates.length;
-            candidates = candidates.filter(restaurant => {
-                return analysis.areaKeywords.some(keyword => 
-                    restaurant.address.includes(keyword) || 
-                    restaurant.area.includes(keyword)
-                );
-            });
-            console.log(`📍 지역 필터 (${analysis.area}): ${beforeCount} → ${candidates.length}`);
-        }
-
-        // 카테고리 필터링
-        if (analysis.category) {
-            const beforeCount = candidates.length;
-            candidates = candidates.filter(restaurant => 
-                restaurant.category === analysis.category
-            );
-            console.log(`🏷️ 카테고리 필터 (${analysis.category}): ${beforeCount} → ${candidates.length}`);
-        }
-
-        // 특정 음식 필터링
-        if (analysis.food) {
-            const beforeCount = candidates.length;
-            candidates = candidates.filter(restaurant => 
-                restaurant.specialties.some(specialty => 
-                    specialty.toLowerCase().includes(analysis.food.toLowerCase())
-                ) || restaurant.name.toLowerCase().includes(analysis.food.toLowerCase()) ||
-                restaurant.description.toLowerCase().includes(analysis.food.toLowerCase())
-            );
-            console.log(`🍽️ 음식 필터 (${analysis.food}): ${beforeCount} → ${candidates.length}`);
-        }
-
-        // 가격대 필터링
-        if (analysis.priceRange === 'low') {
-            candidates = candidates.filter(restaurant => {
-                const maxPrice = parseInt(restaurant.priceRange.split('-')[1]);
-                return maxPrice <= 15000;
-            });
-        } else if (analysis.priceRange === 'high') {
-            candidates = candidates.filter(restaurant => {
-                const maxPrice = parseInt(restaurant.priceRange.split('-')[1]);
-                return maxPrice >= 30000;
-            });
-        }
-
-        // 평점 필터링
-        if (analysis.rating) {
-            candidates = candidates.filter(restaurant => 
-                restaurant.rating >= analysis.rating
-            );
-        }
-
-        // 평점순으로 정렬
-        candidates.sort((a, b) => {
-            if (b.rating !== a.rating) {
-                return b.rating - a.rating;
+        try {
+            // Claude 응답에서 JSON 추출
+            const jsonMatch = response.match(/\{[\s\S]*\}/);
+            if (jsonMatch) {
+                return JSON.parse(jsonMatch[0]);
             }
-            return b.reviewCount - a.reviewCount;
-        });
-
-        const result = {
-            analysis,
-            restaurants: candidates.slice(0, 5),
-            total: candidates.length
-        };
-        
-        console.log(`✅ 최종 결과: ${result.total}개 중 ${result.restaurants.length}개 반환`);
-        if (result.restaurants.length > 0) {
-            console.log('🍴 반환된 맛집:', result.restaurants.map(r => r.name).join(', '));
+            throw new Error('JSON 형식이 아님');
+        } catch (error) {
+            console.error('AI 응답 파싱 실패:', error);
+            return { isRestaurantRequest: false };
         }
-        
-        return result;
+    }
+
+    // Claude용 프롬프트 생성
+    buildRecommendationPrompt(userMessage) {
+        // 맛집 데이터를 간소화해서 전달 (API 토큰 제한 때문에)
+        const simplifiedRestaurants = this.restaurants.slice(0, 50).map(r => ({
+            id: r.id,
+            name: r.name,
+            area: r.area,
+            category: r.category,
+            description: r.description.substring(0, 100),
+            specialties: r.specialties?.slice(0, 3) || [],
+            rating: r.rating,
+            priceRange: r.priceRange
+        }));
+
+        return `당신은 부산 맛집 전문가입니다. 사용자의 요청을 분석하고 적합한 맛집을 추천해주세요.
+
+사용자 요청: "${userMessage}"
+
+부산 맛집 데이터:
+${JSON.stringify(simplifiedRestaurants, null, 2)}
+
+다음 형식으로만 답변해주세요:
+{
+  "isRestaurantRequest": true/false,
+  "reasoning": "추천 이유 (한글 50자 이내)",
+  "recommendedRestaurants": ["맛집ID1", "맛집ID2", "맛집ID3"]
+}
+
+조건:
+1. 사용자가 맛집/음식점을 찾는 요청인지 판단
+2. 적합한 맛집 최대 5개의 ID만 추천
+3. 완벽히 맞지 않아도 가장 유사한 것 추천
+4. JSON 형식 외의 다른 설명은 하지 마세요`;
+    }
+
+    // ID로 맛집 찾기
+    getRestaurantsByIds(ids) {
+        return ids.map(id => 
+            this.restaurants.find(r => r.id === id)
+        ).filter(Boolean);
     }
 
     getRandomRecommendations(count = 3) {
@@ -550,39 +487,8 @@ module.exports = async function handler(req, res) {
         // RestaurantAI 인스턴스 생성
         const restaurantAI = new RestaurantAI();
 
-        // 위치 데이터 언급 여부 체크
-        const locationKeywords = [
-            '해운대', '광안리', '서면', '남포동', '중구', '동구', '서구', '영도', '부산진구', 
-            '동래구', '남구', '북구', '사상구', '금정구', '강서구', '연제구', '수영구', '사하구',
-            '기장', '양산', '온천장', '센텀', '자갈치', '국제시장', '태종대', '용두산', 
-            '부평', '덕천', '화명', '구포', '사직', '연산', '거제', '교대', '부경대', '동아대'
-        ];
-        
-        // 음식 키워드 체크
-        const foodKeywords = [
-            '돼지국밥', '밀면', '회', '씨앗호떡', '비빔당면', '파전', '동래파전',
-            '아구찜', '곰장어', '대게', '멸치', '어묵', '붕어빵', '팥빙수',
-            '냉면', '갈비', '삼겹살', '곱창', '막창', '족발', '보쌈', '치킨',
-            '피자', '파스타', '스테이크', '초밥', '라멘', '우동', '돈까스',
-            '김밥', '떡볶이', '순대', '튀김', '만두', '칼국수', '국수', '짬뽕',
-            '짜장면', '탕수육', '깐풍기', '마라탕', '훠궈', '쌀국수', '분짜',
-            '반미', '타코', '부리또', '햄버거', '샌드위치', '브런치', '베이글',
-            '커피', '카페', '디저트', '케이크', '빵', '크로플', '와플', '아이스크림'
-        ];
-        
-        const hasLocationMention = locationKeywords.some(keyword => 
-            message.toLowerCase().includes(keyword)
-        );
-        
-        const hasFoodMention = foodKeywords.some(keyword => 
-            message.toLowerCase().includes(keyword)
-        );
-
-        // 위치 또는 음식 언급이 있을 때 맛집 추천
-        let recommendations = { restaurants: [], analysis: {}, total: 0 };
-        if (hasLocationMention || hasFoodMention) {
-            recommendations = restaurantAI.recommendRestaurants(message);
-        }
+        // AI 기반 맛집 추천 시스템
+        const recommendations = await restaurantAI.recommendRestaurants(message);
         
         let aiResponse;
         let aiGenerated = false;
@@ -634,8 +540,8 @@ module.exports = async function handler(req, res) {
             aiGenerated = false;
         }
 
-        // 맛집 추천 여부 확인
-        const hasRestaurantRecommendation = hasLocationMention || hasFoodMention;
+        // 맛집 추천 여부 확인 (AI가 판단)
+        const hasRestaurantRecommendation = recommendations.restaurants.length > 0;
         
         // 대화 저장 (비동기로 실행, 응답 차단하지 않음)
         if (sessionId) {
@@ -651,22 +557,20 @@ module.exports = async function handler(req, res) {
         // 응답 전송
         const response = {
             message: aiResponse,
-            restaurants: hasRestaurantRecommendation ? recommendations.restaurants : [],
-            analysis: hasRestaurantRecommendation ? recommendations.analysis : {},
+            restaurants: recommendations.restaurants,
+            analysis: recommendations.analysis,
             type: hasRestaurantRecommendation ? 'recommendation' : 'chat',
             aiGenerated: aiGenerated,
             sessionId: sessionId,
             userId: userId,
-            // 항상 디버그 정보 포함 (임시)
+            // 디버그 정보 (AI 기반)
             debug: {
                 userMessage: message,
-                hasLocationMention,
-                hasFoodMention,
                 hasRestaurantRecommendation,
                 totalCandidates: recommendations.total,
-                analysisArea: recommendations.analysis?.area,
-                analysisFood: recommendations.analysis?.food,
-                restaurantCount: recommendations.restaurants?.length || 0
+                aiReasoning: recommendations.analysis?.aiReasoning,
+                restaurantCount: recommendations.restaurants?.length || 0,
+                aiRecommendationGenerated: recommendations.aiGenerated
             }
         };
         
