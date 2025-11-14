@@ -29,35 +29,33 @@
         </div>
         
         <div class="side-menu-content">
-            <!-- 채팅 관리 섹션 -->
-            <div class="chat-management-section">
+            <!-- 통합된 사이드 메뉴 -->
+            <nav class="side-menu-nav">
+                <!-- 새 대화 버튼 -->
                 <button class="side-menu-item new-chat-item" onclick="startNewConversation()">
                     <i class="fas fa-plus"></i>
                     <span>새 대화</span>
                 </button>
                 
-                <!-- 대화 목록 -->
-                <div class="chat-history-section" id="chatHistorySection">
-                    <div class="chat-history-header">
-                        <h4>이전 대화</h4>
-                        <div class="chat-search-container">
-                            <input type="text" placeholder="대화 검색..." id="conversationSearch" onkeyup="searchConversations()">
-                            <i class="fas fa-search"></i>
-                        </div>
-                    </div>
-                    <div class="conversation-list" id="conversationList">
-                        <div class="loading-conversations">
-                            <i class="fas fa-spinner fa-spin"></i>
-                            <span>대화 목록 로딩 중...</span>
-                        </div>
+                <!-- 대화 검색 -->
+                <div class="conversation-search-item">
+                    <div class="chat-search-container">
+                        <input type="text" placeholder="대화 검색..." id="conversationSearch" onkeyup="searchConversations()">
+                        <i class="fas fa-search"></i>
                     </div>
                 </div>
-            </div>
-            
-            <hr class="side-menu-divider">
-            
-            <!-- 기존 메뉴 항목들 -->
-            <nav class="side-menu-nav">
+                
+                <!-- 대화 목록 (동적으로 여기에 추가됩니다) -->
+                <div class="conversation-list" id="conversationList">
+                    <div class="loading-conversations">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <span>대화 목록 로딩 중...</span>
+                    </div>
+                </div>
+                
+                <hr class="side-menu-divider">
+                
+                <!-- 기존 메뉴 항목들 -->
                 <button class="side-menu-item" id="loginMenuItem" onclick="handleLogin()">
                     <i class="fas fa-user"></i>
                     <span id="loginMenuText">로그인</span>

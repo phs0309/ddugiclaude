@@ -1758,21 +1758,14 @@ body {
     display: block !important;
 }
 
-/* Chat Management Section in Side Menu */
-.chat-management-section {
-    padding: 0 24px;
-    margin-bottom: 20px;
-}
-
+/* Integrated Chat Items in Side Menu */
 .new-chat-item {
-    width: 100%;
     background: linear-gradient(135deg, #FF6B35 0%, #FFD166 100%) !important;
     color: white !important;
-    margin-bottom: 20px;
-    font-weight: 600;
     border-radius: 12px;
     border: none;
     box-shadow: 0 2px 8px rgba(255, 107, 53, 0.2);
+    margin-bottom: 8px;
 }
 
 .new-chat-item:hover {
@@ -1789,61 +1782,54 @@ body {
     color: white !important;
 }
 
-.chat-history-section {
-    background: #F8F9FA;
-    border-radius: 12px;
-    padding: 16px;
-    margin: 0 24px 16px;
-}
-
-.chat-history-header {
-    margin-bottom: 12px;
-}
-
-.chat-history-header h4 {
-    font-size: 13px;
-    font-weight: 600;
-    color: #495057;
-    margin: 0 0 10px 0;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+/* 검색 컨테이너를 사이드메뉴 아이템처럼 스타일링 */
+.conversation-search-item {
+    padding: 8px 24px;
+    margin-bottom: 8px;
 }
 
 .chat-search-container {
     position: relative;
-    margin-bottom: 12px;
+    width: 100%;
 }
 
 .chat-search-container input {
     width: 100%;
-    padding: 10px 12px 10px 32px;
+    padding: 12px 16px 12px 40px;
     border: 2px solid #E9ECEF;
-    border-radius: 10px;
-    font-size: 13px;
-    background: white;
+    border-radius: 12px;
+    font-size: 14px;
+    background: #F8F9FA;
     outline: none;
     transition: all 0.2s;
+    color: #495057;
 }
 
 .chat-search-container input:focus {
     border-color: #FF6B35;
     box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+    background: white;
+}
+
+.chat-search-container input::placeholder {
+    color: #ADB5BD;
 }
 
 .chat-search-container i {
     position: absolute;
-    left: 12px;
+    left: 14px;
     top: 50%;
     transform: translateY(-50%);
     color: #ADB5BD;
-    font-size: 13px;
+    font-size: 14px;
 }
 
 .conversation-list {
-    max-height: 180px;
+    max-height: 280px;
     overflow-y: auto;
     scrollbar-width: thin;
     scrollbar-color: #DEE2E6 transparent;
+    margin-bottom: 8px;
 }
 
 .conversation-list::-webkit-scrollbar {
@@ -1863,65 +1849,104 @@ body {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 20px;
+    padding: 16px 24px;
     color: #6C757D;
-    font-size: 13px;
+    font-size: 14px;
     justify-content: center;
 }
 
 .conversation-group-title {
-    padding: 6px 0;
-    font-size: 10px;
+    padding: 8px 24px 4px;
+    font-size: 11px;
     font-weight: 600;
     color: #6C757D;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    border-bottom: 1px solid #E9ECEF;
-    margin-bottom: 6px;
+    margin: 0;
 }
 
+/* 대화 항목을 사이드메뉴 아이템처럼 스타일링 */
 .conversation-item {
-    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 24px;
+    background: none;
+    border: none;
+    text-align: left;
     cursor: pointer;
-    transition: all 0.2s;
-    border-radius: 8px;
-    margin-bottom: 2px;
+    transition: all 0.2s ease;
+    font-size: 16px;
+    color: #495057;
     position: relative;
-    background: white;
-    border: 1px solid transparent;
+    width: 100%;
+    margin: 0;
 }
 
 .conversation-item:hover {
-    background-color: #F8F9FA;
-    border-color: #E9ECEF;
-    transform: translateX(2px);
+    background: #F8F9FA;
+    color: #212529;
+}
+
+.conversation-item:hover::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 24px;
+    background: linear-gradient(135deg, #FF6B35 0%, #FFD166 100%);
+    border-radius: 0 2px 2px 0;
 }
 
 .conversation-item.active {
-    background-color: #FFF3E0;
-    border-color: #FF6B35;
-    box-shadow: 0 2px 4px rgba(255, 107, 53, 0.1);
+    background: #FFF3E0;
+    color: #212529;
+}
+
+.conversation-item.active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 24px;
+    background: linear-gradient(135deg, #FF6B35 0%, #FFD166 100%);
+    border-radius: 0 2px 2px 0;
+}
+
+/* 대화 아이콘 (메뉴 아이템과 동일한 스타일) */
+.conversation-item .conversation-icon {
+    width: 20px;
+    color: #6C757D;
+    font-size: 16px;
+    flex-shrink: 0;
 }
 
 .conversation-content {
     flex: 1;
     min-width: 0;
+    display: flex;
+    flex-direction: column;
 }
 
 .conversation-title {
-    font-size: 13px;
-    font-weight: 500;
-    color: #212529;
-    margin-bottom: 3px;
+    font-size: 16px;
+    font-weight: 600;
+    color: inherit;
+    margin: 0;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    line-height: 1.3;
+    line-height: 1.2;
 }
 
 .conversation-preview {
-    font-size: 11px;
+    font-size: 12px;
     color: #6C757D;
+    margin: 2px 0 0 0;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1929,9 +1954,9 @@ body {
 }
 
 .conversation-time {
-    font-size: 9px;
+    font-size: 10px;
     color: #ADB5BD;
-    margin-top: 2px;
+    margin: 0;
     white-space: nowrap;
 }
 
@@ -1939,11 +1964,9 @@ body {
     display: flex;
     opacity: 0;
     align-items: center;
-    gap: 2px;
+    gap: 4px;
     transition: opacity 0.2s;
-    position: absolute;
-    right: 8px;
-    top: 8px;
+    margin-left: 8px;
 }
 
 .conversation-item:hover .conversation-actions {
@@ -1951,70 +1974,61 @@ body {
 }
 
 .conversation-action-btn {
-    width: 24px;
-    height: 24px;
+    width: 20px;
+    height: 20px;
     border: none;
-    background: white;
-    border-radius: 6px;
+    background: none;
+    border-radius: 4px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     color: #6C757D;
-    font-size: 11px;
+    font-size: 12px;
     transition: all 0.2s;
-    border: 1px solid #E9ECEF;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
 }
 
 .conversation-action-btn:hover {
-    background-color: #F8F9FA;
+    background-color: #E9ECEF;
     color: #495057;
-    transform: scale(1.05);
-    border-color: #DEE2E6;
 }
 
 .conversation-action-btn.favorite {
     color: #FF6B35;
-    background-color: #FFF3E0;
-    border-color: #FFCC82;
 }
 
 .conversation-action-btn.favorite:hover {
-    background-color: #FFE0B2;
+    background-color: #FFF3E0;
 }
 
 .side-menu-divider {
     border: none;
     border-top: 1px solid #DEE2E6;
-    margin: 20px 0;
+    margin: 20px 24px;
 }
 
 .no-conversations {
-    padding: 24px 16px;
+    padding: 24px;
     text-align: center;
     color: #6C757D;
-    background: white;
-    border-radius: 8px;
-    border: 1px solid #E9ECEF;
 }
 
 .no-conversations i {
-    font-size: 28px;
-    margin-bottom: 8px;
+    font-size: 32px;
+    margin-bottom: 12px;
     opacity: 0.4;
     color: #FF6B35;
 }
 
 .no-conversations h3 {
-    font-size: 13px;
-    margin-bottom: 6px;
+    font-size: 14px;
+    margin-bottom: 8px;
     color: #495057;
     font-weight: 600;
 }
 
 .no-conversations p {
-    font-size: 11px;
+    font-size: 13px;
     line-height: 1.4;
     color: #6C757D;
 }

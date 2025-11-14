@@ -2110,14 +2110,14 @@ class ConversationManager {
         const preview = this.generatePreview(conversation.title);
         
         return `
-            <div class="conversation-item ${isActive ? 'active' : ''}" 
-                 onclick="loadConversation('${conversation.session_id}')" 
-                 data-session-id="${conversation.session_id}">
+            <button class="side-menu-item conversation-item ${isActive ? 'active' : ''}" 
+                    onclick="loadConversation('${conversation.session_id}')" 
+                    data-session-id="${conversation.session_id}">
+                <i class="fas fa-comments conversation-icon"></i>
                 <div class="conversation-content">
                     <div class="conversation-title">${conversation.title}</div>
-                    <div class="conversation-preview">${preview}</div>
+                    <div class="conversation-preview">${preview} • ${time}</div>
                 </div>
-                <div class="conversation-time">${time}</div>
                 <div class="conversation-actions">
                     <button class="conversation-action-btn ${conversation.is_favorite ? 'favorite' : ''}" 
                             onclick="event.stopPropagation(); toggleFavorite('${conversation.session_id}')"
@@ -2125,17 +2125,12 @@ class ConversationManager {
                         <i class="fas fa-star"></i>
                     </button>
                     <button class="conversation-action-btn" 
-                            onclick="event.stopPropagation(); editConversation('${conversation.session_id}', '${conversation.title}')"
-                            title="제목 수정">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button class="conversation-action-btn" 
                             onclick="event.stopPropagation(); deleteConversation('${conversation.session_id}')"
                             title="삭제">
                         <i class="fas fa-trash"></i>
                     </button>
                 </div>
-            </div>
+            </button>
         `;
     }
 
