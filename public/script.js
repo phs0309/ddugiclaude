@@ -2045,13 +2045,9 @@ class ConversationManager {
         `;
 
         try {
-            const userId = apiClient.getCurrentUser()?.id;
             const response = await fetch('/api/conversations', {
                 method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-User-Id': userId
-                }
+                headers: getAuthHeaders()
             });
 
             const data = await response.json();
@@ -2281,13 +2277,9 @@ async function startNewConversation() {
             return;
         }
 
-        const userId = apiClient.getCurrentUser()?.id;
         const response = await fetch('/api/conversations', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-User-Id': userId
-            },
+            headers: getAuthHeaders(),
             body: JSON.stringify({ title: '새 대화' })
         });
 
@@ -2339,13 +2331,9 @@ async function loadConversation(sessionId) {
         }
 
         // 메시지 로드
-        const userId = apiClient.getCurrentUser()?.id;
         const response = await fetch(`/api/conversations?sessionId=${sessionId}`, {
             method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-User-Id': userId
-            }
+            headers: getAuthHeaders()
         });
 
         const data = await response.json();
@@ -2370,16 +2358,12 @@ async function loadConversation(sessionId) {
 // 즐겨찾기 토글
 async function toggleFavorite(sessionId) {
     try {
-        const userId = apiClient.getCurrentUser()?.id;
         const conversation = findConversationById(sessionId);
         const newFavoriteStatus = !conversation?.is_favorite;
 
         const response = await fetch(`/api/conversations?sessionId=${sessionId}`, {
             method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-User-Id': userId
-            },
+            headers: getAuthHeaders(),
             body: JSON.stringify({ is_favorite: newFavoriteStatus })
         });
 
@@ -2406,13 +2390,9 @@ function editConversation(sessionId, currentTitle) {
 // 대화 제목 업데이트
 async function updateConversationTitle(sessionId, newTitle) {
     try {
-        const userId = apiClient.getCurrentUser()?.id;
         const response = await fetch(`/api/conversations?sessionId=${sessionId}`, {
             method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-User-Id': userId
-            },
+            headers: getAuthHeaders(),
             body: JSON.stringify({ title: newTitle })
         });
 
@@ -2433,13 +2413,9 @@ async function deleteConversation(sessionId) {
     }
 
     try {
-        const userId = apiClient.getCurrentUser()?.id;
         const response = await fetch(`/api/conversations?sessionId=${sessionId}`, {
             method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-User-Id': userId
-            }
+            headers: getAuthHeaders()
         });
 
         const data = await response.json();
@@ -2546,6 +2522,18 @@ function findConversationById(sessionId) {
     ];
     
     return allConversations.find(conv => conv.session_id === sessionId);
+}
+
+// ============ API Helper Functions ============
+
+// 공통 헤더 생성 함수
+function getAuthHeaders() {
+    const user = apiClient.getCurrentUser();
+    return {
+        'Content-Type': 'application/json',
+        'X-User-Id': user?.id || user?.userId,
+        'X-User-Email': user?.email
+    };
 }
 
 // ============ User Profile & Logout Functions ============

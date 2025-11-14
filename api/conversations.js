@@ -178,14 +178,30 @@ module.exports = async function handler(req, res) {
     }
 
     const { sessionId } = req.query;
-    const userId = req.headers['x-user-id'];
+    const googleUserId = req.headers['x-user-id'];
 
-    if (!userId) {
+    if (!googleUserId) {
         return res.status(401).json({ 
             success: false, 
             error: '사용자 인증이 필요합니다.' 
         });
     }
+
+    // Google User ID로 실제 DB의 user_id 찾기
+    const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('id')
+        .eq('email', req.headers['x-user-email'] || '')
+        .single();
+
+    if (userError || !userData) {
+        return res.status(401).json({ 
+            success: false, 
+            error: '사용자 정보를 찾을 수 없습니다.' 
+        });
+    }
+
+    const userId = userData.id;
 
     try {
         switch (req.method) {
