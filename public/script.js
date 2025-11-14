@@ -226,8 +226,16 @@ class InstagramStyleChatBot {
     }
 
     addMessage(content, sender) {
+        console.log('🎨 addMessage 호출됨:', { 
+            content: content.substring(0, 50) + '...', 
+            sender, 
+            contentLength: content.length 
+        });
+        
         const messageGroup = document.createElement('div');
         messageGroup.className = `message-group ${sender}-group`;
+        
+        console.log('📦 메시지 그룹 생성:', messageGroup.className);
         
         // 아바타 (봇 메시지에만)
         if (sender === 'bot') {
@@ -267,6 +275,11 @@ class InstagramStyleChatBot {
         
         messageGroup.appendChild(messageContent);
         this.messagesContainer.appendChild(messageGroup);
+        
+        console.log('✅ 메시지 DOM에 추가 완료:', { 
+            sender, 
+            totalMessages: this.messagesContainer.children.length 
+        });
         
         // 스크롤을 맨 아래로
         this.scrollToBottom();
