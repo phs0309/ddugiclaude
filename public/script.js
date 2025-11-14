@@ -2119,14 +2119,8 @@ class ConversationManager {
         
         return `
             <button class="side-menu-item conversation-item ${isActive ? 'active' : ''}" 
-                    onclick="console.log('🖱️ 대화 클릭:', '${conversation.session_id}'); loadConversation('${conversation.session_id}')" 
-                    oncontextmenu="event.preventDefault(); showDeleteConversation('${conversation.session_id}', '${conversation.title.replace(/'/g, "\\'")}')"
-                    ontouchstart="startLongPress('${conversation.session_id}', '${conversation.title.replace(/'/g, "\\'")}')"
-                    ontouchend="cancelLongPress()"
-                    onmousedown="startLongPress('${conversation.session_id}', '${conversation.title.replace(/'/g, "\\'")}')"
-                    onmouseup="cancelLongPress()"
-                    onmouseleave="cancelLongPress()"
-                    data-session-id="${conversation.session_id}">
+                    data-session-id="${conversation.session_id}"
+                    data-title="${conversation.title.replace(/"/g, '&quot;')}">
                 <i class="fas fa-comments conversation-icon"></i>
                 <div class="conversation-content">
                     <div class="conversation-title">${conversation.title}</div>
@@ -2812,6 +2806,84 @@ document.addEventListener('DOMContentLoaded', function() {
 // 로그인 상태 변경 시 프로필 업데이트
 document.addEventListener('loginStateChanged', function() {
     updateUserProfile();
+});
+
+// ============ Conversation List Event Delegation ============
+
+// 대화 목록 클릭 및 길게 누르기 이벤트 처리
+document.addEventListener('DOMContentLoaded', function() {
+    const conversationList = document.getElementById('conversationList');
+    if (!conversationList) return;
+    
+    // 이벤트 위임을 사용해 대화 항목 클릭 및 길게 누르기 처리
+    conversationList.addEventListener('click', function(e) {
+        const conversationItem = e.target.closest('.conversation-item');
+        if (!conversationItem) return;
+        
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const sessionId = conversationItem.dataset.sessionId;
+        const title = conversationItem.dataset.title;
+        
+        console.log('🔘 대화 항목 클릭:', { sessionId, title });
+        
+        if (sessionId) {
+            loadConversation(sessionId, title);
+        }
+    });
+    
+    // 마우스 이벤트 (데스크톱)
+    conversationList.addEventListener('mousedown', function(e) {
+        const conversationItem = e.target.closest('.conversation-item');
+        if (!conversationItem) return;
+        
+        const sessionId = conversationItem.dataset.sessionId;
+        const title = conversationItem.dataset.title;
+        
+        console.log('🖱️ 마우스 다운:', { sessionId, title });
+        startLongPress(sessionId, title);
+    });
+    
+    conversationList.addEventListener('mouseup', function(e) {
+        const conversationItem = e.target.closest('.conversation-item');
+        if (!conversationItem) return;
+        
+        console.log('🖱️ 마우스 업');
+        cancelLongPress();
+    });
+    
+    conversationList.addEventListener('mouseleave', function(e) {
+        console.log('🖱️ 마우스 떠남');
+        cancelLongPress();
+    });
+    
+    // 터치 이벤트 (모바일)
+    conversationList.addEventListener('touchstart', function(e) {
+        const conversationItem = e.target.closest('.conversation-item');
+        if (!conversationItem) return;
+        
+        const sessionId = conversationItem.dataset.sessionId;
+        const title = conversationItem.dataset.title;
+        
+        console.log('👆 터치 시작:', { sessionId, title });
+        startLongPress(sessionId, title);
+    }, { passive: true });
+    
+    conversationList.addEventListener('touchend', function(e) {
+        const conversationItem = e.target.closest('.conversation-item');
+        if (!conversationItem) return;
+        
+        console.log('👆 터치 끝');
+        cancelLongPress();
+    }, { passive: true });
+    
+    conversationList.addEventListener('touchmove', function(e) {
+        console.log('👆 터치 이동');
+        cancelLongPress();
+    }, { passive: true });
+    
+    console.log('✅ 대화 목록 이벤트 리스너 등록 완료');
 });
 
 // ============ Long Press Delete Functions ============
