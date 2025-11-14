@@ -59,6 +59,8 @@ module.exports = async function handler(req, res) {
         if (req.method === 'GET') {
             // 저장된 맛집 조회 (users 테이블에서)
             try {
+                console.log('🔍 조회할 사용자 이메일:', user.email);
+                
                 const { data: userData, error } = await supabase
                     .from('users')
                     .select('saved_restaurant_ids')
@@ -66,6 +68,25 @@ module.exports = async function handler(req, res) {
                     .single();
 
                 if (error) {
+                    console.error('❌ 사용자 데이터 조회 실패:', {
+                        error: error,
+                        code: error.code,
+                        message: error.message,
+                        details: error.details,
+                        hint: error.hint
+                    });
+                    
+                    // 컬럼이 없는 경우 특별 처리
+                    if (error.message?.includes('column') || error.code === '42703') {
+                        console.log('⚠️ saved_restaurant_ids 컬럼이 없습니다. 빈 배열 반환');
+                        return res.status(200).json({
+                            success: true,
+                            restaurantIds: [],
+                            count: 0,
+                            message: 'saved_restaurant_ids 컬럼이 없습니다. SQL 실행이 필요합니다.'
+                        });
+                    }
+                    
                     throw error;
                 }
 
