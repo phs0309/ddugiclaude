@@ -2552,4 +2552,3 @@ function findConversationById(sessionId) {
     
     return allConversations.find(conv => conv.session_id === sessionId);
 }
-});
