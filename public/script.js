@@ -101,6 +101,8 @@ class InstagramStyleChatBot {
     async sendMessage() {
         const message = this.userInput.value.trim();
         if (!message) return;
+        
+        console.log('📝 sendMessage 시작:', { message, sessionId: this.sessionId });
 
         // 빠른 추천 숨기기
         this.hideQuickSuggestions();
@@ -155,17 +157,32 @@ class InstagramStyleChatBot {
             this.addMessage(response.message, 'bot');
             
             // 사용자 메시지와 봇 응답을 한꺼번에 저장 (로그인한 경우에만)
+            console.log('🔍 저장 전 변수 확인:', { 
+                messageExists: !!message,
+                messageValue: message,
+                responseExists: !!response.message,
+                responseValue: response.message.substring(0, 50) + '...',
+                isLoggedIn: apiClient.isLoggedIn(),
+                sessionId: this.sessionId 
+            });
+            
             if (apiClient.isLoggedIn()) {
-                console.log('💾 대화 세트 저장 시작:', { 
-                    userMessage: message,
-                    botResponse: response.message,
-                    sessionId: this.sessionId 
-                });
+                console.log('💾 대화 세트 저장 시작...');
                 
-                await this.saveConversationPair(message, response.message);
+                try {
+                    await this.saveConversationPair(message, response.message);
+                    console.log('✅ saveConversationPair 완료');
+                } catch (error) {
+                    console.error('❌ saveConversationPair 실패:', error);
+                }
                 
                 // AI 주제로 제목 업데이트
-                await this.updateConversationTitle(response.message);
+                try {
+                    await this.updateConversationTitle(response.message);
+                    console.log('✅ updateConversationTitle 완료');
+                } catch (error) {
+                    console.error('❌ updateConversationTitle 실패:', error);
+                }
             } else {
                 console.log('❌ 로그인되지 않아 대화 저장 생략');
             }
