@@ -13,82 +13,70 @@
     <!-- Side Menu Overlay -->
     <div class="side-menu-overlay" id="sideMenuOverlay" onclick="closeSideMenu()"></div>
     
-    <!-- Conversation Sidebar -->
-    <div class="conversation-sidebar" id="conversationSidebar">
-        <div class="sidebar-header">
-            <button class="new-chat-btn" onclick="startNewConversation()">
-                <i class="fas fa-plus"></i>
-                새 대화
-            </button>
-            <button class="sidebar-toggle" onclick="toggleSidebar()">
-                <i class="fas fa-bars"></i>
-            </button>
-        </div>
-
-        <div class="sidebar-search">
-            <div class="search-container">
-                <i class="fas fa-search"></i>
-                <input type="text" placeholder="대화 검색..." id="conversationSearch" onkeyup="searchConversations()">
+    <!-- Side Menu -->
+    <div class="side-menu" id="sideMenu">
+        <div class="side-menu-header">
+            <div class="side-menu-profile">
+                <div class="side-menu-avatar">🐧</div>
+                <div class="side-menu-info">
+                    <h3>뚜기</h3>
+                    <p>부산 맛집 가이드</p>
+                </div>
             </div>
+            <button class="side-menu-close" onclick="closeSideMenu()">
+                <i class="fas fa-times"></i>
+            </button>
         </div>
-
-        <div class="conversation-list" id="conversationList">
-            <div class="loading-conversations">
-                <i class="fas fa-spinner fa-spin"></i>
-                <span>대화 목록 로딩 중...</span>
-            </div>
-        </div>
-
-        <div class="sidebar-footer">
-            <div class="user-info" id="sidebarUserInfo">
-                <div class="user-avatar">🐧</div>
-                <div class="user-details">
-                    <span class="user-name" id="sidebarUserName">뚜기</span>
-                    <span class="user-status">부산 맛집 가이드</span>
+        
+        <div class="side-menu-content">
+            <!-- 채팅 관리 섹션 -->
+            <div class="chat-management-section">
+                <button class="side-menu-item new-chat-item" onclick="startNewConversation()">
+                    <i class="fas fa-plus"></i>
+                    <span>새 대화</span>
+                </button>
+                
+                <!-- 대화 목록 -->
+                <div class="chat-history-section" id="chatHistorySection">
+                    <div class="chat-history-header">
+                        <h4>이전 대화</h4>
+                        <div class="chat-search-container">
+                            <input type="text" placeholder="대화 검색..." id="conversationSearch" onkeyup="searchConversations()">
+                            <i class="fas fa-search"></i>
+                        </div>
+                    </div>
+                    <div class="conversation-list" id="conversationList">
+                        <div class="loading-conversations">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <span>대화 목록 로딩 중...</span>
+                        </div>
+                    </div>
                 </div>
             </div>
             
-            <div class="sidebar-actions">
-                <button class="sidebar-action-btn" onclick="navigateToSavedRestaurants()" title="저장된 맛집">
-                    <i class="fas fa-heart"></i>
-                </button>
-                <button class="sidebar-action-btn" id="loginActionBtn" onclick="handleLogin()" title="로그인">
+            <hr class="side-menu-divider">
+            
+            <!-- 기존 메뉴 항목들 -->
+            <nav class="side-menu-nav">
+                <button class="side-menu-item" id="loginMenuItem" onclick="handleLogin()">
                     <i class="fas fa-user"></i>
+                    <span id="loginMenuText">로그인</span>
                 </button>
-                <button class="sidebar-action-btn" onclick="showSettings()" title="설정">
+                <button class="side-menu-item" onclick="navigateToSavedRestaurants()">
+                    <i class="fas fa-heart"></i>
+                    <span>저장된 맛집</span>
+                </button>
+                <button class="side-menu-item" onclick="showSettings()">
                     <i class="fas fa-cog"></i>
+                    <span>설정</span>
                 </button>
-            </div>
+            </nav>
         </div>
     </div>
 
-    <!-- Sidebar Overlay for Mobile -->
-    <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
-
-    <!-- Legacy Side Menu (숨김) -->
-    <div class="side-menu" id="sideMenu" style="display: none;">
-        <!-- 기존 사이드메뉴 내용 유지 (레거시) -->
-    </div>
-
-    <!-- Main Chat Container -->
-    <div class="chat-app-container">
-        <div class="chat-main-content">
-            <!-- Chat Header -->
-            <div class="chat-header">
-                <button class="sidebar-toggle-mobile" onclick="toggleSidebar()">
-                    <i class="fas fa-bars"></i>
-                </button>
-                <h1 class="chat-title">뚜기의 부산 맛집 가이드</h1>
-                <div class="header-actions">
-                    <button class="header-action-btn" onclick="startNewConversation()" title="새 대화">
-                        <i class="fas fa-plus"></i>
-                    </button>
-                </div>
-            </div>
-            
-            <div class="instagram-dm-container">
+    <div class="instagram-dm-container">
         <!-- Instagram-style header -->
-        <div class="dm-header" style="display: none;">
+        <div class="dm-header">
             <div class="dm-header-left">
                 <button class="menu-btn" aria-label="메뉴" onclick="toggleSideMenu()">
                     <i class="fas fa-bars"></i>
@@ -191,8 +179,6 @@
             </div>
         </div>
     </div>
-        </div> <!-- chat-main-content -->
-    </div> <!-- chat-app-container -->
 
     <!-- Claude AI Artifacts 스타일 동적 콘텐츠 창 -->
     <div class="artifacts-overlay" id="artifactsOverlay" style="display: none;">
