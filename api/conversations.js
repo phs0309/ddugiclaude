@@ -187,17 +187,35 @@ module.exports = async function handler(req, res) {
         });
     }
 
-    // Google User ID로 실제 DB의 user_id 찾기
+    // 사용자 이메일로 실제 DB의 user_id 찾기
+    const userEmail = req.headers['x-user-email'];
+    
+    if (!userEmail) {
+        return res.status(401).json({ 
+            success: false, 
+            error: '사용자 이메일이 필요합니다.' 
+        });
+    }
+
     const { data: userData, error: userError } = await supabase
         .from('users')
         .select('id')
-        .eq('email', req.headers['x-user-email'] || '')
+        .eq('email', userEmail)
         .single();
 
-    if (userError || !userData) {
+    if (userError) {
+        console.error('사용자 조회 에러:', userError);
         return res.status(401).json({ 
             success: false, 
-            error: '사용자 정보를 찾을 수 없습니다.' 
+            error: '사용자 정보를 찾을 수 없습니다.',
+            details: userError.message
+        });
+    }
+
+    if (!userData) {
+        return res.status(401).json({ 
+            success: false, 
+            error: '등록되지 않은 사용자입니다.' 
         });
     }
 
@@ -269,9 +287,12 @@ module.exports = async function handler(req, res) {
                     .single();
 
                 if (createError) {
+                    console.error('대화 생성 에러:', createError);
                     return res.status(500).json({
                         success: false,
-                        error: '대화 생성 실패'
+                        error: '대화 생성 실패',
+                        details: createError.message,
+                        code: createError.code
                     });
                 }
 
