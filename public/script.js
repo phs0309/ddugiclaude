@@ -2120,6 +2120,12 @@ class ConversationManager {
         return `
             <button class="side-menu-item conversation-item ${isActive ? 'active' : ''}" 
                     onclick="loadConversation('${conversation.session_id}')" 
+                    oncontextmenu="event.preventDefault(); showDeleteConversation('${conversation.session_id}', '${conversation.title.replace(/'/g, "\\'")}')"
+                    ontouchstart="startLongPress('${conversation.session_id}', '${conversation.title.replace(/'/g, "\\'")}')"
+                    ontouchend="cancelLongPress()"
+                    onmousedown="startLongPress('${conversation.session_id}', '${conversation.title.replace(/'/g, "\\'")}')"
+                    onmouseup="cancelLongPress()"
+                    onmouseleave="cancelLongPress()"
                     data-session-id="${conversation.session_id}">
                 <i class="fas fa-comments conversation-icon"></i>
                 <div class="conversation-content">
@@ -2759,3 +2765,84 @@ document.addEventListener('DOMContentLoaded', function() {
 document.addEventListener('loginStateChanged', function() {
     updateUserProfile();
 });
+
+// ============ Long Press Delete Functions ============
+
+let longPressTimer = null;
+let currentDeleteSessionId = null;
+let currentDeleteTitle = null;
+
+// 길게 누르기 시작
+function startLongPress(sessionId, title) {
+    cancelLongPress(); // 기존 타이머 취소
+    
+    longPressTimer = setTimeout(() => {
+        showDeleteConversation(sessionId, title);
+    }, 800); // 0.8초
+}
+
+// 길게 누르기 취소
+function cancelLongPress() {
+    if (longPressTimer) {
+        clearTimeout(longPressTimer);
+        longPressTimer = null;
+    }
+}
+
+// 삭제 확인 모달 표시
+function showDeleteConversation(sessionId, title) {
+    currentDeleteSessionId = sessionId;
+    currentDeleteTitle = title;
+    
+    const modal = document.getElementById('deleteConversationModal');
+    const text = document.getElementById('deleteConversationText');
+    
+    if (modal && text) {
+        text.textContent = `"${title}" 대화를 삭제하시겠습니까?`;
+        modal.style.display = 'flex';
+    }
+}
+
+// 삭제 모달 숨기기
+function hideDeleteModal() {
+    const modal = document.getElementById('deleteConversationModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+    
+    currentDeleteSessionId = null;
+    currentDeleteTitle = null;
+}
+
+// 대화 삭제 실행
+async function confirmDeleteConversation() {
+    if (!currentDeleteSessionId) return;
+    
+    try {
+        const response = await fetch(`/api/conversations?sessionId=${currentDeleteSessionId}`, {
+            method: 'DELETE',
+            headers: getAuthHeaders()
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            hideDeleteModal();
+            
+            // 대화 목록 새로고침
+            if (window.conversationManager) {
+                await conversationManager.loadConversations();
+            }
+            
+            // 현재 삭제된 대화가 활성 대화인 경우 새 대화 시작
+            if (window.instagramChatBot && window.instagramChatBot.sessionId === currentDeleteSessionId) {
+                await startNewConversation();
+            }
+        } else {
+            alert('대화 삭제에 실패했습니다.');
+        }
+    } catch (error) {
+        console.error('대화 삭제 실패:', error);
+        alert('대화 삭제 중 오류가 발생했습니다.');
+    }
+}

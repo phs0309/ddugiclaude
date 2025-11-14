@@ -249,6 +249,18 @@
         </div>
     </div>
 
+    <!-- 대화 삭제 확인 모달 -->
+    <div id="deleteConversationModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; display: flex; align-items: center; justify-content: center;">
+        <div style="background: white; padding: 20px; border-radius: 12px; text-align: center; max-width: 300px; margin: 20px;">
+            <h3 style="margin: 0 0 15px 0; color: #212529;">대화 삭제</h3>
+            <p id="deleteConversationText" style="margin: 0 0 20px 0; color: #495057;"></p>
+            <div style="display: flex; gap: 10px;">
+                <button onclick="hideDeleteModal()" style="flex: 1; padding: 10px; border: 1px solid #ddd; background: white; border-radius: 6px; cursor: pointer;">취소</button>
+                <button onclick="confirmDeleteConversation()" style="flex: 1; padding: 10px; border: none; background: #dc3545; color: white; border-radius: 6px; cursor: pointer;">삭제</button>
+            </div>
+        </div>
+    </div>
+
     <script src="api-client.js"></script>
     <script src="script.js"></script>
 </body>
