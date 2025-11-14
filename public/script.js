@@ -2362,15 +2362,30 @@ window.loadConversation = async function loadConversation(sessionId) {
         if (data.success && data.messages && data.messages.length > 0) {
             console.log(`📝 메시지 ${data.messages.length}개 로드됨`);
             
-            // 채팅창 클리어 (초기 인사말 제외하고)
+            // 채팅창 완전 클리어 후 초기 인사말 다시 추가
             const messagesContainer = document.getElementById('chatMessages');
             if (messagesContainer) {
-                // 첫 번째 메시지 그룹(뚜기 인사말)은 유지하고 나머지만 클리어
-                const messageGroups = messagesContainer.querySelectorAll('.message-group');
-                for (let i = 1; i < messageGroups.length; i++) {
-                    messageGroups[i].remove();
-                }
-                console.log('🧹 기존 대화 메시지 클리어 완료 (인사말 유지)');
+                console.log('🧹 채팅창 완전 클리어 시작...');
+                messagesContainer.innerHTML = '';
+                
+                // 초기 인사말 다시 추가
+                const welcomeGroup = document.createElement('div');
+                welcomeGroup.className = 'message-group bot-group';
+                welcomeGroup.innerHTML = `
+                    <div class="message-avatar">
+                        <div class="avatar-image">🐧</div>
+                    </div>
+                    <div class="message-content">
+                        <div class="message-bubble bot-bubble">
+                            <p>마! 뚜기다이가! 🐧</p>
+                            <p>부산 토박이 맛집 가이드 뚜기입니다!</p>
+                            <p>어떤 맛있는 거 찾고 있노? 😊</p>
+                        </div>
+                        <div class="message-time">방금 전</div>
+                    </div>
+                `;
+                messagesContainer.appendChild(welcomeGroup);
+                console.log('✅ 초기 인사말 복원 완료');
             }
             
             // 메시지 복원
@@ -2910,7 +2925,11 @@ window.startLongPress = function startLongPress(sessionId, title) {
     
     longPressTimer = setTimeout(() => {
         console.log('⏰ 길게 누르기 감지 - 삭제 모달 표시');
-        showDeleteConversation(sessionId, title);
+        if (window.showDeleteConversation) {
+            window.showDeleteConversation(sessionId, title);
+        } else {
+            console.error('❌ showDeleteConversation 함수 없음');
+        }
     }, 800); // 0.8초
 }
 
@@ -2923,8 +2942,8 @@ window.cancelLongPress = function cancelLongPress() {
     }
 }
 
-// 삭제 확인 모달 표시
-function showDeleteConversation(sessionId, title) {
+// 삭제 확인 모달 표시 (전역으로 노출)
+window.showDeleteConversation = function showDeleteConversation(sessionId, title) {
     currentDeleteSessionId = sessionId;
     currentDeleteTitle = title;
     
@@ -2937,8 +2956,8 @@ function showDeleteConversation(sessionId, title) {
     }
 }
 
-// 삭제 모달 숨기기
-function hideDeleteModal() {
+// 삭제 모달 숨기기 (전역으로 노출)
+window.hideDeleteModal = function hideDeleteModal() {
     const modal = document.getElementById('deleteConversationModal');
     if (modal) {
         modal.style.display = 'none';
@@ -2948,8 +2967,8 @@ function hideDeleteModal() {
     currentDeleteTitle = null;
 }
 
-// 대화 삭제 실행
-async function confirmDeleteConversation() {
+// 대화 삭제 실행 (전역으로 노출)
+window.confirmDeleteConversation = async function confirmDeleteConversation() {
     if (!currentDeleteSessionId) {
         console.error('삭제할 세션 ID가 없습니다');
         return;
