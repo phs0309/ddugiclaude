@@ -95,32 +95,45 @@ class RestaurantAI {
     recommendRestaurants(userMessage) {
         const analysis = this.analyzeUserMessage(userMessage);
         let candidates = [...this.restaurants];
+        
+        console.log('🔍 분석 결과:', {
+            area: analysis.area,
+            food: analysis.food,
+            category: analysis.category,
+            totalRestaurants: candidates.length
+        });
 
         // 지역 필터링
         if (analysis.area && analysis.areaKeywords) {
+            const beforeCount = candidates.length;
             candidates = candidates.filter(restaurant => {
                 return analysis.areaKeywords.some(keyword => 
                     restaurant.address.includes(keyword) || 
                     restaurant.area.includes(keyword)
                 );
             });
+            console.log(`📍 지역 필터 (${analysis.area}): ${beforeCount} → ${candidates.length}`);
         }
 
         // 카테고리 필터링
         if (analysis.category) {
+            const beforeCount = candidates.length;
             candidates = candidates.filter(restaurant => 
                 restaurant.category === analysis.category
             );
+            console.log(`🏷️ 카테고리 필터 (${analysis.category}): ${beforeCount} → ${candidates.length}`);
         }
 
         // 특정 음식 필터링
         if (analysis.food) {
+            const beforeCount = candidates.length;
             candidates = candidates.filter(restaurant => 
                 restaurant.specialties.some(specialty => 
-                    specialty.includes(analysis.food)
-                ) || restaurant.name.includes(analysis.food) ||
-                restaurant.description.includes(analysis.food)
+                    specialty.toLowerCase().includes(analysis.food.toLowerCase())
+                ) || restaurant.name.toLowerCase().includes(analysis.food.toLowerCase()) ||
+                restaurant.description.toLowerCase().includes(analysis.food.toLowerCase())
             );
+            console.log(`🍽️ 음식 필터 (${analysis.food}): ${beforeCount} → ${candidates.length}`);
         }
 
         // 가격대 필터링
@@ -151,11 +164,18 @@ class RestaurantAI {
             return b.reviewCount - a.reviewCount;
         });
 
-        return {
+        const result = {
             analysis,
             restaurants: candidates.slice(0, 5),
             total: candidates.length
         };
+        
+        console.log(`✅ 최종 결과: ${result.total}개 중 ${result.restaurants.length}개 반환`);
+        if (result.restaurants.length > 0) {
+            console.log('🍴 반환된 맛집:', result.restaurants.map(r => r.name).join(', '));
+        }
+        
+        return result;
     }
 
     getRandomRecommendations(count = 3) {
