@@ -2315,8 +2315,15 @@ async function startNewConversation() {
 
 // 기존 대화 로드
 async function loadConversation(sessionId) {
+    console.log('💬 대화 로드 시작:', sessionId);
+    
     try {
-        if (!apiClient.isLoggedIn()) return;
+        if (!apiClient.isLoggedIn()) {
+            console.log('❌ 로그인되지 않음');
+            return;
+        }
+        
+        console.log('✅ 로그인 확인 완료');
         
         // 활성 대화 표시 업데이트
         document.querySelectorAll('.conversation-item').forEach(item => {
@@ -2326,6 +2333,7 @@ async function loadConversation(sessionId) {
         const clickedItem = document.querySelector(`[data-session-id="${sessionId}"]`);
         if (clickedItem) {
             clickedItem.classList.add('active');
+            console.log('🎯 활성 대화 UI 업데이트 완료');
         }
 
         // 세션 ID 업데이트
@@ -2334,30 +2342,54 @@ async function loadConversation(sessionId) {
         
         if (window.instagramChatBot) {
             window.instagramChatBot.sessionId = sessionId;
+            console.log('🤖 챗봇 세션 ID 업데이트 완료');
         }
+
+        // 사이드 메뉴 닫기 (모바일에서 대화 내용이 보이도록)
+        closeSideMenu();
+        console.log('📱 사이드 메뉴 닫기 완료');
 
         // 메시지 로드
+        console.log('📡 API 요청 시작...');
+        const headers = getAuthHeaders();
+        console.log('📋 요청 헤더:', headers);
+        
         const response = await fetch(`/api/conversations?sessionId=${sessionId}`, {
             method: 'GET',
-            headers: getAuthHeaders()
+            headers: headers
         });
 
+        console.log('🔍 응답 상태:', response.status);
+        
         const data = await response.json();
+        console.log('📊 응답 데이터:', data);
         
         if (data.success && data.messages) {
+            console.log(`📝 메시지 ${data.messages.length}개 로드됨`);
+            
             // 채팅창 클리어
             const messagesContainer = document.getElementById('chatMessages');
-            messagesContainer.innerHTML = '';
+            if (messagesContainer) {
+                messagesContainer.innerHTML = '';
+                console.log('🧹 기존 메시지 클리어 완료');
+            }
             
             // 메시지 복원
-            data.messages.forEach(message => {
+            data.messages.forEach((message, index) => {
                 if (window.instagramChatBot) {
                     window.instagramChatBot.addMessage(message.content, message.role);
+                    console.log(`➕ 메시지 ${index + 1} 추가: ${message.role} - ${message.content.substring(0, 30)}...`);
+                } else {
+                    console.error('❌ instagramChatBot 인스턴스 없음');
                 }
             });
+            
+            console.log('✅ 대화 로드 완료');
+        } else {
+            console.log('⚠️ 메시지 없음 또는 실패:', data);
         }
     } catch (error) {
-        console.error('대화 로드 실패:', error);
+        console.error('💥 대화 로드 실패:', error);
     }
 }
 
