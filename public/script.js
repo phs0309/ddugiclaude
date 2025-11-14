@@ -2944,23 +2944,38 @@ window.cancelLongPress = function cancelLongPress() {
 
 // 삭제 확인 모달 표시 (전역으로 노출)
 window.showDeleteConversation = function showDeleteConversation(sessionId, title) {
+    console.log('🚨 showDeleteConversation 호출됨:', { sessionId, title });
+    
     currentDeleteSessionId = sessionId;
     currentDeleteTitle = title;
     
     const modal = document.getElementById('deleteConversationModal');
     const text = document.getElementById('deleteConversationText');
     
+    console.log('📋 모달 요소 확인:', { 
+        modal: !!modal, 
+        text: !!text,
+        modalDisplay: modal?.style?.display 
+    });
+    
     if (modal && text) {
         text.textContent = `"${title}" 대화를 삭제하시겠습니까?`;
         modal.style.display = 'flex';
+        console.log('✅ 삭제 모달 표시 완료');
+    } else {
+        console.error('❌ 모달 요소를 찾을 수 없음:', { modal, text });
     }
 }
 
 // 삭제 모달 숨기기 (전역으로 노출)
 window.hideDeleteModal = function hideDeleteModal() {
+    console.log('❌ hideDeleteModal 호출됨');
     const modal = document.getElementById('deleteConversationModal');
     if (modal) {
         modal.style.display = 'none';
+        console.log('✅ 모달 숨김 완료');
+    } else {
+        console.error('❌ 모달 요소 없음');
     }
     
     currentDeleteSessionId = null;

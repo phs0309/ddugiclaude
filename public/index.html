@@ -255,8 +255,8 @@
             <h3 style="margin: 0 0 15px 0; color: #212529;">대화 삭제</h3>
             <p id="deleteConversationText" style="margin: 0 0 20px 0; color: #495057;"></p>
             <div style="display: flex; gap: 10px;">
-                <button onclick="hideDeleteModal()" style="flex: 1; padding: 10px; border: 1px solid #ddd; background: white; border-radius: 6px; cursor: pointer;">취소</button>
-                <button onclick="confirmDeleteConversation()" style="flex: 1; padding: 10px; border: none; background: #dc3545; color: white; border-radius: 6px; cursor: pointer;">삭제</button>
+                <button onclick="window.hideDeleteModal ? window.hideDeleteModal() : console.error('hideDeleteModal 함수 없음')" style="flex: 1; padding: 10px; border: 1px solid #ddd; background: white; border-radius: 6px; cursor: pointer;">취소</button>
+                <button onclick="window.confirmDeleteConversation ? window.confirmDeleteConversation() : console.error('confirmDeleteConversation 함수 없음')" style="flex: 1; padding: 10px; border: none; background: #dc3545; color: white; border-radius: 6px; cursor: pointer;">삭제</button>
             </div>
         </div>
     </div>
