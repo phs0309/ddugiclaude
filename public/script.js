@@ -2308,7 +2308,8 @@ async function startNewConversation() {
 }
 
 // 기존 대화 로드
-async function loadConversation(sessionId) {
+// 전역으로 노출
+window.loadConversation = async function loadConversation(sessionId) {
     console.log('💬 대화 로드 시작:', sessionId);
     
     try {
@@ -2812,78 +2813,88 @@ document.addEventListener('loginStateChanged', function() {
 
 // 대화 목록 클릭 및 길게 누르기 이벤트 처리
 document.addEventListener('DOMContentLoaded', function() {
-    const conversationList = document.getElementById('conversationList');
-    if (!conversationList) return;
+    console.log('🔧 이벤트 리스너 설정 시작...');
     
-    // 이벤트 위임을 사용해 대화 항목 클릭 및 길게 누르기 처리
-    conversationList.addEventListener('click', function(e) {
+    // 동적으로 생성되는 대화 항목에 이벤트 위임 사용
+    document.addEventListener('click', function(e) {
+        // 대화 항목 클릭 감지
         const conversationItem = e.target.closest('.conversation-item');
         if (!conversationItem) return;
         
         e.preventDefault();
         e.stopPropagation();
         
-        const sessionId = conversationItem.dataset.sessionId;
-        const title = conversationItem.dataset.title;
+        const sessionId = conversationItem.getAttribute('data-session-id');
+        const title = conversationItem.getAttribute('data-title');
         
-        console.log('🔘 대화 항목 클릭:', { sessionId, title });
+        console.log('🔘 대화 항목 클릭 감지:', { sessionId, title });
         
-        if (sessionId) {
-            loadConversation(sessionId, title);
+        if (sessionId && window.loadConversation) {
+            console.log('📞 loadConversation 호출');
+            window.loadConversation(sessionId);
+        } else {
+            console.error('❌ sessionId 또는 loadConversation 함수 없음:', { sessionId, hasFunction: !!window.loadConversation });
         }
     });
     
-    // 마우스 이벤트 (데스크톱)
-    conversationList.addEventListener('mousedown', function(e) {
+    // 길게 누르기 이벤트 (마우스)
+    document.addEventListener('mousedown', function(e) {
         const conversationItem = e.target.closest('.conversation-item');
         if (!conversationItem) return;
         
-        const sessionId = conversationItem.dataset.sessionId;
-        const title = conversationItem.dataset.title;
+        const sessionId = conversationItem.getAttribute('data-session-id');
+        const title = conversationItem.getAttribute('data-title');
         
-        console.log('🖱️ 마우스 다운:', { sessionId, title });
-        startLongPress(sessionId, title);
+        console.log('🖱️ 마우스 다운 감지:', { sessionId, title });
+        
+        if (sessionId && window.startLongPress) {
+            window.startLongPress(sessionId, title);
+        }
     });
     
-    conversationList.addEventListener('mouseup', function(e) {
+    document.addEventListener('mouseup', function(e) {
         const conversationItem = e.target.closest('.conversation-item');
         if (!conversationItem) return;
         
-        console.log('🖱️ 마우스 업');
-        cancelLongPress();
+        console.log('🖱️ 마우스 업 감지');
+        if (window.cancelLongPress) {
+            window.cancelLongPress();
+        }
     });
     
-    conversationList.addEventListener('mouseleave', function(e) {
-        console.log('🖱️ 마우스 떠남');
-        cancelLongPress();
-    });
-    
-    // 터치 이벤트 (모바일)
-    conversationList.addEventListener('touchstart', function(e) {
+    // 길게 누르기 이벤트 (터치)
+    document.addEventListener('touchstart', function(e) {
         const conversationItem = e.target.closest('.conversation-item');
         if (!conversationItem) return;
         
-        const sessionId = conversationItem.dataset.sessionId;
-        const title = conversationItem.dataset.title;
+        const sessionId = conversationItem.getAttribute('data-session-id');
+        const title = conversationItem.getAttribute('data-title');
         
-        console.log('👆 터치 시작:', { sessionId, title });
-        startLongPress(sessionId, title);
+        console.log('👆 터치 시작 감지:', { sessionId, title });
+        
+        if (sessionId && window.startLongPress) {
+            window.startLongPress(sessionId, title);
+        }
     }, { passive: true });
     
-    conversationList.addEventListener('touchend', function(e) {
+    document.addEventListener('touchend', function(e) {
         const conversationItem = e.target.closest('.conversation-item');
         if (!conversationItem) return;
         
-        console.log('👆 터치 끝');
-        cancelLongPress();
+        console.log('👆 터치 끝 감지');
+        if (window.cancelLongPress) {
+            window.cancelLongPress();
+        }
     }, { passive: true });
     
-    conversationList.addEventListener('touchmove', function(e) {
-        console.log('👆 터치 이동');
-        cancelLongPress();
+    document.addEventListener('touchmove', function(e) {
+        console.log('👆 터치 이동 감지');
+        if (window.cancelLongPress) {
+            window.cancelLongPress();
+        }
     }, { passive: true });
     
-    console.log('✅ 대화 목록 이벤트 리스너 등록 완료');
+    console.log('✅ 전역 이벤트 리스너 등록 완료');
 });
 
 // ============ Long Press Delete Functions ============
@@ -2892,8 +2903,8 @@ let longPressTimer = null;
 let currentDeleteSessionId = null;
 let currentDeleteTitle = null;
 
-// 길게 누르기 시작
-function startLongPress(sessionId, title) {
+// 길게 누르기 시작 (전역으로 노출)
+window.startLongPress = function startLongPress(sessionId, title) {
     console.log('👆 길게 누르기 시작:', sessionId);
     cancelLongPress(); // 기존 타이머 취소
     
@@ -2903,8 +2914,8 @@ function startLongPress(sessionId, title) {
     }, 800); // 0.8초
 }
 
-// 길게 누르기 취소
-function cancelLongPress() {
+// 길게 누르기 취소 (전역으로 노출)
+window.cancelLongPress = function cancelLongPress() {
     if (longPressTimer) {
         console.log('❌ 길게 누르기 취소');
         clearTimeout(longPressTimer);
