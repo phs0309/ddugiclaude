@@ -2816,33 +2816,48 @@ function hideDeleteModal() {
 
 // 대화 삭제 실행
 async function confirmDeleteConversation() {
-    if (!currentDeleteSessionId) return;
+    if (!currentDeleteSessionId) {
+        console.error('삭제할 세션 ID가 없습니다');
+        return;
+    }
+    
+    console.log('🗑️ 대화 삭제 시작:', currentDeleteSessionId);
     
     try {
+        const headers = getAuthHeaders();
+        console.log('📋 요청 헤더:', headers);
+        
         const response = await fetch(`/api/conversations?sessionId=${currentDeleteSessionId}`, {
             method: 'DELETE',
-            headers: getAuthHeaders()
+            headers: headers
         });
         
+        console.log('🔍 응답 상태:', response.status);
+        
         const data = await response.json();
+        console.log('📊 응답 데이터:', data);
         
         if (data.success) {
+            console.log('✅ 삭제 성공');
             hideDeleteModal();
             
             // 대화 목록 새로고침
             if (window.conversationManager) {
                 await conversationManager.loadConversations();
+                console.log('🔄 대화 목록 새로고침 완료');
             }
             
             // 현재 삭제된 대화가 활성 대화인 경우 새 대화 시작
             if (window.instagramChatBot && window.instagramChatBot.sessionId === currentDeleteSessionId) {
                 await startNewConversation();
+                console.log('🆕 새 대화 시작');
             }
         } else {
-            alert('대화 삭제에 실패했습니다.');
+            console.error('❌ 삭제 실패:', data.error);
+            alert(`대화 삭제에 실패했습니다: ${data.error}`);
         }
     } catch (error) {
-        console.error('대화 삭제 실패:', error);
-        alert('대화 삭제 중 오류가 발생했습니다.');
+        console.error('💥 대화 삭제 중 오류:', error);
+        alert('대화 삭제 중 네트워크 오류가 발생했습니다.');
     }
 }
