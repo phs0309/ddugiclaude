@@ -101,8 +101,6 @@ class InstagramStyleChatBot {
     async sendMessage() {
         const message = this.userInput.value.trim();
         if (!message) return;
-        
-        console.log('📝 sendMessage 시작:', { message, sessionId: this.sessionId });
 
         // 빠른 추천 숨기기
         this.hideQuickSuggestions();
@@ -157,34 +155,9 @@ class InstagramStyleChatBot {
             this.addMessage(response.message, 'bot');
             
             // 사용자 메시지와 봇 응답을 한꺼번에 저장 (로그인한 경우에만)
-            console.log('🔍 저장 전 변수 확인:', { 
-                messageExists: !!message,
-                messageValue: message,
-                responseExists: !!response.message,
-                responseValue: response.message.substring(0, 50) + '...',
-                isLoggedIn: apiClient.isLoggedIn(),
-                sessionId: this.sessionId 
-            });
-            
             if (apiClient.isLoggedIn()) {
-                console.log('💾 대화 세트 저장 시작...');
-                
-                try {
-                    await this.saveConversationPair(message, response.message);
-                    console.log('✅ saveConversationPair 완료');
-                } catch (error) {
-                    console.error('❌ saveConversationPair 실패:', error);
-                }
-                
-                // AI 주제로 제목 업데이트
-                try {
-                    await this.updateConversationTitle(response.message);
-                    console.log('✅ updateConversationTitle 완료');
-                } catch (error) {
-                    console.error('❌ updateConversationTitle 실패:', error);
-                }
-            } else {
-                console.log('❌ 로그인되지 않아 대화 저장 생략');
+                await this.saveConversationPair(message, response.message);
+                await this.updateConversationTitle(response.message);
             }
             
             // 맛집 데이터가 있으면 모달 버튼과 모달 표시
@@ -238,16 +211,8 @@ class InstagramStyleChatBot {
     }
 
     addMessage(content, sender) {
-        console.log('🎨 addMessage 호출됨:', { 
-            content: content.substring(0, 50) + '...', 
-            sender, 
-            contentLength: content.length 
-        });
-        
         const messageGroup = document.createElement('div');
         messageGroup.className = `message-group ${sender}-group`;
-        
-        console.log('📦 메시지 그룹 생성:', messageGroup.className);
         
         // 아바타 (봇 메시지에만)
         if (sender === 'bot') {
@@ -287,11 +252,6 @@ class InstagramStyleChatBot {
         
         messageGroup.appendChild(messageContent);
         this.messagesContainer.appendChild(messageGroup);
-        
-        console.log('✅ 메시지 DOM에 추가 완료:', { 
-            sender, 
-            totalMessages: this.messagesContainer.children.length 
-        });
         
         // 스크롤을 맨 아래로
         this.scrollToBottom();
@@ -433,16 +393,10 @@ ${restaurant.description}`;
     // 사용자 메시지와 봇 응답을 한 번에 저장
     async saveConversationPair(userMessage, botMessage) {
         try {
-            console.log('💾 대화 세트 저장:', { 
-                userContent: userMessage.substring(0, 30) + '...',
-                botContent: botMessage.substring(0, 30) + '...',
-                sessionId: this.sessionId 
-            });
-            
             const headers = getAuthHeaders();
             headers['Content-Type'] = 'application/json';
             
-            const response = await fetch('/api/conversations', {
+            await fetch('/api/conversations', {
                 method: 'POST',
                 headers: headers,
                 body: JSON.stringify({
@@ -453,23 +407,14 @@ ${restaurant.description}`;
                     ]
                 })
             });
-            
-            if (response.ok) {
-                const data = await response.json();
-                console.log('✅ 대화 세트 저장 성공:', data);
-            } else {
-                console.error('❌ 대화 세트 저장 실패:', response.status);
-            }
         } catch (error) {
-            console.error('💥 대화 세트 저장 오류:', error);
+            console.error('대화 저장 오류:', error);
         }
     }
 
     // AI 응답 기반으로 대화 제목 업데이트
     async updateConversationTitle(aiResponse) {
         try {
-            console.log('📝 제목 업데이트 시작:', { sessionId: this.sessionId, response: aiResponse.substring(0, 100) + '...' });
-            
             // AI 응답에서 주제 키워드 추출
             let title = this.extractTopicFromResponse(aiResponse);
             
@@ -485,18 +430,13 @@ ${restaurant.description}`;
             });
             
             if (response.ok) {
-                const data = await response.json();
-                console.log('✅ 제목 업데이트 성공:', { title });
-                
                 // 대화 목록 새로고침
                 if (conversationManager) {
                     await conversationManager.loadConversations();
                 }
-            } else {
-                console.error('❌ 제목 업데이트 실패:', response.status);
             }
         } catch (error) {
-            console.error('💥 제목 업데이트 오류:', error);
+            console.error('제목 업데이트 오류:', error);
         }
     }
 
@@ -2459,15 +2399,10 @@ async function startNewConversation() {
 // 기존 대화 로드
 // 전역으로 노출
 window.loadConversation = async function loadConversation(sessionId) {
-    console.log('💬 대화 로드 시작:', sessionId);
-    
     try {
         if (!apiClient.isLoggedIn()) {
-            console.log('❌ 로그인되지 않음');
             return;
         }
-        
-        console.log('✅ 로그인 확인 완료');
         
         // 활성 대화 표시 업데이트
         document.querySelectorAll('.conversation-item').forEach(item => {
@@ -2477,7 +2412,6 @@ window.loadConversation = async function loadConversation(sessionId) {
         const clickedItem = document.querySelector(`[data-session-id="${sessionId}"]`);
         if (clickedItem) {
             clickedItem.classList.add('active');
-            console.log('🎯 활성 대화 UI 업데이트 완료');
         }
 
         // 세션 ID 업데이트
@@ -2486,33 +2420,24 @@ window.loadConversation = async function loadConversation(sessionId) {
         
         if (window.instagramChatBot) {
             window.instagramChatBot.sessionId = sessionId;
-            console.log('🤖 챗봇 세션 ID 업데이트 완료');
         }
 
         // 사이드 메뉴 닫기 (모바일에서 대화 내용이 보이도록)
         closeSideMenu();
-        console.log('📱 사이드 메뉴 닫기 완료');
 
         // 메시지 로드
-        console.log('📡 API 요청 시작...');
         const headers = getAuthHeaders();
-        console.log('📋 요청 헤더:', headers);
-        
         const response = await fetch(`/api/conversations?sessionId=${sessionId}`, {
             method: 'GET',
             headers: headers
         });
-
-        console.log('🔍 응답 상태:', response.status);
         
         const data = await response.json();
-        console.log('📊 응답 데이터:', data);
         
         if (data.success) {
             // 항상 채팅창 클리어 및 초기 인사말 복원
             const messagesContainer = document.getElementById('chatMessages');
             if (messagesContainer) {
-                console.log('🧹 채팅창 완전 클리어 시작...');
                 messagesContainer.innerHTML = '';
                 
                 // 초기 인사말 다시 추가
@@ -2532,33 +2457,13 @@ window.loadConversation = async function loadConversation(sessionId) {
                     </div>
                 `;
                 messagesContainer.appendChild(welcomeGroup);
-                console.log('✅ 초기 인사말 복원 완료');
             }
             
             if (data.messages && data.messages.length > 0) {
-                console.log(`📝 메시지 ${data.messages.length}개 로드됨`);
-                
-                // 메시지 분석
-                const userMessages = data.messages.filter(m => m.role === 'user');
-                const botMessages = data.messages.filter(m => m.role === 'bot');
-                console.log('📊 메시지 분석:', { 
-                    total: data.messages.length,
-                    user: userMessages.length,
-                    bot: botMessages.length 
-                });
-                
                 // 메시지 복원
-                data.messages.forEach((message, index) => {
+                data.messages.forEach((message) => {
                     if (window.instagramChatBot) {
-                        console.log(`🔄 메시지 ${index + 1} 처리중:`, {
-                            role: message.role,
-                            content: message.content.substring(0, 50) + '...',
-                            length: message.content.length
-                        });
                         window.instagramChatBot.addMessage(message.content, message.role);
-                        console.log(`✅ 메시지 ${index + 1} UI 추가 완료`);
-                    } else {
-                        console.error('❌ instagramChatBot 인스턴스 없음');
                     }
                 });
                 
@@ -2566,13 +2471,8 @@ window.loadConversation = async function loadConversation(sessionId) {
                 if (messagesContainer) {
                     setTimeout(() => {
                         messagesContainer.scrollTop = messagesContainer.scrollHeight;
-                        console.log('📜 스크롤 하단으로 이동');
                     }, 100);
                 }
-                
-                console.log(`✅ 대화 로드 완료 (메시지 ${data.messages.length}개)`);
-            } else {
-                console.log('📝 새 대화 - 메시지 없음 (초기 인사말만 표시)');
             }
         } else {
             console.log('⚠️ 대화 로드 실패:', data);
@@ -2991,38 +2891,19 @@ document.addEventListener('loginStateChanged', function() {
 
 // 대화 목록 클릭 및 길게 누르기 이벤트 처리
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🔧 이벤트 리스너 설정 시작...');
-    
     // 동적으로 생성되는 대화 항목에 이벤트 위임 사용
     document.addEventListener('click', function(e) {
         // 대화 항목 클릭 감지
         const conversationItem = e.target.closest('.conversation-item');
         if (!conversationItem) return;
         
-        console.log('🎯 대화 항목 클릭됨:', conversationItem);
-        
         e.preventDefault();
         e.stopPropagation();
         
         const sessionId = conversationItem.getAttribute('data-session-id');
-        const title = conversationItem.getAttribute('data-title');
-        
-        console.log('🔘 대화 항목 클릭 감지:', { 
-            sessionId, 
-            title, 
-            hasLoadFunction: !!window.loadConversation,
-            element: conversationItem.outerHTML.substring(0, 200) + '...'
-        });
         
         if (sessionId && window.loadConversation) {
-            console.log('📞 loadConversation 호출 시작');
             window.loadConversation(sessionId);
-        } else {
-            console.error('❌ sessionId 또는 loadConversation 함수 없음:', { 
-                sessionId, 
-                hasFunction: !!window.loadConversation,
-                windowKeys: Object.keys(window).filter(key => key.includes('load'))
-            });
         }
     });
     
@@ -3034,8 +2915,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const sessionId = conversationItem.getAttribute('data-session-id');
         const title = conversationItem.getAttribute('data-title');
         
-        console.log('🖱️ 마우스 다운 감지:', { sessionId, title });
-        
         if (sessionId && window.startLongPress) {
             window.startLongPress(sessionId, title);
         }
@@ -3045,7 +2924,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const conversationItem = e.target.closest('.conversation-item');
         if (!conversationItem) return;
         
-        console.log('🖱️ 마우스 업 감지');
         if (window.cancelLongPress) {
             window.cancelLongPress();
         }
@@ -3059,8 +2937,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const sessionId = conversationItem.getAttribute('data-session-id');
         const title = conversationItem.getAttribute('data-title');
         
-        console.log('👆 터치 시작 감지:', { sessionId, title });
-        
         if (sessionId && window.startLongPress) {
             window.startLongPress(sessionId, title);
         }
@@ -3070,16 +2946,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const conversationItem = e.target.closest('.conversation-item');
         if (!conversationItem) return;
         
-        console.log('👆 터치 끝 감지');
         if (window.cancelLongPress) {
             window.cancelLongPress();
         }
     }, { passive: true });
-    
-    // touchmove는 너무 민감하므로 제거
-    // 대신 touchend에서만 처리
-    
-    console.log('✅ 전역 이벤트 리스너 등록 완료');
 });
 
 // ============ Long Press Delete Functions ============
@@ -3090,15 +2960,11 @@ let currentDeleteTitle = null;
 
 // 길게 누르기 시작 (전역으로 노출)
 window.startLongPress = function startLongPress(sessionId, title) {
-    console.log('👆 길게 누르기 시작:', sessionId);
     cancelLongPress(); // 기존 타이머 취소
     
     longPressTimer = setTimeout(() => {
-        console.log('⏰ 길게 누르기 감지 - 삭제 모달 표시');
         if (window.showDeleteConversation) {
             window.showDeleteConversation(sessionId, title);
-        } else {
-            console.error('❌ showDeleteConversation 함수 없음');
         }
     }, 800); // 0.8초
 }
@@ -3106,7 +2972,6 @@ window.startLongPress = function startLongPress(sessionId, title) {
 // 길게 누르기 취소 (전역으로 노출)
 window.cancelLongPress = function cancelLongPress() {
     if (longPressTimer) {
-        console.log('❌ 길게 누르기 취소');
         clearTimeout(longPressTimer);
         longPressTimer = null;
     }
@@ -3114,38 +2979,23 @@ window.cancelLongPress = function cancelLongPress() {
 
 // 삭제 확인 모달 표시 (전역으로 노출)
 window.showDeleteConversation = function showDeleteConversation(sessionId, title) {
-    console.log('🚨 showDeleteConversation 호출됨:', { sessionId, title });
-    
     currentDeleteSessionId = sessionId;
     currentDeleteTitle = title;
     
     const modal = document.getElementById('deleteConversationModal');
     const text = document.getElementById('deleteConversationText');
     
-    console.log('📋 모달 요소 확인:', { 
-        modal: !!modal, 
-        text: !!text,
-        modalDisplay: modal?.style?.display 
-    });
-    
     if (modal && text) {
         text.textContent = `"${title}" 대화를 삭제하시겠습니까?`;
         modal.style.display = 'flex';
-        console.log('✅ 삭제 모달 표시 완료');
-    } else {
-        console.error('❌ 모달 요소를 찾을 수 없음:', { modal, text });
     }
 }
 
 // 삭제 모달 숨기기 (전역으로 노출)
 window.hideDeleteModal = function hideDeleteModal() {
-    console.log('❌ hideDeleteModal 호출됨');
     const modal = document.getElementById('deleteConversationModal');
     if (modal) {
         modal.style.display = 'none';
-        console.log('✅ 모달 숨김 완료');
-    } else {
-        console.error('❌ 모달 요소 없음');
     }
     
     currentDeleteSessionId = null;
