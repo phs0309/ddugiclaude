@@ -272,11 +272,53 @@ module.exports = async function handler(req, res) {
                 break;
 
             case 'POST':
-                const { title, content, role, sessionId: messageSessionId } = req.body;
+                const { title, content, role, sessionId: messageSessionId, messages } = req.body;
                 
-                if (content && role && messageSessionId) {
-                    // 메시지 저장
-                    console.log('💾 메시지 저장 요청:', { sessionId: messageSessionId, role, content: content.substring(0, 50) + '...' });
+                if (messages && messageSessionId) {
+                    // 대화 세트 저장 (사용자 메시지 + 봇 응답)
+                    console.log('💾 대화 세트 저장 요청:', { sessionId: messageSessionId, messageCount: messages.length });
+                    
+                    // 세션 존재 여부 확인 및 생성
+                    const session = await createOrUpdateSession(messageSessionId, userId, true);
+                    if (!session) {
+                        return res.status(500).json({
+                            success: false,
+                            error: '세션 생성/업데이트 실패'
+                        });
+                    }
+                    
+                    // 여러 메시지를 한 번에 저장
+                    const messagesToInsert = messages.map(msg => ({
+                        session_id: messageSessionId,
+                        user_id: userId,
+                        role: msg.role,
+                        content: msg.content
+                    }));
+                    
+                    const { data: savedMessages, error: messageError } = await supabase
+                        .from('conversations')
+                        .insert(messagesToInsert)
+                        .select();
+
+                    if (messageError) {
+                        console.error('대화 세트 저장 에러:', messageError);
+                        return res.status(500).json({
+                            success: false,
+                            error: '대화 세트 저장 실패',
+                            details: messageError.message
+                        });
+                    }
+
+                    console.log('✅ 대화 세트 저장 성공:', { count: savedMessages.length });
+                    
+                    res.json({
+                        success: true,
+                        message: `${savedMessages.length}개 메시지가 저장되었습니다`,
+                        data: savedMessages
+                    });
+                } else if (content && role && messageSessionId) {
+                    // 단일 메시지 저장 (기존 방식 - 호환성 유지)
+                    console.log('💾 단일 메시지 저장 요청:', { sessionId: messageSessionId, role, content: content.substring(0, 50) + '...' });
                     
                     // 세션 존재 여부 확인 및 생성
                     const session = await createOrUpdateSession(messageSessionId, userId, true);
@@ -308,7 +350,7 @@ module.exports = async function handler(req, res) {
                         });
                     }
 
-                    console.log('✅ 메시지 저장 성공:', { messageId: message.id });
+                    console.log('✅ 단일 메시지 저장 성공:', { messageId: message.id });
                     
                     res.json({
                         success: true,
