@@ -175,6 +175,21 @@ class InstagramStyleChatBot {
                     }
                     this.delayedShowArtifacts(response.restaurants, title);
                 }
+            } else if (this.detectRestaurantRequest(message) && response.type === 'recommendation') {
+                // 맛집을 검색했지만 결과가 없는 경우
+                let searchDescription = '';
+                if (response.analysis?.area && response.analysis?.food) {
+                    searchDescription = `${response.analysis.area}에 ${response.analysis.food} 맛집`;
+                } else if (response.analysis?.area) {
+                    searchDescription = `${response.analysis.area} 맛집`;
+                } else if (response.analysis?.food) {
+                    searchDescription = `${response.analysis.food} 맛집`;
+                }
+                
+                // 데이터 없음 메시지 추가
+                setTimeout(() => {
+                    this.addMessage(`😅 ${searchDescription} 데이터가 없어요!\n다른 지역이나 음식으로 검색해보세요.`, 'bot');
+                }, 500);
             }
             
             // 분석 결과 로그
