@@ -61,11 +61,12 @@ module.exports = async function handler(req, res) {
             try {
                 console.log('🔍 조회할 사용자 이메일:', user.email);
                 
+                // 먼저 사용자 존재 여부 확인
                 const { data: userData, error } = await supabase
                     .from('users')
                     .select('saved_restaurant_ids')
                     .eq('email', user.email)
-                    .single();
+                    .maybeSingle(); // single() 대신 maybeSingle() 사용 - null 허용
 
                 if (error) {
                     console.error('❌ 사용자 데이터 조회 실패:', {
@@ -88,6 +89,43 @@ module.exports = async function handler(req, res) {
                     }
                     
                     throw error;
+                }
+
+                // 사용자가 없는 경우 새 사용자 생성
+                if (!userData) {
+                    console.log('⚠️ 사용자가 없음. 새 사용자 생성 시도...');
+                    
+                    // 새 사용자 생성
+                    const { data: newUser, error: createError } = await supabase
+                        .from('users')
+                        .insert({
+                            email: user.email,
+                            name: user.name || user.email.split('@')[0],
+                            profile_picture: user.profilePicture || user.picture,
+                            provider: user.provider || 'google',
+                            saved_restaurant_ids: []
+                        })
+                        .select('saved_restaurant_ids')
+                        .single();
+                    
+                    if (createError) {
+                        console.error('❌ 새 사용자 생성 실패:', createError);
+                        // 생성 실패해도 빈 배열 반환
+                        return res.status(200).json({
+                            success: true,
+                            restaurantIds: [],
+                            count: 0,
+                            message: '사용자 데이터가 없습니다'
+                        });
+                    }
+                    
+                    console.log('✅ 새 사용자 생성 완료:', user.email);
+                    return res.status(200).json({
+                        success: true,
+                        restaurantIds: [],
+                        count: 0,
+                        message: '새 사용자가 생성되었습니다'
+                    });
                 }
 
                 const savedIds = userData?.saved_restaurant_ids || [];
@@ -132,10 +170,37 @@ module.exports = async function handler(req, res) {
                     .from('users')
                     .select('saved_restaurant_ids')
                     .eq('email', user.email)
-                    .single();
+                    .maybeSingle();
 
                 if (fetchError) {
                     throw fetchError;
+                }
+
+                // 사용자가 없으면 새로 생성
+                if (!userData) {
+                    console.log('⚠️ POST: 사용자 없음, 새로 생성');
+                    const { data: newUser, error: createError } = await supabase
+                        .from('users')
+                        .insert({
+                            email: user.email,
+                            name: user.name || user.email.split('@')[0],
+                            profile_picture: user.profilePicture || user.picture,
+                            provider: user.provider || 'google',
+                            saved_restaurant_ids: [restaurant.id]
+                        })
+                        .select()
+                        .single();
+                    
+                    if (createError) {
+                        throw createError;
+                    }
+                    
+                    return res.status(200).json({
+                        success: true,
+                        message: '맛집이 저장되었습니다 (새 사용자 생성)',
+                        restaurantIds: [restaurant.id],
+                        count: 1
+                    });
                 }
 
                 const currentIds = userData?.saved_restaurant_ids || [];
@@ -200,10 +265,21 @@ module.exports = async function handler(req, res) {
                     .from('users')
                     .select('saved_restaurant_ids')
                     .eq('email', user.email)
-                    .single();
+                    .maybeSingle();
 
                 if (fetchError) {
                     throw fetchError;
+                }
+
+                // 사용자가 없으면 이미 삭제된 것으로 간주
+                if (!userData) {
+                    console.log('⚠️ DELETE: 사용자 없음');
+                    return res.status(200).json({
+                        success: true,
+                        message: '맛집 저장이 해제되었습니다',
+                        restaurantIds: [],
+                        count: 0
+                    });
                 }
 
                 const currentIds = userData?.saved_restaurant_ids || [];
