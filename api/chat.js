@@ -538,13 +538,29 @@ module.exports = async function handler(req, res) {
             '부평', '덕천', '화명', '구포', '사직', '연산', '거제', '교대', '부경대', '동아대'
         ];
         
+        // 음식 키워드 체크
+        const foodKeywords = [
+            '돼지국밥', '밀면', '회', '씨앗호떡', '비빔당면', '파전', '동래파전',
+            '아구찜', '곰장어', '대게', '멸치', '어묵', '붕어빵', '팥빙수',
+            '냉면', '갈비', '삼겹살', '곱창', '막창', '족발', '보쌈', '치킨',
+            '피자', '파스타', '스테이크', '초밥', '라멘', '우동', '돈까스',
+            '김밥', '떡볶이', '순대', '튀김', '만두', '칼국수', '국수', '짬뽕',
+            '짜장면', '탕수육', '깐풍기', '마라탕', '훠궈', '쌀국수', '분짜',
+            '반미', '타코', '부리또', '햄버거', '샌드위치', '브런치', '베이글',
+            '커피', '카페', '디저트', '케이크', '빵', '크로플', '와플', '아이스크림'
+        ];
+        
         const hasLocationMention = locationKeywords.some(keyword => 
             message.toLowerCase().includes(keyword)
         );
+        
+        const hasFoodMention = foodKeywords.some(keyword => 
+            message.toLowerCase().includes(keyword)
+        );
 
-        // 위치 언급이 있을 때만 맛집 추천
+        // 위치 또는 음식 언급이 있을 때 맛집 추천
         let recommendations = { restaurants: [], analysis: {}, total: 0 };
-        if (hasLocationMention) {
+        if (hasLocationMention || hasFoodMention) {
             recommendations = restaurantAI.recommendRestaurants(message);
         }
         
@@ -598,6 +614,9 @@ module.exports = async function handler(req, res) {
             aiGenerated = false;
         }
 
+        // 맛집 추천 여부 확인
+        const hasRestaurantRecommendation = hasLocationMention || hasFoodMention;
+        
         // 대화 저장 (비동기로 실행, 응답 차단하지 않음)
         if (sessionId) {
             // 사용자 메시지 저장
@@ -605,16 +624,16 @@ module.exports = async function handler(req, res) {
                 .catch(err => console.error('사용자 메시지 저장 실패:', err));
             
             // AI 응답 저장
-            saveConversationMessage(sessionId, userId, 'assistant', aiResponse, hasLocationMention ? 'recommendation' : 'chat')
+            saveConversationMessage(sessionId, userId, 'assistant', aiResponse, hasRestaurantRecommendation ? 'recommendation' : 'chat')
                 .catch(err => console.error('AI 응답 저장 실패:', err));
         }
 
         // 응답 전송
         const response = {
             message: aiResponse,
-            restaurants: hasLocationMention ? recommendations.restaurants : [],
-            analysis: hasLocationMention ? recommendations.analysis : {},
-            type: hasLocationMention ? 'recommendation' : 'chat',
+            restaurants: hasRestaurantRecommendation ? recommendations.restaurants : [],
+            analysis: hasRestaurantRecommendation ? recommendations.analysis : {},
+            type: hasRestaurantRecommendation ? 'recommendation' : 'chat',
             aiGenerated: aiGenerated,
             sessionId: sessionId,
             userId: userId
@@ -624,6 +643,8 @@ module.exports = async function handler(req, res) {
         if (process.env.NODE_ENV === 'development') {
             response.debug = {
                 hasLocationMention,
+                hasFoodMention,
+                hasRestaurantRecommendation,
                 totalCandidates: recommendations.total,
                 apiKeyConfigured: !!process.env.claude_api_key
             };
