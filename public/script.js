@@ -2364,29 +2364,45 @@ async function loadConversation(sessionId) {
         const data = await response.json();
         console.log('📊 응답 데이터:', data);
         
-        if (data.success && data.messages) {
+        if (data.success && data.messages && data.messages.length > 0) {
             console.log(`📝 메시지 ${data.messages.length}개 로드됨`);
             
-            // 채팅창 클리어
+            // 채팅창 클리어 (초기 인사말 제외하고)
             const messagesContainer = document.getElementById('chatMessages');
             if (messagesContainer) {
-                messagesContainer.innerHTML = '';
-                console.log('🧹 기존 메시지 클리어 완료');
+                // 첫 번째 메시지 그룹(뚜기 인사말)은 유지하고 나머지만 클리어
+                const messageGroups = messagesContainer.querySelectorAll('.message-group');
+                for (let i = 1; i < messageGroups.length; i++) {
+                    messageGroups[i].remove();
+                }
+                console.log('🧹 기존 대화 메시지 클리어 완료 (인사말 유지)');
             }
             
             // 메시지 복원
             data.messages.forEach((message, index) => {
                 if (window.instagramChatBot) {
                     window.instagramChatBot.addMessage(message.content, message.role);
-                    console.log(`➕ 메시지 ${index + 1} 추가: ${message.role} - ${message.content.substring(0, 30)}...`);
+                    console.log(`➕ 메시지 ${index + 1} 추가: ${message.role} - ${message.content.substring(0, 50)}...`);
                 } else {
                     console.error('❌ instagramChatBot 인스턴스 없음');
                 }
             });
             
+            // 스크롤을 맨 아래로
+            if (messagesContainer) {
+                setTimeout(() => {
+                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                    console.log('📜 스크롤 하단으로 이동');
+                }, 100);
+            }
+            
             console.log('✅ 대화 로드 완료');
         } else {
             console.log('⚠️ 메시지 없음 또는 실패:', data);
+            // 메시지가 없어도 성공인 경우 (새 대화)
+            if (data.success) {
+                console.log('📝 새 대화 - 메시지 없음');
+            }
         }
     } catch (error) {
         console.error('💥 대화 로드 실패:', error);
