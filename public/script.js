@@ -2119,7 +2119,7 @@ class ConversationManager {
         
         return `
             <button class="side-menu-item conversation-item ${isActive ? 'active' : ''}" 
-                    onclick="loadConversation('${conversation.session_id}')" 
+                    onclick="console.log('🖱️ 대화 클릭:', '${conversation.session_id}'); loadConversation('${conversation.session_id}')" 
                     oncontextmenu="event.preventDefault(); showDeleteConversation('${conversation.session_id}', '${conversation.title.replace(/'/g, "\\'")}')"
                     ontouchstart="startLongPress('${conversation.session_id}', '${conversation.title.replace(/'/g, "\\'")}')"
                     ontouchend="cancelLongPress()"
@@ -2822,9 +2822,11 @@ let currentDeleteTitle = null;
 
 // 길게 누르기 시작
 function startLongPress(sessionId, title) {
+    console.log('👆 길게 누르기 시작:', sessionId);
     cancelLongPress(); // 기존 타이머 취소
     
     longPressTimer = setTimeout(() => {
+        console.log('⏰ 길게 누르기 감지 - 삭제 모달 표시');
         showDeleteConversation(sessionId, title);
     }, 800); // 0.8초
 }
@@ -2832,6 +2834,7 @@ function startLongPress(sessionId, title) {
 // 길게 누르기 취소
 function cancelLongPress() {
     if (longPressTimer) {
+        console.log('❌ 길게 누르기 취소');
         clearTimeout(longPressTimer);
         longPressTimer = null;
     }
