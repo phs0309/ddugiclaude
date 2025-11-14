@@ -128,6 +128,21 @@ class InstagramStyleChatBot {
             const response = await this.callChatAPI(message);
             this.hideTypingIndicator();
             
+            // 디버깅을 위한 콘솔 로그
+            console.log('📡 API 응답:', {
+                message: message,
+                hasRestaurants: !!(response.restaurants && response.restaurants.length > 0),
+                restaurantCount: response.restaurants?.length || 0,
+                analysis: response.analysis,
+                type: response.type,
+                debug: response.debug
+            });
+            
+            // 디버그 정보가 있으면 상세 출력
+            if (response.debug) {
+                console.log('🔍 상세 디버그:', response.debug);
+            }
+            
             // 뚜기 응답 표시
             this.addMessage(response.message, 'bot');
             

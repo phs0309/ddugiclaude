@@ -656,19 +656,19 @@ module.exports = async function handler(req, res) {
             type: hasRestaurantRecommendation ? 'recommendation' : 'chat',
             aiGenerated: aiGenerated,
             sessionId: sessionId,
-            userId: userId
-        };
-        
-        // 개발 환경에서는 디버그 정보 추가
-        if (process.env.NODE_ENV === 'development') {
-            response.debug = {
+            userId: userId,
+            // 항상 디버그 정보 포함 (임시)
+            debug: {
+                userMessage: message,
                 hasLocationMention,
                 hasFoodMention,
                 hasRestaurantRecommendation,
                 totalCandidates: recommendations.total,
-                apiKeyConfigured: !!process.env.claude_api_key
-            };
-        }
+                analysisArea: recommendations.analysis?.area,
+                analysisFood: recommendations.analysis?.food,
+                restaurantCount: recommendations.restaurants?.length || 0
+            }
+        };
         
         console.log(`📤 응답 전송: ${response.type}, AI생성: ${response.aiGenerated}`);
         res.json(response);
