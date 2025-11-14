@@ -158,11 +158,21 @@ class InstagramStyleChatBot {
             this.addMessage(response.message, 'bot');
             
             // 봇 응답 저장 (로그인한 경우에만)
+            console.log('🤖 봇 응답 저장 체크:', { 
+                isLoggedIn: apiClient.isLoggedIn(),
+                responseLength: response.message.length,
+                sessionId: this.sessionId 
+            });
+            
             if (apiClient.isLoggedIn()) {
+                console.log('💾 봇 응답 저장 시작...');
                 await this.saveMessage(response.message, 'bot');
                 
                 // 첫 번째 봇 응답 시 AI 주제로 제목 업데이트
+                console.log('📝 제목 업데이트 시작...');
                 await this.updateConversationTitle(response.message);
+            } else {
+                console.log('❌ 로그인되지 않아 봇 응답 저장 생략');
             }
             
             // 맛집 데이터가 있으면 모달 버튼과 모달 표시
@@ -2497,11 +2507,25 @@ window.loadConversation = async function loadConversation(sessionId) {
             if (data.messages && data.messages.length > 0) {
                 console.log(`📝 메시지 ${data.messages.length}개 로드됨`);
                 
+                // 메시지 분석
+                const userMessages = data.messages.filter(m => m.role === 'user');
+                const botMessages = data.messages.filter(m => m.role === 'bot');
+                console.log('📊 메시지 분석:', { 
+                    total: data.messages.length,
+                    user: userMessages.length,
+                    bot: botMessages.length 
+                });
+                
                 // 메시지 복원
                 data.messages.forEach((message, index) => {
                     if (window.instagramChatBot) {
+                        console.log(`🔄 메시지 ${index + 1} 처리중:`, {
+                            role: message.role,
+                            content: message.content.substring(0, 50) + '...',
+                            length: message.content.length
+                        });
                         window.instagramChatBot.addMessage(message.content, message.role);
-                        console.log(`➕ 메시지 ${index + 1} 추가: ${message.role} - ${message.content.substring(0, 50)}...`);
+                        console.log(`✅ 메시지 ${index + 1} UI 추가 완료`);
                     } else {
                         console.error('❌ instagramChatBot 인스턴스 없음');
                     }
@@ -2515,7 +2539,7 @@ window.loadConversation = async function loadConversation(sessionId) {
                     }, 100);
                 }
                 
-                console.log('✅ 대화 로드 완료 (메시지 ${data.messages.length}개)');
+                console.log(`✅ 대화 로드 완료 (메시지 ${data.messages.length}개)`);
             } else {
                 console.log('📝 새 대화 - 메시지 없음 (초기 인사말만 표시)');
             }
