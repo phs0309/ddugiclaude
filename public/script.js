@@ -2902,12 +2902,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }, { passive: true });
     
-    document.addEventListener('touchmove', function(e) {
-        console.log('👆 터치 이동 감지');
-        if (window.cancelLongPress) {
-            window.cancelLongPress();
-        }
-    }, { passive: true });
+    // touchmove는 너무 민감하므로 제거
+    // 대신 touchend에서만 처리
     
     console.log('✅ 전역 이벤트 리스너 등록 완료');
 });
