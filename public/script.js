@@ -409,7 +409,7 @@ ${restaurant.description}`;
                     sessionId: this.sessionId,
                     messages: [
                         { content: userMessage, role: 'user' },
-                        { content: botMessage, role: 'bot' }
+                        { content: botMessage, role: 'assistant' }
                     ]
                 })
             });
@@ -2476,7 +2476,9 @@ window.loadConversation = async function loadConversation(sessionId) {
                 // 메시지 복원
                 data.messages.forEach((message) => {
                     if (window.instagramChatBot) {
-                        window.instagramChatBot.addMessage(message.content, message.role);
+                        // role을 addMessage가 이해할 수 있는 형태로 변환
+                        const sender = message.role === 'assistant' ? 'bot' : message.role;
+                        window.instagramChatBot.addMessage(message.content, sender);
                     }
                 });
                 
