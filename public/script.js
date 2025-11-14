@@ -2126,18 +2126,6 @@ class ConversationManager {
                     <div class="conversation-title">${conversation.title}</div>
                     <div class="conversation-preview">${preview} • ${time}</div>
                 </div>
-                <div class="conversation-actions">
-                    <button class="conversation-action-btn ${conversation.is_favorite ? 'favorite' : ''}" 
-                            onclick="event.stopPropagation(); toggleFavorite('${conversation.session_id}')"
-                            title="즐겨찾기">
-                        <i class="fas fa-star"></i>
-                    </button>
-                    <button class="conversation-action-btn" 
-                            onclick="event.stopPropagation(); deleteConversation('${conversation.session_id}')"
-                            title="삭제">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
             </button>
         `;
     }
