@@ -124,6 +124,11 @@ class InstagramStyleChatBot {
         this.userInput.value = '';
         this.updateSendButton();
         
+        // 사용자 메시지 저장 (로그인한 경우에만)
+        if (apiClient.isLoggedIn()) {
+            await this.saveMessage(message, 'user');
+        }
+        
         // 추천 시스템에 메시지 전달
         suggestionManager.onUserMessage(message);
 
@@ -151,6 +156,11 @@ class InstagramStyleChatBot {
             
             // 뚜기 응답 표시
             this.addMessage(response.message, 'bot');
+            
+            // 봇 응답 저장 (로그인한 경우에만)
+            if (apiClient.isLoggedIn()) {
+                await this.saveMessage(response.message, 'bot');
+            }
             
             // 맛집 데이터가 있으면 모달 버튼과 모달 표시
             if (response.restaurants && response.restaurants.length > 0) {
@@ -380,6 +390,35 @@ ${restaurant.description}`;
         }
 
         return await response.json();
+    }
+
+    // 메시지를 데이터베이스에 저장
+    async saveMessage(content, role) {
+        try {
+            console.log('💾 메시지 저장 시작:', { content: content.substring(0, 50) + '...', role, sessionId: this.sessionId });
+            
+            const headers = getAuthHeaders();
+            headers['Content-Type'] = 'application/json';
+            
+            const response = await fetch('/api/conversations', {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify({
+                    sessionId: this.sessionId,
+                    content: content,
+                    role: role
+                })
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                console.log('✅ 메시지 저장 성공:', data);
+            } else {
+                console.error('❌ 메시지 저장 실패:', response.status);
+            }
+        } catch (error) {
+            console.error('💥 메시지 저장 오류:', error);
+        }
     }
 
     showTypingIndicator() {

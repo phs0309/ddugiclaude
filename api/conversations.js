@@ -272,34 +272,84 @@ module.exports = async function handler(req, res) {
                 break;
 
             case 'POST':
-                // 새 대화 세션 생성
-                const { title = '새 대화' } = req.body;
-                const newSessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+                const { title, content, role, sessionId: messageSessionId } = req.body;
+                
+                if (content && role && messageSessionId) {
+                    // 메시지 저장
+                    console.log('💾 메시지 저장 요청:', { sessionId: messageSessionId, role, content: content.substring(0, 50) + '...' });
+                    
+                    // 세션 존재 여부 확인 및 생성
+                    const session = await createOrUpdateSession(messageSessionId, userId, true);
+                    if (!session) {
+                        return res.status(500).json({
+                            success: false,
+                            error: '세션 생성/업데이트 실패'
+                        });
+                    }
+                    
+                    // 메시지 저장
+                    const { data: message, error: messageError } = await supabase
+                        .from('conversations')
+                        .insert({
+                            session_id: messageSessionId,
+                            user_id: userId,
+                            role: role,
+                            content: content
+                        })
+                        .select()
+                        .single();
 
-                const { data: newSession, error: createError } = await supabase
-                    .from('conversation_sessions')
-                    .insert({
-                        session_id: newSessionId,
-                        user_id: userId,
-                        title
-                    })
-                    .select()
-                    .single();
+                    if (messageError) {
+                        console.error('메시지 저장 에러:', messageError);
+                        return res.status(500).json({
+                            success: false,
+                            error: '메시지 저장 실패',
+                            details: messageError.message
+                        });
+                    }
 
-                if (createError) {
-                    console.error('대화 생성 에러:', createError);
-                    return res.status(500).json({
-                        success: false,
-                        error: '대화 생성 실패',
-                        details: createError.message,
-                        code: createError.code
+                    console.log('✅ 메시지 저장 성공:', { messageId: message.id });
+                    
+                    // 첫 번째 메시지인 경우 제목 자동 생성
+                    if (role === 'user') {
+                        updateConversationTitle(messageSessionId);
+                    }
+                    
+                    res.json({
+                        success: true,
+                        message: '메시지가 저장되었습니다',
+                        data: message
+                    });
+                } else {
+                    // 새 대화 세션 생성 (기존 로직)
+                    const newTitle = title || '새 대화';
+                    const newSessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+                    const { data: newSession, error: createError } = await supabase
+                        .from('conversation_sessions')
+                        .insert({
+                            session_id: newSessionId,
+                            user_id: userId,
+                            title: newTitle
+                        })
+                        .select()
+                        .single();
+
+                    if (createError) {
+                        console.error('대화 생성 에러:', createError);
+                        return res.status(500).json({
+                            success: false,
+                            error: '대화 생성 실패',
+                            details: createError.message,
+                            code: createError.code
+                        });
+                    }
+
+                    res.json({
+                        success: true,
+                        session: newSession
                     });
                 }
-
-                res.json({
-                    success: true,
-                    session: newSession
-                });
                 break;
 
             case 'PUT':
