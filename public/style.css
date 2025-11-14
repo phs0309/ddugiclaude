@@ -1758,14 +1758,19 @@ body {
     display: block !important;
 }
 
-/* Integrated Chat Items in Side Menu */
+/* New Chat Button - Match Search Input Size */
 .new-chat-item {
+    margin: 0 24px 8px 24px !important; /* 검색창과 동일한 마진 */
+    padding: 12px 16px !important; /* 검색창과 동일한 패딩 */
     background: linear-gradient(135deg, #FF6B35 0%, #FFD166 100%) !important;
     color: white !important;
     border-radius: 12px;
     border: none;
     box-shadow: 0 2px 8px rgba(255, 107, 53, 0.2);
-    margin-bottom: 8px;
+    font-size: 14px; /* 검색창과 동일한 폰트 사이즈 */
+    font-weight: 600;
+    text-align: left;
+    justify-content: flex-start;
 }
 
 .new-chat-item:hover {
@@ -1780,6 +1785,7 @@ body {
 
 .new-chat-item i {
     color: white !important;
+    width: 20px; /* 아이콘 너비 고정 */
 }
 
 /* 검색 컨테이너를 사이드메뉴 아이템처럼 스타일링 */
