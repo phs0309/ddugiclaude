@@ -15,7 +15,6 @@ class InstagramStyleChatBot {
         console.log('🔑 세션 ID:', this.sessionId);
         
         this.initEventListeners();
-        this.loadInitialRecommendations();
         this.updateTimestamps();
         this.checkLocationAndShowNearbyRestaurants();
     }
@@ -47,7 +46,7 @@ class InstagramStyleChatBot {
         
         // 채팅 메시지 초기화
         this.messagesContainer.innerHTML = '';
-        this.loadInitialRecommendations();
+        this.checkLocationAndShowNearbyRestaurants();
     }
 
     initEventListeners() {
@@ -550,24 +549,69 @@ ${restaurant.description}`;
 
     // GPS 위치 확인 및 주변 맛집 추천
     async checkLocationAndShowNearbyRestaurants() {
-        // 이미 위치 권한을 요청했는지 확인
-        if (localStorage.getItem('locationChecked')) {
-            return;
-        }
-
         // 위치 서비스 지원 여부 확인
         if (!navigator.geolocation) {
             console.log('이 브라우저는 위치 서비스를 지원하지 않습니다');
+            // 위치 서비스가 지원되지 않는 경우 기본 추천 표시
+            setTimeout(() => {
+                this.loadInitialRecommendations();
+            }, 1000);
             return;
         }
 
-        // 사용자에게 위치 권한 요청 전 안내 메시지
-        setTimeout(() => {
-            this.addMessage('현재 위치 기반으로 주변 맛집을 추천해드릴까요? 📍\n위치 권한을 허용해주시면 더 정확한 추천이 가능해요!', 'bot');
+        // 바로 위치 요청하여 주변 맛집 추천
+        setTimeout(async () => {
+            this.addMessage('현재 위치 주변의 맛집을 찾아보고 있어요... 📍', 'bot');
+            this.showTyping();
             
-            // 위치 권한 요청 카드 추가
-            this.addLocationPermissionCard();
-        }, 2000); // 초기 메시지 후 2초 뒤
+            try {
+                const position = await this.getCurrentPosition();
+                const { latitude, longitude } = position.coords;
+                
+                // 주변 맛집 검색
+                const response = await fetch(`/api/nearby-restaurants?lat=${latitude}&lng=${longitude}&radius=3`);
+                const data = await response.json();
+                
+                this.hideTyping();
+                
+                if (data.success && data.restaurants.length > 0) {
+                    this.addMessage(`현재 위치에서 가까운 맛집 ${data.count}곳을 찾았어요! 🎯\n이 중에서 마음에 드는 곳이 있나 확인해보세요!`, 'bot');
+                    
+                    // 주변 맛집 카드 표시
+                    setTimeout(() => {
+                        this.displayRestaurantCards(data.restaurants);
+                        this.delayedShowArtifacts(data.restaurants, '주변 맛집');
+                    }, 800);
+                } else {
+                    // 3km 내에 맛집이 없으면 더 넓은 범위로 검색
+                    const widerResponse = await fetch(`/api/nearby-restaurants?lat=${latitude}&lng=${longitude}&radius=5`);
+                    const widerData = await widerResponse.json();
+                    
+                    if (widerData.success && widerData.restaurants.length > 0) {
+                        this.addMessage(`3km 내에는 맛집이 없어서 조금 더 넓은 5km 범위에서 ${widerData.count}곳을 찾았어요! 🎯`, 'bot');
+                        setTimeout(() => {
+                            this.displayRestaurantCards(widerData.restaurants);
+                            this.delayedShowArtifacts(widerData.restaurants, '주변 맛집 (5km)');
+                        }, 800);
+                    } else {
+                        this.addMessage('주변에 등록된 맛집을 찾을 수 없어서 부산 전체의 추천 맛집을 보여드릴게요! 😊', 'bot');
+                        this.loadInitialRecommendations();
+                    }
+                }
+                
+            } catch (error) {
+                this.hideTyping();
+                console.warn('위치 확인 오류:', error);
+                
+                if (error.code === error.PERMISSION_DENIED) {
+                    this.addMessage('위치 권한이 필요해서 부산 전체의 추천 맛집을 보여드릴게요! 😊', 'bot');
+                } else {
+                    this.addMessage('현재 위치를 확인할 수 없어서 부산 전체의 추천 맛집을 보여드릴게요! 😊', 'bot');
+                }
+                
+                this.loadInitialRecommendations();
+            }
+        }, 1500); // 초기 메시지 후 1.5초 뒤
     }
 
     // 위치 권한 요청 카드 추가
