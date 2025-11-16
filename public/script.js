@@ -562,7 +562,7 @@ ${restaurant.description}`;
         // 바로 위치 요청하여 주변 맛집 추천
         setTimeout(async () => {
             this.addMessage('현재 위치 주변의 맛집을 찾아보고 있어요... 📍', 'bot');
-            this.showTyping();
+            this.showTypingIndicator();
             
             try {
                 const position = await this.getCurrentPosition();
@@ -572,7 +572,7 @@ ${restaurant.description}`;
                 const response = await fetch(`/api/nearby-restaurants?lat=${latitude}&lng=${longitude}&radius=3`);
                 const data = await response.json();
                 
-                this.hideTyping();
+                this.hideTypingIndicator();
                 
                 if (data.success && data.restaurants.length > 0) {
                     this.addMessage(`현재 위치에서 가까운 맛집 ${data.count}곳을 찾았어요! 🎯\n이 중에서 마음에 드는 곳이 있나 확인해보세요!`, 'bot');
@@ -600,7 +600,7 @@ ${restaurant.description}`;
                 }
                 
             } catch (error) {
-                this.hideTyping();
+                this.hideTypingIndicator();
                 console.warn('위치 확인 오류:', error);
                 
                 if (error.code === error.PERMISSION_DENIED) {
@@ -660,7 +660,7 @@ ${restaurant.description}`;
             }
 
             this.addMessage('위치를 확인하는 중...', 'user');
-            this.showTyping();
+            this.showTypingIndicator();
 
             const position = await this.getCurrentPosition();
             const { latitude, longitude } = position.coords;
@@ -671,7 +671,7 @@ ${restaurant.description}`;
             const response = await fetch(`/api/nearby-restaurants?lat=${latitude}&lng=${longitude}&radius=3`);
             const data = await response.json();
 
-            this.hideTyping();
+            this.hideTypingIndicator();
 
             if (data.success && data.restaurants.length > 0) {
                 this.addMessage(`현재 위치 주변 ${data.searchRadius}km 내에서 ${data.count}곳의 맛집을 찾았어요! 🎯`, 'bot');
@@ -696,7 +696,7 @@ ${restaurant.description}`;
             localStorage.setItem('userLocation', JSON.stringify({ lat: latitude, lng: longitude }));
 
         } catch (error) {
-            this.hideTyping();
+            this.hideTypingIndicator();
             console.error('위치 확인 오류:', error);
             
             if (error.code === error.PERMISSION_DENIED) {
@@ -738,7 +738,7 @@ ${restaurant.description}`;
 
     // 주변 맛집 요청 처리
     async handleNearbyRequest() {
-        this.showTyping();
+        this.showTypingIndicator();
 
         try {
             // 저장된 위치가 있는지 확인
@@ -757,7 +757,7 @@ ${restaurant.description}`;
                     localStorage.setItem('userLocation', JSON.stringify({ lat: latitude, lng: longitude }));
                     console.log('새 위치 확인:', latitude, longitude);
                 } catch (error) {
-                    this.hideTyping();
+                    this.hideTypingIndicator();
                     console.error('위치 확인 실패:', error);
                     this.addMessage('위치 정보를 가져올 수 없어요 😅\n대신 부산 전체 맛집을 추천해드릴게요!', 'bot');
                     this.loadInitialRecommendations();
@@ -771,7 +771,7 @@ ${restaurant.description}`;
             const response = await fetch(`/api/nearby-restaurants?lat=${latitude}&lng=${longitude}&radius=3`);
             const data = await response.json();
 
-            this.hideTyping();
+            this.hideTypingIndicator();
 
             if (data.success && data.restaurants.length > 0) {
                 this.addMessage(`현재 위치 주변에서 ${data.count}곳의 맛집을 찾았어요! 🎯`, 'bot');
@@ -806,7 +806,7 @@ ${restaurant.description}`;
             }
 
         } catch (error) {
-            this.hideTyping();
+            this.hideTypingIndicator();
             console.error('주변 맛집 검색 오류:', error);
             this.addMessage('주변 맛집 검색 중 오류가 발생했어요 😅\n부산 전체 맛집을 추천해드릴게요!', 'bot');
             this.loadInitialRecommendations();

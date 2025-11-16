@@ -284,6 +284,9 @@ function updateAllUIText(language) {
         // 입력창의 경우 placeholder 업데이트
         if (element.tagName === 'INPUT' && element.type === 'text') {
             element.placeholder = translatedText;
+        } else if (element.id === 'sendButton') {
+            // 보내기 버튼은 아이콘만 표시하므로 텍스트 변경하지 않음
+            return;
         } else {
             element.textContent = translatedText;
         }
