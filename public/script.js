@@ -1343,7 +1343,7 @@ ${restaurant.description}`;
         // 지도 생성
         const map = new naver.maps.Map(container, {
             center: new naver.maps.LatLng(centerLat, centerLng),
-            zoom: 14,
+            zoom: 12,
             mapTypeControl: true,
             mapTypeControlOptions: {
                 style: naver.maps.MapTypeControlStyle.BUTTON,
@@ -1434,7 +1434,98 @@ ${restaurant.description}`;
         window.currentMap = map;
         window.currentInfoWindows = markers.map(m => m.infoWindow);
         
+        // 현재 위치 표시
+        this.addCurrentLocationMarker(map);
+        
         console.log(`🗺️ 네이버 지도에 ${restaurants.length}개 맛집 마커 생성 완료`);
+    }
+
+    // 현재 위치 마커 추가
+    addCurrentLocationMarker(map) {
+        if (navigator.geolocation) {
+            console.log('🧭 현재 위치 요청 중...');
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    
+                    console.log(`📍 현재 위치: ${lat}, ${lng}`);
+                    
+                    // 현재 위치 마커 생성
+                    const currentLocationMarker = new naver.maps.Marker({
+                        position: new naver.maps.LatLng(lat, lng),
+                        map: map,
+                        title: '현재 위치',
+                        icon: {
+                            content: `
+                                <div style="
+                                    width: 20px; 
+                                    height: 20px; 
+                                    background: #4285F4; 
+                                    border: 3px solid white; 
+                                    border-radius: 50%; 
+                                    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+                                    position: relative;
+                                ">
+                                    <div style="
+                                        width: 40px;
+                                        height: 40px;
+                                        background: rgba(66, 133, 244, 0.2);
+                                        border-radius: 50%;
+                                        position: absolute;
+                                        top: -13px;
+                                        left: -13px;
+                                        animation: pulse 2s infinite;
+                                    "></div>
+                                </div>
+                                <style>
+                                    @keyframes pulse {
+                                        0% { transform: scale(1); opacity: 0.8; }
+                                        50% { transform: scale(1.2); opacity: 0.4; }
+                                        100% { transform: scale(1); opacity: 0.8; }
+                                    }
+                                </style>
+                            `,
+                            size: new naver.maps.Size(20, 20),
+                            anchor: new naver.maps.Point(10, 10)
+                        }
+                    });
+                    
+                    // 현재 위치 정보창
+                    const currentLocationInfo = new naver.maps.InfoWindow({
+                        content: `
+                            <div style="padding: 8px; font-size: 12px;">
+                                <strong>📍 현재 위치</strong><br>
+                                ${lat.toFixed(6)}, ${lng.toFixed(6)}
+                            </div>
+                        `,
+                        backgroundColor: "#fff",
+                        borderColor: "#4285F4",
+                        borderWidth: 2,
+                        anchorSize: new naver.maps.Size(30, 30),
+                        anchorSkew: true,
+                        anchorColor: "#4285F4"
+                    });
+                    
+                    // 마커 클릭 이벤트
+                    naver.maps.Event.addListener(currentLocationMarker, 'click', () => {
+                        currentLocationInfo.open(map, currentLocationMarker);
+                    });
+                    
+                    console.log('✅ 현재 위치 마커 추가 완료');
+                },
+                (error) => {
+                    console.warn('⚠️ 현재 위치를 가져올 수 없습니다:', error.message);
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 5000,
+                    maximumAge: 300000 // 5분
+                }
+            );
+        } else {
+            console.warn('⚠️ Geolocation이 지원되지 않는 브라우저입니다');
+        }
     }
 
     createFallbackMap(restaurants, container) {
