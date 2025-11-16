@@ -6,6 +6,7 @@
     <title>뚜기의 부산 맛집</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="user-menu.css">
+    <link rel="stylesheet" href="language-selector.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- 네이버 지도 API는 동적으로 로드됩니다 -->
@@ -192,6 +193,29 @@
         <div class="dm-input-area">
             <div class="input-container">
                 <div class="input-wrapper">
+                    <div class="language-selector">
+                        <button class="language-btn" id="languageBtn" onclick="toggleLanguageDropdown()" aria-label="언어 선택">
+                            <span class="language-flag" id="currentLanguageFlag">🇰🇷</span>
+                        </button>
+                        <div class="language-dropdown" id="languageDropdown" style="display: none;">
+                            <button class="language-option" data-lang="ko" onclick="selectLanguage('ko', '🇰🇷', '한국어')">
+                                <span class="option-flag">🇰🇷</span>
+                                <span class="option-name">한국어</span>
+                            </button>
+                            <button class="language-option" data-lang="en" onclick="selectLanguage('en', '🇺🇸', 'English')">
+                                <span class="option-flag">🇺🇸</span>
+                                <span class="option-name">English</span>
+                            </button>
+                            <button class="language-option" data-lang="zh" onclick="selectLanguage('zh', '🇨🇳', '中文')">
+                                <span class="option-flag">🇨🇳</span>
+                                <span class="option-name">中文</span>
+                            </button>
+                            <button class="language-option" data-lang="ja" onclick="selectLanguage('ja', '🇯🇵', '日本語')">
+                                <span class="option-flag">🇯🇵</span>
+                                <span class="option-name">日本語</span>
+                            </button>
+                        </div>
+                    </div>
                     <div class="text-input-container">
                         <input type="text" id="userInput" placeholder="메시지 보내기..." />
                     </div>

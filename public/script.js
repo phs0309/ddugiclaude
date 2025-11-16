@@ -133,7 +133,7 @@ class InstagramStyleChatBot {
         this.showTypingIndicator();
 
         try {
-            const response = await this.callChatAPI(message);
+            const response = await this.callChatAPI(message, selectedLanguage);
             this.hideTypingIndicator();
             
             // 디버깅을 위한 콘솔 로그
@@ -362,7 +362,7 @@ ${restaurant.description}`;
         this.addMessage(detail, 'bot');
     }
 
-    async callChatAPI(message) {
+    async callChatAPI(message, language = 'ko') {
         const response = await fetch('/api/chat', {
             method: 'POST',
             headers: {
@@ -370,6 +370,7 @@ ${restaurant.description}`;
             },
             body: JSON.stringify({ 
                 message,
+                language,
                 sessionId: this.sessionId,
                 userId: this.userId
             })
