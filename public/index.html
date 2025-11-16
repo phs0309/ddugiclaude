@@ -13,14 +13,14 @@
     <!-- Side Menu Overlay -->
     <div class="side-menu-overlay" id="sideMenuOverlay" onclick="closeSideMenu()"></div>
     
-    <!-- Side Menu -->
+    <!-- Simplified Side Menu -->
     <div class="side-menu" id="sideMenu">
         <div class="side-menu-header">
             <div class="side-menu-profile">
                 <div class="side-menu-avatar">🐧</div>
                 <div class="side-menu-info">
-                    <h3>뚜기</h3>
-                    <p>부산 맛집 가이드</p>
+                    <h3>뚜기 AI</h3>
+                    <p>맛집 가이드</p>
                 </div>
             </div>
             <button class="side-menu-close" onclick="closeSideMenu()">
@@ -73,7 +73,7 @@
     </div>
 
     <div class="instagram-dm-container">
-        <!-- Instagram-style header -->
+        <!-- Simplified Header -->
         <div class="dm-header">
             <div class="dm-header-left">
                 <button class="menu-btn" aria-label="메뉴" onclick="toggleSideMenu()">
@@ -86,7 +86,7 @@
                     </div>
                     <div class="profile-details">
                         <h2 class="profile-name">뚜기</h2>
-                        <p class="profile-status">부산 맛집 가이드 • 활성</p>
+                        <p class="profile-status">맛집 가이드</p>
                     </div>
                 </div>
             </div>
@@ -167,9 +167,6 @@
                 <div class="input-wrapper">
                     <div class="text-input-container">
                         <input type="text" id="userInput" placeholder="메시지 보내기..." />
-                        <button class="emoji-btn" aria-label="이모지">
-                            <i class="far fa-smile"></i>
-                        </button>
                     </div>
                     <button id="sendButton" class="send-btn" aria-label="보내기">
                         <i class="fas fa-paper-plane"></i>
@@ -179,12 +176,11 @@
         </div>
     </div>
 
-    <!-- Claude AI Artifacts 스타일 동적 콘텐츠 창 -->
+    <!-- Simplified Artifacts Modal -->
     <div class="artifacts-overlay" id="artifactsOverlay" style="display: none;">
         <div class="artifacts-container">
             <div class="artifacts-header">
                 <div class="artifacts-title">
-                    <i class="fas fa-map-marker-alt"></i>
                     <span id="artifactsLocation">맛집 추천</span>
                 </div>
                 <button class="artifacts-close" onclick="closeArtifacts()">
