@@ -194,23 +194,23 @@
             <div class="input-container">
                 <div class="input-wrapper">
                     <div class="language-selector">
-                        <button class="language-btn" id="languageBtn" onclick="toggleLanguageDropdown()" aria-label="언어 선택">
-                            <span class="language-flag" id="currentLanguageFlag">🇰🇷</span>
+                        <button class="language-btn" id="languageBtn" aria-label="언어 선택">
+                            <i class="fas fa-globe" id="currentLanguageIcon"></i>
                         </button>
                         <div class="language-dropdown" id="languageDropdown" style="display: none;">
-                            <button class="language-option" data-lang="ko" onclick="selectLanguage('ko', '🇰🇷', '한국어')">
+                            <button class="language-option" data-lang="ko">
                                 <span class="option-flag">🇰🇷</span>
                                 <span class="option-name">한국어</span>
                             </button>
-                            <button class="language-option" data-lang="en" onclick="selectLanguage('en', '🇺🇸', 'English')">
+                            <button class="language-option" data-lang="en">
                                 <span class="option-flag">🇺🇸</span>
                                 <span class="option-name">English</span>
                             </button>
-                            <button class="language-option" data-lang="zh" onclick="selectLanguage('zh', '🇨🇳', '中文')">
+                            <button class="language-option" data-lang="zh">
                                 <span class="option-flag">🇨🇳</span>
                                 <span class="option-name">中文</span>
                             </button>
-                            <button class="language-option" data-lang="ja" onclick="selectLanguage('ja', '🇯🇵', '日本語')">
+                            <button class="language-option" data-lang="ja">
                                 <span class="option-flag">🇯🇵</span>
                                 <span class="option-name">日本語</span>
                             </button>
@@ -309,6 +309,7 @@
     </div>
 
     <script src="api-client.js"></script>
+    <script src="language-functions.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

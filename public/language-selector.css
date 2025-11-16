@@ -22,9 +22,18 @@
     background: rgba(95, 99, 104, 0.08);
 }
 
-.language-flag {
-    font-size: 20px;
+.language-flag, #currentLanguageIcon {
+    font-size: 16px;
     line-height: 1;
+    color: var(--text-secondary);
+}
+
+#currentLanguageIcon {
+    transition: color 0.2s ease;
+}
+
+.language-btn:hover #currentLanguageIcon {
+    color: var(--primary);
 }
 
 .language-dropdown {
