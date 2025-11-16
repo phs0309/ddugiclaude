@@ -76,6 +76,16 @@ window.selectLanguage = function(langCode, flag, name) {
     // 플레이스홀더 업데이트
     updateInputPlaceholder(langCode);
     
+    // 모든 UI 텍스트 업데이트
+    if (window.updateAllUIText) {
+        window.updateAllUIText(langCode);
+    }
+    
+    // 언어 변경 이벤트 발생
+    if (window.onLanguageChange) {
+        window.onLanguageChange(langCode);
+    }
+    
     // 드롭다운 닫기
     closeLanguageDropdown();
     
@@ -154,6 +164,13 @@ function initializeLanguageSelector() {
         currentLanguage = savedLanguage;
         updateInputPlaceholder(savedLanguage);
         updateLanguageOptions();
+        
+        // 저장된 언어로 UI 업데이트
+        if (window.updateAllUIText) {
+            setTimeout(() => {
+                window.updateAllUIText(savedLanguage);
+            }, 200);
+        }
     }
     
     console.log('✅ 언어 선택기 초기화 완료. 현재 언어:', currentLanguage);
