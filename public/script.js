@@ -1343,7 +1343,7 @@ ${restaurant.description}`;
         // 지도 생성
         const map = new naver.maps.Map(container, {
             center: new naver.maps.LatLng(centerLat, centerLng),
-            zoom: 11,
+            zoom: 14,
             mapTypeControl: true,
             mapTypeControlOptions: {
                 style: naver.maps.MapTypeControlStyle.BUTTON,
@@ -1366,24 +1366,27 @@ ${restaurant.description}`;
                 icon: {
                     content: `
                         <div style="
-                            width: 32px; 
-                            height: 32px; 
-                            background: #0095f6; 
+                            background: #FF6B35; 
                             border: 2px solid white; 
-                            border-radius: 50%; 
+                            border-radius: 20px; 
+                            padding: 6px 12px;
                             display: flex; 
                             align-items: center; 
                             justify-content: center; 
                             color: white; 
                             font-weight: bold; 
-                            font-size: 12px;
-                            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+                            font-size: 11px;
+                            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+                            white-space: nowrap;
+                            max-width: 120px;
+                            overflow: hidden;
+                            text-overflow: ellipsis;
                         ">
-                            ${index + 1}
+                            ${restaurant.name.length > 8 ? restaurant.name.substring(0, 8) + '...' : restaurant.name}
                         </div>
                     `,
-                    size: new naver.maps.Size(32, 32),
-                    anchor: new naver.maps.Point(16, 16)
+                    size: new naver.maps.Size(120, 32),
+                    anchor: new naver.maps.Point(60, 16)
                 }
             });
             
