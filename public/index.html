@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>뚜기의 부산 맛집</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="user-menu.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- 네이버 지도 API는 동적으로 로드됩니다 -->
@@ -55,7 +56,7 @@
                 
                 <hr class="side-menu-divider">
                 
-                <!-- 기존 메뉴 항목들 -->
+                <!-- 메뉴 항목들 -->
                 <button class="side-menu-item" id="loginMenuItem" onclick="handleLogin()">
                     <i class="fas fa-user"></i>
                     <span id="loginMenuText">로그인</span>
@@ -63,10 +64,6 @@
                 <button class="side-menu-item" onclick="navigateToSavedRestaurants()">
                     <i class="fas fa-heart"></i>
                     <span>저장된 맛집</span>
-                </button>
-                <button class="side-menu-item" onclick="showSettings()">
-                    <i class="fas fa-cog"></i>
-                    <span>설정</span>
                 </button>
             </nav>
         </div>
@@ -91,10 +88,40 @@
                 </div>
             </div>
             <div class="dm-header-right">
-                <button class="header-action-btn user-profile-btn" id="userProfileBtn" aria-label="사용자 프로필" onclick="showUserProfile()">
+                <button class="header-action-btn user-profile-btn" id="userProfileBtn" aria-label="사용자 프로필" onclick="toggleUserMenu()">
                     <i class="fas fa-user" id="userProfileIcon"></i>
                     <img id="userProfileImage" class="profile-image" style="display: none;" alt="프로필">
                 </button>
+                <!-- User Dropdown Menu -->
+                <div class="user-dropdown-menu" id="userDropdownMenu" style="display: none;">
+                    <div class="dropdown-header">
+                        <div class="dropdown-user-info" id="dropdownUserInfo">
+                            <img id="dropdownUserImage" class="dropdown-user-avatar" alt="프로필">
+                            <div class="dropdown-user-details">
+                                <div class="dropdown-user-name" id="dropdownUserName">게스트</div>
+                                <div class="dropdown-user-email" id="dropdownUserEmail"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="dropdown-divider"></div>
+                    <div class="dropdown-menu-items">
+                        <button class="dropdown-menu-item" onclick="navigateToSavedRestaurants(); closeUserMenu();">
+                            <i class="fas fa-heart"></i>
+                            <span>저장된 맛집</span>
+                        </button>
+                        <button class="dropdown-menu-item" onclick="showSettings(); closeUserMenu();">
+                            <i class="fas fa-cog"></i>
+                            <span>설정</span>
+                        </button>
+                    </div>
+                    <div class="dropdown-divider"></div>
+                    <div class="dropdown-auth-section">
+                        <button class="dropdown-menu-item" id="dropdownLoginMenuItem" onclick="handleDropdownLogin()">
+                            <i class="fas fa-sign-in-alt"></i>
+                            <span id="dropdownLoginMenuText">로그인</span>
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
 

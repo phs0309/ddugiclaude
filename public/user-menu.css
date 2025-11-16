@@ -1,0 +1,117 @@
+/* User Dropdown Menu - Gemini Style */
+.user-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: 280px;
+    background: var(--surface-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    transform: scale(0.95) translateY(-10px);
+    opacity: 0;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.user-dropdown-menu.show {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+}
+
+.dropdown-header {
+    padding: 20px;
+}
+
+.dropdown-user-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.dropdown-user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.dropdown-user-details {
+    flex: 1;
+    min-width: 0;
+}
+
+.dropdown-user-name {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 2px;
+}
+
+.dropdown-user-email {
+    font-size: 14px;
+    color: var(--text-secondary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dropdown-divider {
+    height: 1px;
+    background: var(--border);
+    margin: 0;
+}
+
+.dropdown-menu-items {
+    padding: 8px 0;
+}
+
+.dropdown-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 12px 20px;
+    background: none;
+    border: none;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    color: var(--text);
+    font-size: 14px;
+}
+
+.dropdown-menu-item:hover {
+    background: rgba(95, 99, 104, 0.08);
+}
+
+.dropdown-menu-item i {
+    width: 20px;
+    color: var(--text-secondary);
+    font-size: 18px;
+    text-align: center;
+}
+
+.dropdown-menu-item span {
+    font-weight: 400;
+}
+
+.dropdown-auth-section {
+    padding: 8px 0;
+}
+
+/* Profile image in header */
+.profile-image {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+/* Mobile responsive */
+@media (max-width: 480px) {
+    .user-dropdown-menu {
+        width: 260px;
+        right: -10px;
+    }
+}

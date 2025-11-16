@@ -2833,7 +2833,7 @@ function updateUserProfile() {
     }
 }
 
-// 사용자 프로필 버튼 클릭
+// 사용자 프로필 버튼 클릭 (기존 함수 유지)
 function showUserProfile() {
     if (apiClient.isLoggedIn()) {
         // 로그인된 경우 로그아웃 모달 표시
@@ -2842,6 +2842,104 @@ function showUserProfile() {
         // 로그인되지 않은 경우 로그인 페이지로 이동
         handleLogin();
     }
+}
+
+// 사용자 메뉴 토글
+function toggleUserMenu() {
+    const menu = document.getElementById('userDropdownMenu');
+    const isVisible = menu.style.display === 'block';
+    
+    if (isVisible) {
+        closeUserMenu();
+    } else {
+        showUserMenu();
+    }
+}
+
+// 사용자 메뉴 표시
+function showUserMenu() {
+    const menu = document.getElementById('userDropdownMenu');
+    updateDropdownUserInfo();
+    
+    menu.style.display = 'block';
+    setTimeout(() => {
+        menu.classList.add('show');
+    }, 10);
+    
+    // 외부 클릭 시 메뉴 닫기
+    document.addEventListener('click', handleOutsideClick);
+}
+
+// 사용자 메뉴 닫기
+function closeUserMenu() {
+    const menu = document.getElementById('userDropdownMenu');
+    menu.classList.remove('show');
+    
+    setTimeout(() => {
+        menu.style.display = 'none';
+    }, 200);
+    
+    document.removeEventListener('click', handleOutsideClick);
+}
+
+// 외부 클릭 핸들러
+function handleOutsideClick(event) {
+    const menu = document.getElementById('userDropdownMenu');
+    const button = document.getElementById('userProfileBtn');
+    
+    if (!menu.contains(event.target) && !button.contains(event.target)) {
+        closeUserMenu();
+    }
+}
+
+// 드롭다운 사용자 정보 업데이트
+function updateDropdownUserInfo() {
+    const dropdownUserImage = document.getElementById('dropdownUserImage');
+    const dropdownUserName = document.getElementById('dropdownUserName');
+    const dropdownUserEmail = document.getElementById('dropdownUserEmail');
+    const dropdownLoginMenuItem = document.getElementById('dropdownLoginMenuItem');
+    const dropdownLoginMenuText = document.getElementById('dropdownLoginMenuText');
+    
+    if (apiClient.isLoggedIn()) {
+        const user = apiClient.getCurrentUser();
+        
+        // 사용자 프로필 이미지
+        if (user.picture) {
+            dropdownUserImage.src = user.picture;
+            dropdownUserImage.style.display = 'block';
+        } else {
+            dropdownUserImage.style.display = 'none';
+        }
+        
+        // 사용자 정보
+        dropdownUserName.textContent = user.name || '사용자';
+        dropdownUserEmail.textContent = user.email || '';
+        
+        // 로그아웃 버튼으로 변경
+        dropdownLoginMenuText.textContent = '로그아웃';
+        dropdownLoginMenuItem.querySelector('i').className = 'fas fa-sign-out-alt';
+    } else {
+        // 게스트 상태
+        dropdownUserImage.style.display = 'none';
+        dropdownUserName.textContent = '게스트';
+        dropdownUserEmail.textContent = '';
+        
+        // 로그인 버튼으로 변경
+        dropdownLoginMenuText.textContent = '로그인';
+        dropdownLoginMenuItem.querySelector('i').className = 'fas fa-sign-in-alt';
+    }
+}
+
+// 드롭다운에서 로그인/로그아웃 처리
+function handleDropdownLogin() {
+    if (apiClient.isLoggedIn()) {
+        // 로그아웃
+        confirmLogout();
+    } else {
+        // 로그인
+        handleLogin();
+    }
+    closeUserMenu();
 }
 
 // 로그아웃 모달 표시
