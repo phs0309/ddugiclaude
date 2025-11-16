@@ -6,8 +6,8 @@
     width: 280px;
     background: var(--surface-elevated);
     border: 1px solid var(--border);
-    border-radius: var(--radius);
-    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.15);
+    border-radius: 16px;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
     z-index: 1000;
     transform: scale(0.95) translateY(-10px);
     opacity: 0;
@@ -79,6 +79,9 @@
     transition: background 0.2s ease;
     color: var(--text);
     font-size: 14px;
+    margin: 2px 8px;
+    border-radius: 12px;
+    width: calc(100% - 16px);
 }
 
 .dropdown-menu-item:hover {

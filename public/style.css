@@ -7,15 +7,15 @@
 }
 
 :root {
-    --primary: #1a73e8;
-    --secondary: #4285f4;
+    --primary: #FF6B35;
+    --secondary: #FFD166;
     --bg: #f8f9fa;
     --surface: #f8f9fa;
     --surface-elevated: #ffffff;
     --text: #202124;
     --text-secondary: #5f6368;
     --border: #e8eaed;
-    --radius: 8px;
+    --radius: 12px;
     --radius-large: 24px;
     --header-height: 56px;
     --input-height: 48px;
@@ -158,7 +158,7 @@ body {
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background: var(--primary);
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
     display: flex;
     align-items: center;
     justify-content: center;
@@ -217,8 +217,8 @@ body {
     font-size: 15px;
     color: var(--text);
     position: relative;
-    margin: 2px 8px;
-    border-radius: 8px;
+    margin: 2px 12px;
+    border-radius: 16px;
 }
 
 .side-menu-item:hover {
@@ -249,7 +249,7 @@ body {
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    background: var(--primary);
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
     display: flex;
     align-items: center;
     justify-content: center;
@@ -363,8 +363,8 @@ body {
 
 /* Message Bubbles - Gemini Style */
 .message-bubble {
-    padding: 12px 16px;
-    border-radius: 18px;
+    padding: 12px 18px;
+    border-radius: 24px;
     font-size: 14px;
     line-height: 1.6;
     word-wrap: break-word;
@@ -379,8 +379,8 @@ body {
 }
 
 .user-bubble {
-    background: #e8f0fe;
-    color: var(--text);
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: white;
     margin-right: 4px;
 }
 
@@ -420,10 +420,10 @@ body {
     display: flex;
     align-items: center;
     gap: 6px;
-    padding: 8px 16px;
+    padding: 10px 18px;
     background: var(--surface-elevated);
     border: 1px solid var(--border);
-    border-radius: 100px;
+    border-radius: 50px;
     color: var(--text);
     font-size: 14px;
     font-weight: 500;
@@ -431,12 +431,14 @@ body {
     transition: all 0.2s ease;
     white-space: nowrap;
     flex-shrink: 0;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
 
 .suggestion-pill:hover {
-    background: #e8f0fe;
-    border-color: var(--primary);
-    color: var(--primary);
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    border-color: transparent;
+    color: white;
+    transform: translateY(-1px);
 }
 
 .suggestion-pill i {
@@ -449,11 +451,11 @@ body {
 }
 
 .typing-bubble {
-    background: var(--surface);
-    padding: 10px 14px;
-    border-radius: 18px;
+    background: var(--surface-elevated);
+    padding: 12px 18px;
+    border-radius: 24px;
     margin-left: 4px;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
     display: inline-block;
 }
 
@@ -504,10 +506,10 @@ body {
     align-items: center;
     gap: 8px;
     background: var(--surface-elevated);
-    border-radius: var(--radius-large);
-    padding: 10px 16px;
+    border-radius: 50px;
+    padding: 12px 20px;
     border: 1px solid var(--border);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     transition: all 0.2s ease;
 }
 
@@ -525,7 +527,7 @@ body {
 
 .input-wrapper:focus-within {
     border-color: var(--primary);
-    box-shadow: 0 1px 6px rgba(26, 115, 232, 0.2);
+    box-shadow: 0 2px 8px rgba(255, 107, 53, 0.15);
 }
 
 .input-action-btn {
@@ -581,7 +583,7 @@ body {
 }
 
 .send-btn {
-    background: var(--primary);
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
     border: none;
     color: white;
     width: 36px;
@@ -596,7 +598,8 @@ body {
 }
 
 .send-btn:hover {
-    background: #1557b0;
+    background: linear-gradient(135deg, #FF7A45, #FFD975);
+    transform: scale(1.05);
 }
 
 .send-btn:disabled {
@@ -626,12 +629,12 @@ body {
 
 .restaurant-card {
     min-width: 260px;
-    background: var(--surface);
-    border-radius: var(--radius);
+    background: var(--surface-elevated);
+    border-radius: 20px;
     overflow: hidden;
     cursor: pointer;
     transition: all 0.2s ease;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     flex-shrink: 0;
 }
 
@@ -647,7 +650,7 @@ body {
     align-items: center;
     justify-content: center;
     font-size: 40px;
-    color: var(--surface);
+    color: white;
     position: relative;
 }
 
@@ -688,15 +691,15 @@ body {
 
 .specialty-tag {
     display: inline-block;
-    background: var(--bg);
-    color: var(--text);
-    padding: 4px 10px;
-    border-radius: 6px;
+    background: var(--surface-elevated);
+    color: var(--primary);
+    padding: 4px 12px;
+    border-radius: 20px;
     font-size: 11px;
     font-weight: 500;
     margin-right: 4px;
     margin-bottom: 4px;
-    border: 1px solid var(--border);
+    border: 1px solid var(--primary);
 }
 
 .restaurant-rating {
@@ -904,9 +907,9 @@ body {
 
 .artifacts-restaurant-card {
     min-width: 260px;
-    background: var(--surface);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-    border-radius: var(--radius);
+    background: var(--surface-elevated);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    border-radius: 20px;
     overflow: hidden;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -925,7 +928,7 @@ body {
     align-items: center;
     justify-content: center;
     font-size: 32px;
-    color: var(--surface);
+    color: white;
     position: relative;
 }
 
@@ -1232,12 +1235,12 @@ body {
 
 /* Artifacts Card - Minimal Design */
 .artifacts-card {
-    background: var(--surface);
-    border-radius: var(--radius);
+    background: var(--surface-elevated);
+    border-radius: 20px;
     padding: 0;
     min-width: 100%;
     max-width: 100%;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     transition: all 0.2s ease;
     position: relative;
     overflow: hidden;
@@ -1310,7 +1313,7 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    background: var(--primary);
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
     color: white;
     text-align: center;
     padding: 20px;
@@ -1410,10 +1413,10 @@ body {
 
 .artifacts-card-price {
     display: inline-block;
-    background: var(--primary);
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
     color: white;
     padding: 6px 12px;
-    border-radius: var(--radius);
+    border-radius: 20px;
     font-size: 12px;
     font-weight: 500;
     margin-bottom: 8px;
@@ -1439,8 +1442,8 @@ body {
 /* Map View Card - Gemini Style */
 .map-view-card {
     background: var(--surface-elevated);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-    border-radius: var(--radius);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    border-radius: 20px;
     overflow: hidden;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -1458,7 +1461,7 @@ body {
     width: 100%;
     height: 120px;
     overflow: hidden;
-    background: var(--primary);
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
 }
 
 .map-card-image img {
@@ -1474,7 +1477,7 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(26, 115, 232, 0.7);
+    background: rgba(255, 107, 53, 0.7);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1759,23 +1762,25 @@ body {
     display: block !important;
 }
 
-/* New Chat Button - Gemini Style */
+/* New Chat Button - Rounded Style */
 .new-chat-item {
-    margin: 8px !important;
+    margin: 12px 20px 8px 20px !important;
     padding: 12px 20px !important;
-    background: var(--primary) !important;
+    background: linear-gradient(135deg, var(--primary), var(--secondary)) !important;
     color: white !important;
-    border-radius: var(--radius-large);
+    border-radius: 50px !important;
     border: none;
     font-size: 14px;
     font-weight: 500;
     text-align: left;
     justify-content: flex-start;
+    box-shadow: 0 2px 8px rgba(255, 107, 53, 0.2);
 }
 
 .new-chat-item:hover {
-    background: #1557b0 !important;
-    box-shadow: 0 2px 8px rgba(26, 115, 232, 0.2);
+    background: linear-gradient(135deg, #FF7A45, #FFD975) !important;
+    box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+    transform: translateY(-1px);
 }
 
 .new-chat-item:hover::before {
@@ -1798,22 +1803,27 @@ body {
     width: 100%;
 }
 
+.chat-search-container {
+    margin: 0 20px;
+}
+
 .chat-search-container input {
     width: 100%;
-    padding: 10px 14px 10px 36px;
+    padding: 12px 16px 12px 40px;
     border: 1px solid var(--border);
-    border-radius: 8px;
-    font-size: 13px;
-    background: var(--bg);
+    border-radius: 50px;
+    font-size: 14px;
+    background: var(--surface-elevated);
     outline: none;
     transition: all 0.2s;
     color: var(--text);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .chat-search-container input:focus {
     border-color: var(--primary);
     background: var(--surface-elevated);
-    box-shadow: 0 1px 6px rgba(26, 115, 232, 0.2);
+    box-shadow: 0 2px 8px rgba(255, 107, 53, 0.15);
 }
 
 .chat-search-container input::placeholder {
@@ -1885,8 +1895,8 @@ body {
     color: var(--text);
     position: relative;
     width: 100%;
-    margin: 2px 8px;
-    border-radius: 8px;
+    margin: 2px 12px;
+    border-radius: 16px;
 }
 
 .conversation-item:hover {
