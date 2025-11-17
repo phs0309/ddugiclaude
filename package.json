@@ -13,6 +13,7 @@
     "data-report": "node restaurantDataManager.js report"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.69.0",
     "@supabase/supabase-js": "^2.80.0",
     "@vercel/postgres": "^0.10.0",
     "axios": "^1.6.2",

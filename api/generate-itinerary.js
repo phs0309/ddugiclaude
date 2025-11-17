@@ -1,8 +1,8 @@
-import Anthropic from '@anthropic-ai/sdk';
-import fs from 'fs';
-import path from 'path';
+const Anthropic = require('@anthropic-ai/sdk').default;
+const fs = require('fs');
+const path = require('path');
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
     console.log('🗺️ [generate-itinerary] Request received:', req.method);
     
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -64,9 +64,28 @@ export default async function handler(req, res) {
         }
         
         // restaurants.json에서 부산 맛집 데이터 로드
-        const restaurantsPath = path.join(process.cwd(), 'restaurants.json');
-        const restaurantsData = JSON.parse(fs.readFileSync(restaurantsPath, 'utf8'));
-        const allRestaurants = restaurantsData.restaurants || restaurantsData;
+        let allRestaurants = [];
+        try {
+            const restaurantsPath = path.join(process.cwd(), 'restaurants.json');
+            console.log('📁 [generate-itinerary] Loading restaurants from:', restaurantsPath);
+            
+            if (!fs.existsSync(restaurantsPath)) {
+                throw new Error('restaurants.json 파일을 찾을 수 없습니다');
+            }
+            
+            const restaurantsData = JSON.parse(fs.readFileSync(restaurantsPath, 'utf8'));
+            allRestaurants = restaurantsData.restaurants || restaurantsData;
+            
+            if (!Array.isArray(allRestaurants)) {
+                throw new Error('맛집 데이터 형식이 올바르지 않습니다');
+            }
+        } catch (fileError) {
+            console.error('❌ [generate-itinerary] File loading error:', fileError.message);
+            return res.status(500).json({
+                success: false,
+                error: '맛집 데이터를 로드할 수 없습니다.'
+            });
+        }
         
         console.log('🍽️ [generate-itinerary] Total restaurants available:', allRestaurants.length);
         
@@ -81,24 +100,38 @@ export default async function handler(req, res) {
         
         // Claude AI로 여행계획서 생성
         console.log('🤖 [generate-itinerary] Calling Claude API...');
-        const anthropic = new Anthropic({
-            apiKey: process.env.claude_api_key
-        });
+        
+        let anthropic;
+        try {
+            anthropic = new Anthropic({
+                apiKey: process.env.claude_api_key
+            });
+        } catch (initError) {
+            console.error('❌ [generate-itinerary] Anthropic initialization error:', initError.message);
+            return res.status(500).json({
+                success: false,
+                error: 'AI 서비스 초기화에 실패했습니다.'
+            });
+        }
         
         // 맛집 데이터를 샘플링 (너무 많으면 API 제한에 걸림)
         const sampleRestaurants = allRestaurants
             .sort(() => Math.random() - 0.5)
             .slice(0, 50)
             .map(r => ({
-                name: r.name,
-                area: r.area,
-                category: r.category,
+                name: r.name || '이름 없음',
+                area: r.area || '지역 불명',
+                category: r.category || '기타',
                 description: r.description || '',
                 address: r.address || '',
                 rating: r.rating || ''
             }));
         
-        const message = await anthropic.messages.create({
+        console.log('🔄 [generate-itinerary] Sampled restaurants:', sampleRestaurants.length);
+        
+        let message;
+        try {
+            message = await anthropic.messages.create({
             model: 'claude-3-5-haiku-20241022',
             max_tokens: 4000,
             system: `당신은 부산 여행 전문가입니다. 사용자가 제공한 여행 기간에 맞춰 완벽한 부산 여행계획서를 HTML로 작성해주세요.
@@ -143,6 +176,19 @@ ${sampleRestaurants.map(r =>
             }],
             temperature: 0.8
         });
+        
+        if (!message || !message.content || !message.content[0] || !message.content[0].text) {
+            throw new Error('Claude API에서 올바른 응답을 받지 못했습니다');
+        }
+        
+        } catch (apiError) {
+            console.error('❌ [generate-itinerary] Claude API error:', apiError.message);
+            return res.status(500).json({
+                success: false,
+                error: 'AI 여행계획서 생성에 실패했습니다.',
+                details: apiError.message
+            });
+        }
         
         const htmlContent = message.content[0].text;
         console.log('📄 [generate-itinerary] Raw Claude response length:', htmlContent.length);
