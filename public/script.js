@@ -3451,4 +3451,29 @@ document.addEventListener('DOMContentLoaded', () => {
         // 모바일 환경임을 body에 클래스로 추가
         document.body.classList.add('mobile-device');
     }
+
+    // 플로팅 여행계획서 버튼 이벤트 추가
+    const floatingBtn = document.getElementById('floatingItineraryBtn');
+    if (floatingBtn) {
+        floatingBtn.addEventListener('click', generateTravelItinerary);
+    }
 });
+
+// 여행계획서 생성 함수
+function generateTravelItinerary() {
+    const btn = document.getElementById('floatingItineraryBtn');
+    const originalHTML = btn.innerHTML;
+    
+    // 로딩 상태로 변경
+    btn.classList.add('loading');
+    btn.innerHTML = '<i class="fas fa-spinner"></i>';
+    
+    // 임시 알림 (나중에 실제 기능으로 교체)
+    setTimeout(() => {
+        alert('여행계획서 기능을 준비 중입니다! 곧 만나보실 수 있어요 🎉');
+        
+        // 원래 상태로 복구
+        btn.classList.remove('loading');
+        btn.innerHTML = originalHTML;
+    }, 2000);
+}

@@ -2336,4 +2336,110 @@ body {
 .clear-search-btn:hover {
     background-color: #FFE0B2;
 }
+
+/* 플로팅 여행계획서 버튼 */
+.floating-itinerary-btn {
+    position: fixed !important;
+    bottom: 30px !important;
+    right: 30px !important;
+    width: 60px !important;
+    height: 60px !important;
+    background: linear-gradient(135deg, #FF6B35 0%, #FFD166 100%) !important;
+    border: none !important;
+    border-radius: 50% !important;
+    box-shadow: 0 4px 20px rgba(255, 107, 53, 0.3) !important;
+    cursor: pointer !important;
+    z-index: 9999 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: all 0.3s ease !important;
+    animation: floatAnimation 2s ease-in-out infinite !important;
+}
+
+.floating-itinerary-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 30px rgba(255, 107, 53, 0.5);
+}
+
+.floating-itinerary-btn:active {
+    transform: scale(0.95);
+}
+
+.floating-itinerary-btn i {
+    color: white !important;
+    font-size: 24px !important;
+}
+
+.floating-itinerary-btn .tooltip {
+    position: absolute;
+    right: 70px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: #2F2F2F;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.floating-itinerary-btn:hover .tooltip {
+    opacity: 1;
+}
+
+.floating-itinerary-btn .tooltip::after {
+    content: '';
+    position: absolute;
+    left: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    border: 6px solid transparent;
+    border-left-color: #2F2F2F;
+}
+
+@keyframes floatAnimation {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+/* 로딩 상태 */
+.floating-itinerary-btn.loading {
+    pointer-events: none;
+    opacity: 0.8;
+}
+
+.floating-itinerary-btn.loading i {
+    animation: rotate-spinner 1s linear infinite;
+}
+
+@keyframes rotate-spinner {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@media (max-width: 768px) {
+    .floating-itinerary-btn {
+        width: 50px !important;
+        height: 50px !important;
+        bottom: 20px !important;
+        right: 20px !important;
+    }
+    
+    .floating-itinerary-btn i {
+        font-size: 20px !important;
+    }
+    
+    .floating-itinerary-btn .tooltip {
+        display: none;
+    }
+}
 }
