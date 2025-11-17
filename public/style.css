@@ -27,8 +27,13 @@ body {
     color: var(--text);
     overflow: hidden;
     height: 100vh;
+    height: 100dvh; /* 동적 뷰포트 높이 (iOS Safari 지원) */
     margin: 0;
     padding: 0;
+    /* iOS Safari 스크롤 바운스 방지 */
+    position: fixed;
+    width: 100%;
+    overscroll-behavior: none;
 }
 
 /* Main Container - Gemini Style */
@@ -36,11 +41,13 @@ body {
     display: flex;
     flex-direction: column;
     height: 100vh;
+    height: 100dvh; /* 동적 뷰포트 높이 */
     width: 100vw;
     max-width: 100%;
     margin: 0;
     background: var(--bg);
     overflow: hidden;
+    position: relative;
 }
 
 /* Desktop View */
@@ -495,6 +502,10 @@ body {
     max-width: 900px;
     margin: 0 auto;
     width: 100%;
+    /* 모바일 환경에서 하단 안전 영역 확보 */
+    padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+    position: relative;
+    z-index: 10;
 }
 
 .input-container {
@@ -517,11 +528,44 @@ body {
 @media (max-width: 768px) {
     .dm-input-area {
         padding: 10px 12px;
-        padding-bottom: env(safe-area-inset-bottom, 10px);
+        padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+        /* 키보드가 올라올 때를 대비한 추가 하단 여백 */
+        margin-bottom: env(keyboard-inset-height, 0px);
     }
     
     .input-wrapper {
         padding: 8px 12px;
+        min-height: 44px; /* iOS 터치 타겟 최소 크기 */
+    }
+    
+    /* iOS Safari에서 키보드가 올라올 때 뷰포트 조정 */
+    .instagram-dm-container {
+        height: 100vh;
+        height: 100dvh;
+        height: calc(var(--vh, 1vh) * 100); /* JavaScript로 설정된 실제 뷰포트 높이 사용 */
+        /* iOS Safari에서 주소창 숨김/표시 시 부드러운 전환 */
+        transition: height 0.3s ease;
+    }
+    
+    /* 모바일 환경에서 body 높이 고정 */
+    body.mobile-device {
+        height: 100vh;
+        height: 100dvh;
+        height: calc(var(--vh, 1vh) * 100);
+        position: fixed;
+        overflow: hidden;
+    }
+    
+    /* 모바일에서 메시지 영역 최적화 */
+    .mobile-device .dm-messages {
+        -webkit-overflow-scrolling: touch; /* iOS 부드러운 스크롤 */
+        overscroll-behavior-y: contain; /* 스크롤 바운스 제한 */
+    }
+    
+    /* 모바일에서 입력창 포커스 시 최적화 */
+    .mobile-device .input-wrapper:focus-within {
+        transform: translateY(0);
+        transition: transform 0.3s ease;
     }
 }
 

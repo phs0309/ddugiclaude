@@ -298,7 +298,8 @@ module.exports = async function handler(req, res) {
                         session_id: messageSessionId,
                         user_id: userId,
                         role: msg.role,
-                        content: msg.content
+                        content: msg.content,
+                        metadata: msg.metadata || null // 맛집 데이터 등 메타데이터 저장
                     }));
                     
                     console.log('📝 저장할 메시지들:', messagesToInsert.map(m => ({ 

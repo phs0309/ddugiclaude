@@ -153,9 +153,9 @@ class InstagramStyleChatBot {
             // 뚜기 응답 표시
             this.addMessage(response.message, 'bot');
             
-            // 사용자 메시지와 봇 응답을 한꺼번에 저장 (로그인한 경우에만)
+            // 사용자 메시지와 봇 응답을 한꺼번에 저장 (로그인한 경우에만, 맛집 데이터 포함)
             if (apiClient.isLoggedIn()) {
-                await this.saveConversationPair(message, response.message);
+                await this.saveConversationPair(message, response.message, response.restaurants);
                 await this.updateConversationTitle(response.message);
             }
             
@@ -390,8 +390,8 @@ ${restaurant.description}`;
         return await response.json();
     }
 
-    // 사용자 메시지와 봇 응답을 한 번에 저장
-    async saveConversationPair(userMessage, botMessage) {
+    // 사용자 메시지와 봇 응답을 한 번에 저장 (맛집 데이터 포함)
+    async saveConversationPair(userMessage, botMessage, restaurants = null) {
         try {
             const headers = getAuthHeaders();
             headers['Content-Type'] = 'application/json';
@@ -399,18 +399,32 @@ ${restaurant.description}`;
             console.log('🚀 저장 요청 전송:', {
                 sessionId: this.sessionId,
                 userMsg: userMessage.substring(0, 30),
-                botMsg: botMessage.substring(0, 30)
+                botMsg: botMessage.substring(0, 30),
+                hasRestaurants: !!restaurants
             });
+            
+            const messages = [
+                { content: userMessage, role: 'user' }
+            ];
+            
+            // 봇 응답에 맛집 메타데이터 포함
+            const botMessageData = { 
+                content: botMessage, 
+                role: 'assistant'
+            };
+            
+            if (restaurants && restaurants.length > 0) {
+                botMessageData.metadata = { restaurants: restaurants };
+            }
+            
+            messages.push(botMessageData);
             
             const response = await fetch('/api/conversations', {
                 method: 'POST',
                 headers: headers,
                 body: JSON.stringify({
                     sessionId: this.sessionId,
-                    messages: [
-                        { content: userMessage, role: 'user' },
-                        { content: botMessage, role: 'assistant' }
-                    ]
+                    messages: messages
                 })
             });
             
@@ -774,7 +788,13 @@ ${restaurant.description}`;
             this.hideTypingIndicator();
 
             if (data.success && data.restaurants.length > 0) {
-                this.addMessage(`현재 위치 주변에서 ${data.count}곳의 맛집을 찾았어요! 🎯`, 'bot');
+                const botMessage = `현재 위치 주변에서 ${data.count}곳의 맛집을 찾았어요! 🎯`;
+                this.addMessage(botMessage, 'bot');
+                
+                // 대화 저장 (맛집 데이터 포함)
+                if (apiClient.isLoggedIn()) {
+                    await this.saveConversationPair('주변 맛집 추천', botMessage, data.restaurants);
+                }
                 
                 // 주변 맛집 카드 표시
                 setTimeout(() => {
@@ -794,7 +814,14 @@ ${restaurant.description}`;
                 const widerData = await widerResponse.json();
                 
                 if (widerData.success && widerData.restaurants.length > 0) {
-                    this.addMessage(`5km 내에서 ${widerData.count}곳을 찾았어요! 🎯`, 'bot');
+                    const widerBotMessage = `5km 내에서 ${widerData.count}곳을 찾았어요! 🎯`;
+                    this.addMessage(widerBotMessage, 'bot');
+                    
+                    // 대화 저장 (맛집 데이터 포함)
+                    if (apiClient.isLoggedIn()) {
+                        await this.saveConversationPair('주변 맛집 추천', widerBotMessage, widerData.restaurants);
+                    }
+                    
                     setTimeout(() => {
                         this.displayRestaurantCards(widerData.restaurants);
                         this.delayedShowArtifacts(widerData.restaurants, '주변 맛집 (5km)');
@@ -2617,7 +2644,20 @@ window.loadConversation = async function loadConversation(sessionId) {
                     if (window.instagramChatBot) {
                         // role을 addMessage가 이해할 수 있는 형태로 변환
                         const sender = message.role === 'assistant' ? 'bot' : message.role;
-                        window.instagramChatBot.addMessage(message.content, sender);
+                        
+                        // 메시지가 JSON 형식의 맛집 데이터인지 확인
+                        if (message.metadata && message.metadata.restaurants) {
+                            // 먼저 텍스트 메시지 추가
+                            window.instagramChatBot.addMessage(message.content, sender);
+                            
+                            // 맛집 카드 표시
+                            setTimeout(() => {
+                                window.instagramChatBot.displayRestaurantCards(message.metadata.restaurants);
+                            }, 100);
+                        } else {
+                            // 일반 텍스트 메시지
+                            window.instagramChatBot.addMessage(message.content, sender);
+                        }
                     }
                 });
                 
@@ -3306,3 +3346,83 @@ window.confirmDeleteConversation = async function confirmDeleteConversation() {
         alert('대화 삭제 중 네트워크 오류가 발생했습니다.');
     }
 }
+
+// ============ 모바일 뷰포트 핸들링 ============
+
+// 모바일 환경에서 뷰포트 높이 동적 조정
+function handleMobileViewport() {
+    // CSS 커스텀 프로퍼티로 실제 뷰포트 높이 설정
+    const setVH = () => {
+        const vh = window.innerHeight * 0.01;
+        document.documentElement.style.setProperty('--vh', `${vh}px`);
+    };
+
+    // 초기 설정
+    setVH();
+
+    // 뷰포트 크기 변경 시 재조정 (키보드 올라올 때 등)
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(setVH, 100);
+    });
+
+    // iOS Safari에서 주소창 숨김/표시 시 재조정
+    window.addEventListener('orientationchange', () => {
+        setTimeout(setVH, 500);
+    });
+}
+
+// 모바일 입력 포커스 처리
+function handleMobileInputFocus() {
+    const userInput = document.getElementById('userInput');
+    const chatContainer = document.querySelector('.dm-chat-area');
+    
+    if (userInput && chatContainer) {
+        // 입력창 포커스 시 스크롤을 하단으로
+        userInput.addEventListener('focus', () => {
+            setTimeout(() => {
+                // iOS Safari에서 키보드가 올라온 후 스크롤 조정
+                if (window.instagramChatBot) {
+                    window.instagramChatBot.scrollToBottom();
+                }
+            }, 300);
+        });
+
+        // 입력창에서 포커스 해제 시 뷰포트 재조정
+        userInput.addEventListener('blur', () => {
+            setTimeout(() => {
+                const vh = window.innerHeight * 0.01;
+                document.documentElement.style.setProperty('--vh', `${vh}px`);
+            }, 100);
+        });
+    }
+}
+
+// 모바일 터치 스크롤 최적화
+function handleMobileTouch() {
+    // iOS에서 바운스 스크롤 방지
+    document.addEventListener('touchmove', (e) => {
+        if (e.target.closest('.dm-messages')) {
+            // 메시지 영역에서는 스크롤 허용
+            return;
+        }
+        e.preventDefault();
+    }, { passive: false });
+}
+
+// 페이지 로드 시 모바일 최적화 초기화
+document.addEventListener('DOMContentLoaded', () => {
+    // 모바일 환경 감지
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
+    if (isMobile || window.innerWidth <= 768) {
+        console.log('📱 모바일 환경 감지 - 뷰포트 최적화 시작');
+        handleMobileViewport();
+        handleMobileInputFocus();
+        handleMobileTouch();
+        
+        // 모바일 환경임을 body에 클래스로 추가
+        document.body.classList.add('mobile-device');
+    }
+});
