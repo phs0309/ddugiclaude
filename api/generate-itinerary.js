@@ -51,18 +51,6 @@ module.exports = async function handler(req, res) {
         
         console.log(`📅 [generate-itinerary] Travel period: ${days} days (${startDate} ~ ${endDate})`);
         
-        // 저장된 맛집 데이터 가져오기
-        let savedRestaurants = [];
-        if (userId) {
-            try {
-                // 실제 환경에서는 데이터베이스에서 가져와야 함
-                // 여기서는 임시로 빈 배열 사용
-                console.log('👤 [generate-itinerary] User ID provided:', userId);
-            } catch (error) {
-                console.warn('⚠️ [generate-itinerary] Could not fetch saved restaurants:', error.message);
-            }
-        }
-        
         // restaurants.json에서 부산 맛집 데이터 로드
         let allRestaurants = [];
         try {
@@ -88,6 +76,59 @@ module.exports = async function handler(req, res) {
         }
         
         console.log('🍽️ [generate-itinerary] Total restaurants available:', allRestaurants.length);
+        
+        // 저장된 맛집 데이터 가져오기
+        let savedRestaurants = [];
+        let savedRestaurantIds = [];
+        
+        if (userId) {
+            try {
+                console.log('👤 [generate-itinerary] User ID provided:', userId);
+                
+                // user-restaurants API 호출하여 저장된 맛집 ID들 가져오기
+                const userRestaurantsModule = require('./user-restaurants.js');
+                
+                // 모의 request 객체 생성
+                const mockReq = {
+                    method: 'GET',
+                    headers: {
+                        authorization: `Bearer ${Buffer.from(JSON.stringify({ email: userId, name: '사용자' })).toString('base64')}`
+                    }
+                };
+                
+                // 모의 response 객체 생성
+                let savedData = null;
+                const mockRes = {
+                    setHeader: () => {},
+                    status: (code) => ({
+                        json: (data) => { savedData = data; return { end: () => {} }; },
+                        end: () => {}
+                    })
+                };
+                
+                // user-restaurants API 호출
+                await userRestaurantsModule(mockReq, mockRes);
+                
+                if (savedData && savedData.success && savedData.restaurantIds) {
+                    savedRestaurantIds = savedData.restaurantIds;
+                    console.log('📋 [generate-itinerary] Found saved restaurant IDs:', savedRestaurantIds.length);
+                    
+                    // 저장된 ID들에 해당하는 맛집 정보 찾기
+                    savedRestaurants = allRestaurants.filter(restaurant => 
+                        savedRestaurantIds.includes(restaurant.id) || 
+                        savedRestaurantIds.includes(String(restaurant.id))
+                    );
+                    
+                    console.log('🍽️ [generate-itinerary] Found saved restaurants:', savedRestaurants.length);
+                } else {
+                    console.log('📋 [generate-itinerary] No saved restaurants found or user not logged in');
+                }
+            } catch (error) {
+                console.warn('⚠️ [generate-itinerary] Could not fetch saved restaurants:', error.message);
+            }
+        } else {
+            console.log('👤 [generate-itinerary] No user ID provided - guest user');
+        }
         
         // Claude API 키 확인
         const apiKey = process.env.claude_api_key || process.env.CLAUDE_API_KEY;
@@ -118,20 +159,43 @@ module.exports = async function handler(req, res) {
             });
         }
         
-        // 맛집 데이터를 샘플링 (너무 많으면 API 제한에 걸림)
-        const sampleRestaurants = allRestaurants
-            .sort(() => Math.random() - 0.5)
-            .slice(0, 50)
-            .map(r => ({
-                name: r.name || '이름 없음',
-                area: r.area || '지역 불명',
-                category: r.category || '기타',
-                description: r.description || '',
-                address: r.address || '',
-                rating: r.rating || ''
-            }));
+        // 저장된 맛집과 추천 맛집 조합
+        let restaurantsForPrompt = [];
         
-        console.log('🔄 [generate-itinerary] Sampled restaurants:', sampleRestaurants.length);
+        // 1. 저장된 맛집 우선 포함 (최대 20개)
+        const savedForPrompt = savedRestaurants.slice(0, 20).map(r => ({
+            name: r.name || '이름 없음',
+            area: r.area || '지역 불명',
+            category: r.category || '기타',
+            description: r.description || '',
+            address: r.address || '',
+            rating: r.rating || '',
+            isSaved: true
+        }));
+        restaurantsForPrompt = [...savedForPrompt];
+        
+        console.log('⭐ [generate-itinerary] Saved restaurants for prompt:', savedForPrompt.length);
+        
+        // 2. 추가로 랜덤 맛집 포함 (총 50개까지)
+        const remainingSlots = 50 - restaurantsForPrompt.length;
+        if (remainingSlots > 0) {
+            const additionalRestaurants = allRestaurants
+                .filter(r => !savedRestaurantIds.includes(r.id) && !savedRestaurantIds.includes(String(r.id)))
+                .sort(() => Math.random() - 0.5)
+                .slice(0, remainingSlots)
+                .map(r => ({
+                    name: r.name || '이름 없음',
+                    area: r.area || '지역 불명',
+                    category: r.category || '기타',
+                    description: r.description || '',
+                    address: r.address || '',
+                    rating: r.rating || '',
+                    isSaved: false
+                }));
+            restaurantsForPrompt = [...restaurantsForPrompt, ...additionalRestaurants];
+        }
+        
+        console.log('🔄 [generate-itinerary] Total restaurants for prompt:', restaurantsForPrompt.length);
         
         let message;
         try {
@@ -165,18 +229,24 @@ module.exports = async function handler(req, res) {
 
 여행 기간: ${startDate} ~ ${endDate} (${days}일)
 
-사용 가능한 부산 맛집 정보:
-${sampleRestaurants.map(r => 
-    `- ${r.name} (${r.area}, ${r.category}): ${r.description}`
+${savedForPrompt.length > 0 ? `⭐ 사용자가 저장한 맛집 (우선 포함해주세요):
+${savedForPrompt.map(r => 
+    `★ ${r.name} (${r.area}, ${r.category}): ${r.description}`
+).join('\n')}
+
+` : ''}사용 가능한 부산 맛집 정보:
+${restaurantsForPrompt.map(r => 
+    `${r.isSaved ? '★' : '-'} ${r.name} (${r.area}, ${r.category}): ${r.description}`
 ).join('\n')}
 
 요청사항:
 1. 각 날짜별로 오전/오후/저녁 일정 구성
-2. 맛집은 위의 목록에서만 선택
+2. ${savedForPrompt.length > 0 ? '★표시된 저장된 맛집들을 최대한 우선적으로 포함해주세요' : '위의 목록에서만 맛집을 선택해주세요'}
 3. 부산 대표 관광지 포함 (해운대, 감천문화마을, 자갈치시장 등)
 4. 현실적인 이동 동선 고려
 5. 숙소는 실제 부산 호텔/게스트하우스 추천
-6. 부산 사투리로 친근하게 작성`
+6. 부산 사투리로 친근하게 작성
+${savedForPrompt.length > 0 ? '7. 저장된 맛집들(★표시)을 여행 일정에 최우선으로 배치해주세요' : ''}`
             }],
             temperature: 0.8
         });
@@ -210,9 +280,11 @@ ${sampleRestaurants.map(r =>
             message: '여행계획서가 생성되었습니다!',
             debug: {
                 days,
-                sampledRestaurants: sampleRestaurants.length,
+                savedRestaurants: savedRestaurants.length,
+                totalRestaurantsForPrompt: restaurantsForPrompt.length,
                 totalRestaurants: allRestaurants.length,
-                htmlLength: finalHtml.length
+                htmlLength: finalHtml.length,
+                userId: userId || 'guest'
             }
         });
         
