@@ -314,6 +314,52 @@
         <span class="tooltip">여행계획서 만들기</span>
     </button>
 
+    <!-- 여행계획서 날짜 선택 모달 -->
+    <div id="itineraryModal" class="itinerary-modal" style="display: none;">
+        <div class="itinerary-modal-content">
+            <div class="itinerary-modal-header">
+                <h2>부산 여행계획서 만들기</h2>
+                <button class="itinerary-modal-close" onclick="closeItineraryModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="itinerary-modal-body">
+                <div class="date-section">
+                    <label for="travelDates">여행 기간을 선택해주세요</label>
+                    <div class="date-inputs">
+                        <div class="date-input-group">
+                            <label>출발일</label>
+                            <input type="date" id="startDate" required>
+                        </div>
+                        <div class="date-input-group">
+                            <label>도착일</label>
+                            <input type="date" id="endDate" required>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="travel-info">
+                    <div class="info-item">
+                        <i class="fas fa-heart"></i>
+                        <span>저장된 맛집을 우선으로 포함합니다</span>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-robot"></i>
+                        <span>AI가 추가 맛집과 숙소를 추천합니다</span>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-map"></i>
+                        <span>최적의 동선으로 일정을 구성합니다</span>
+                    </div>
+                </div>
+            </div>
+            <div class="itinerary-modal-footer">
+                <button class="cancel-btn" onclick="closeItineraryModal()">취소</button>
+                <button class="create-btn" onclick="createItinerary()">여행계획서 만들기</button>
+            </div>
+        </div>
+    </div>
+
     <script src="api-client.js"></script>
     <script src="translations.js"></script>
     <script src="language-functions.js"></script>

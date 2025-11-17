@@ -3461,19 +3461,111 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // 여행계획서 생성 함수
 function generateTravelItinerary() {
-    const btn = document.getElementById('floatingItineraryBtn');
-    const originalHTML = btn.innerHTML;
+    // 모달 열기
+    document.getElementById('itineraryModal').style.display = 'flex';
+    
+    // 오늘 날짜를 기본값으로 설정
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    
+    document.getElementById('startDate').valueAsDate = today;
+    document.getElementById('endDate').valueAsDate = tomorrow;
+}
+
+// 여행계획서 모달 닫기
+function closeItineraryModal() {
+    document.getElementById('itineraryModal').style.display = 'none';
+}
+
+// 여행계획서 생성 실행
+async function createItinerary() {
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
+    const createBtn = document.querySelector('.create-btn');
+    
+    if (!startDate || !endDate) {
+        alert('여행 날짜를 모두 선택해주세요.');
+        return;
+    }
+    
+    // 날짜 유효성 검사
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    if (start < today) {
+        alert('여행 시작일은 오늘 이후로 선택해주세요.');
+        return;
+    }
+    
+    if (end <= start) {
+        alert('도착일은 출발일 이후로 선택해주세요.');
+        return;
+    }
     
     // 로딩 상태로 변경
-    btn.classList.add('loading');
-    btn.innerHTML = '<i class="fas fa-spinner"></i>';
+    createBtn.disabled = true;
+    createBtn.innerHTML = '<i class="fas fa-spinner" style="animation: rotate-spinner 1s linear infinite;"></i> 생성 중...';
     
-    // 임시 알림 (나중에 실제 기능으로 교체)
-    setTimeout(() => {
-        alert('여행계획서 기능을 준비 중입니다! 곧 만나보실 수 있어요 🎉');
+    try {
+        // 사용자 ID 가져오기 (로그인된 경우)
+        let userId = null;
+        if (typeof apiClient !== 'undefined' && apiClient.isLoggedIn()) {
+            const user = apiClient.getCurrentUser();
+            userId = user?.id || null;
+        }
         
+        // API 호출
+        const response = await fetch('/api/generate-itinerary', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                startDate,
+                endDate,
+                userId
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            // 모달 닫기
+            closeItineraryModal();
+            
+            // 새 창에서 여행계획서 열기
+            const itineraryWindow = window.open('', '_blank');
+            itineraryWindow.document.write(result.html);
+            itineraryWindow.document.close();
+            
+            // 성공 메시지
+            if (window.currentChatBot) {
+                window.currentChatBot.addMessage('🎉 여행계획서가 생성되었습니다! 새 창에서 확인해보세요.', 'bot');
+            } else {
+                alert('🎉 여행계획서가 생성되었습니다!');
+            }
+            
+        } else {
+            alert(result.error || '여행계획서 생성에 실패했습니다.');
+        }
+        
+    } catch (error) {
+        console.error('여행계획서 생성 오류:', error);
+        alert('여행계획서 생성 중 오류가 발생했습니다.');
+    } finally {
         // 원래 상태로 복구
-        btn.classList.remove('loading');
-        btn.innerHTML = originalHTML;
-    }, 2000);
+        createBtn.disabled = false;
+        createBtn.innerHTML = '여행계획서 만들기';
+    }
 }
+
+// 모달 배경 클릭 시 닫기
+document.addEventListener('click', function(event) {
+    const modal = document.getElementById('itineraryModal');
+    if (event.target === modal) {
+        closeItineraryModal();
+    }
+});
