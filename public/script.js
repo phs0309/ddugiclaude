@@ -592,12 +592,14 @@ ${restaurant.description}`;
                 this.hideTypingIndicator();
                 
                 if (data.success && data.restaurants.length > 0) {
-                    this.addMessage(`현재 위치에서 가까운 맛집 ${data.count}곳을 찾았어요! 🎯\n이 중에서 마음에 드는 곳이 있나 확인해보세요!`, 'bot');
+                    // 상위 5개 맛집 선별
+                    const selectedRestaurants = data.restaurants.slice(0, 5);
                     
-                    // 주변 맛집 카드 표시
+                    this.addMessage(`현재 위치에서 가까운 맛집 ${selectedRestaurants.length}곳을 추천해드릴게요! 🎯`, 'bot');
+                    
+                    // 통합 카드 표시
                     setTimeout(() => {
-                        this.displayRestaurantCards(data.restaurants);
-                        this.delayedShowArtifacts(data.restaurants, '주변 맛집');
+                        this.addModalButton(selectedRestaurants, '주변 맛집');
                     }, 800);
                 } else {
                     // 3km 내에 맛집이 없으면 더 넓은 범위로 검색
@@ -605,10 +607,12 @@ ${restaurant.description}`;
                     const widerData = await widerResponse.json();
                     
                     if (widerData.success && widerData.restaurants.length > 0) {
-                        this.addMessage(`3km 내에는 맛집이 없어서 조금 더 넓은 5km 범위에서 ${widerData.count}곳을 찾았어요! 🎯`, 'bot');
+                        // 상위 5개 맛집 선별
+                        const selectedWiderRestaurants = widerData.restaurants.slice(0, 5);
+                        
+                        this.addMessage(`조금 더 넓은 범위에서 ${selectedWiderRestaurants.length}곳을 추천해드릴게요! 🎯`, 'bot');
                         setTimeout(() => {
-                            this.displayRestaurantCards(widerData.restaurants);
-                            this.delayedShowArtifacts(widerData.restaurants, '주변 맛집 (5km)');
+                            this.addModalButton(selectedWiderRestaurants, '주변 맛집 (5km)');
                         }, 800);
                     } else {
                         this.addMessage('주변에 등록된 맛집을 찾을 수 없어서 부산 전체의 추천 맛집을 보여드릴게요! 😊', 'bot');
@@ -691,12 +695,14 @@ ${restaurant.description}`;
             this.hideTypingIndicator();
 
             if (data.success && data.restaurants.length > 0) {
-                this.addMessage(`현재 위치 주변 ${data.searchRadius}km 내에서 ${data.count}곳의 맛집을 찾았어요! 🎯`, 'bot');
+                // 상위 5개 맛집 선별
+                const selectedRestaurants = data.restaurants.slice(0, 5);
                 
-                // 주변 맛집 카드 표시
+                this.addMessage(`현재 위치 주변에서 ${selectedRestaurants.length}곳의 맛집을 추천해드릴게요! 🎯`, 'bot');
+                
+                // 통합 카드 표시
                 setTimeout(() => {
-                    this.displayRestaurantCards(data.restaurants);
-                    this.delayedShowArtifacts(data.restaurants, '주변 맛집');
+                    this.addModalButton(selectedRestaurants, '주변 맛집');
                 }, 500);
                 
             } else if (data.isOutsideBusan) {
@@ -791,18 +797,20 @@ ${restaurant.description}`;
             this.hideTypingIndicator();
 
             if (data.success && data.restaurants.length > 0) {
-                const botMessage = `현재 위치 주변에서 ${data.count}곳의 맛집을 찾았어요! 🎯`;
+                // 상위 5개 맛집 선별
+                const selectedRestaurants = data.restaurants.slice(0, 5);
+                
+                const botMessage = `현재 위치 주변에서 ${selectedRestaurants.length}곳의 맛집을 추천해드릴게요! 🎯`;
                 this.addMessage(botMessage, 'bot');
                 
                 // 대화 저장 (맛집 데이터 포함)
                 if (apiClient.isLoggedIn()) {
-                    await this.saveConversationPair('주변 맛집 추천', botMessage, data.restaurants);
+                    await this.saveConversationPair('주변 맛집 추천', botMessage, selectedRestaurants);
                 }
                 
-                // 주변 맛집 카드 표시
+                // 통합 카드 표시
                 setTimeout(() => {
-                    this.displayRestaurantCards(data.restaurants);
-                    this.delayedShowArtifacts(data.restaurants, '주변 맛집');
+                    this.addModalButton(selectedRestaurants, '주변 맛집');
                 }, 500);
                 
             } else if (data.isOutsideBusan) {
@@ -817,17 +825,19 @@ ${restaurant.description}`;
                 const widerData = await widerResponse.json();
                 
                 if (widerData.success && widerData.restaurants.length > 0) {
-                    const widerBotMessage = `5km 내에서 ${widerData.count}곳을 찾았어요! 🎯`;
+                    // 상위 5개 맛집 선별
+                    const selectedWiderRestaurants = widerData.restaurants.slice(0, 5);
+                    
+                    const widerBotMessage = `조금 더 넓은 범위에서 ${selectedWiderRestaurants.length}곳을 추천해드릴게요! 🎯`;
                     this.addMessage(widerBotMessage, 'bot');
                     
                     // 대화 저장 (맛집 데이터 포함)
                     if (apiClient.isLoggedIn()) {
-                        await this.saveConversationPair('주변 맛집 추천', widerBotMessage, widerData.restaurants);
+                        await this.saveConversationPair('주변 맛집 추천', widerBotMessage, selectedWiderRestaurants);
                     }
                     
                     setTimeout(() => {
-                        this.displayRestaurantCards(widerData.restaurants);
-                        this.delayedShowArtifacts(widerData.restaurants, '주변 맛집 (5km)');
+                        this.addModalButton(selectedWiderRestaurants, '주변 맛집 (5km)');
                     }, 500);
                 } else {
                     this.addMessage('부산 전체 맛집을 추천해드릴게요!', 'bot');
