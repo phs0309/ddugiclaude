@@ -258,7 +258,7 @@ class InstagramStyleChatBot {
         return messageContent;
     }
 
-    displayRestaurantCards(restaurants, isInitial = false) {
+    displayRestaurantCards(restaurants, isInitial = false, targetMessageElement = null) {
         const cardsContainer = document.createElement('div');
         cardsContainer.className = 'restaurant-cards-container';
         
@@ -272,7 +272,10 @@ class InstagramStyleChatBot {
         
         cardsContainer.appendChild(cardsWrapper);
         
-        if (isInitial) {
+        // 특정 메시지 엘리먼트가 지정된 경우
+        if (targetMessageElement) {
+            targetMessageElement.appendChild(cardsContainer);
+        } else if (isInitial) {
             // 초기 추천은 첫 번째 봇 메시지에 추가
             const firstBotMessage = this.messagesContainer.querySelector('.bot-group .message-content');
             if (firstBotMessage) {
@@ -2613,6 +2616,18 @@ window.loadConversation = async function loadConversation(sessionId) {
         
         const data = await response.json();
         
+        // 디버깅: 받아온 메시지 데이터 확인
+        console.log('📥 대화 데이터 로드:', {
+            sessionId: sessionId,
+            messageCount: data.messages?.length || 0,
+            messagesWithMetadata: data.messages?.filter(m => m.metadata)?.length || 0,
+            messages: data.messages?.map(m => ({
+                role: m.role,
+                hasMetadata: !!m.metadata,
+                restaurantCount: m.metadata?.restaurants?.length || 0
+            }))
+        });
+        
         if (data.success) {
             // 항상 채팅창 클리어 및 초기 인사말 복원
             const messagesContainer = document.getElementById('chatMessages');
@@ -2640,23 +2655,24 @@ window.loadConversation = async function loadConversation(sessionId) {
             
             if (data.messages && data.messages.length > 0) {
                 // 메시지 복원
-                data.messages.forEach((message) => {
+                data.messages.forEach((message, index) => {
                     if (window.instagramChatBot) {
                         // role을 addMessage가 이해할 수 있는 형태로 변환
                         const sender = message.role === 'assistant' ? 'bot' : message.role;
                         
-                        // 메시지가 JSON 형식의 맛집 데이터인지 확인
+                        // 텍스트 메시지 추가하고 엘리먼트 참조 저장
+                        const messageElement = window.instagramChatBot.addMessage(message.content, sender);
+                        
+                        // 메시지가 맛집 데이터를 포함하는 경우 카드 추가
                         if (message.metadata && message.metadata.restaurants) {
-                            // 먼저 텍스트 메시지 추가
-                            window.instagramChatBot.addMessage(message.content, sender);
-                            
-                            // 맛집 카드 표시
+                            // 약간의 지연을 두고 해당 메시지에 카드 추가
                             setTimeout(() => {
-                                window.instagramChatBot.displayRestaurantCards(message.metadata.restaurants);
-                            }, 100);
-                        } else {
-                            // 일반 텍스트 메시지
-                            window.instagramChatBot.addMessage(message.content, sender);
+                                window.instagramChatBot.displayRestaurantCards(
+                                    message.metadata.restaurants, 
+                                    false, 
+                                    messageElement
+                                );
+                            }, 50 * (index + 1)); // 각 메시지마다 약간의 지연
                         }
                     }
                 });

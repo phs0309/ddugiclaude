@@ -240,6 +240,20 @@ module.exports = async function handler(req, res) {
                         });
                     }
 
+                    // 디버깅: metadata 포함 여부 확인
+                    console.log('📤 메시지 조회 결과:', {
+                        sessionId: sessionId,
+                        totalMessages: messages?.length || 0,
+                        messagesWithMetadata: messages?.filter(m => m.metadata)?.length || 0,
+                        metadataDetails: messages?.map(m => ({
+                            id: m.id,
+                            role: m.role,
+                            hasMetadata: !!m.metadata,
+                            metadataType: typeof m.metadata,
+                            restaurantCount: m.metadata?.restaurants?.length || 0
+                        }))
+                    });
+                    
                     res.json({
                         success: true,
                         messages: messages || []
@@ -305,7 +319,9 @@ module.exports = async function handler(req, res) {
                     console.log('📝 저장할 메시지들:', messagesToInsert.map(m => ({ 
                         role: m.role, 
                         contentLength: m.content.length,
-                        preview: m.content.substring(0, 30) 
+                        preview: m.content.substring(0, 30),
+                        hasMetadata: !!m.metadata,
+                        restaurantCount: m.metadata?.restaurants?.length || 0
                     })));
                     
                     const { data: savedMessages, error: messageError } = await supabase
@@ -324,7 +340,12 @@ module.exports = async function handler(req, res) {
 
                     console.log('✅ 대화 세트 저장 성공:', { 
                         count: savedMessages.length,
-                        savedRoles: savedMessages.map(m => m.role)
+                        savedRoles: savedMessages.map(m => m.role),
+                        savedMetadata: savedMessages.map(m => ({
+                            role: m.role,
+                            hasMetadata: !!m.metadata,
+                            restaurantCount: m.metadata?.restaurants?.length || 0
+                        }))
                     });
                     
                     res.json({
