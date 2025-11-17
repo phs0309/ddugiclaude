@@ -40,7 +40,8 @@
       "Bash(copy publicindex.html publicindex_backup.html)",
       "WebFetch(domain:docs.claude.com)",
       "Bash(git fetch:*)",
-      "Bash(vercel logs:*)"
+      "Bash(vercel logs:*)",
+      "Bash(vercel env:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"

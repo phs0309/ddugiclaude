@@ -90,13 +90,17 @@ module.exports = async function handler(req, res) {
         console.log('🍽️ [generate-itinerary] Total restaurants available:', allRestaurants.length);
         
         // Claude API 키 확인
-        if (!process.env.claude_api_key) {
+        const apiKey = process.env.claude_api_key || process.env.CLAUDE_API_KEY;
+        if (!apiKey) {
             console.error('❌ [generate-itinerary] Claude API key not found');
+            console.error('Available env vars:', Object.keys(process.env).filter(k => k.toLowerCase().includes('claude')));
             return res.status(500).json({
                 success: false,
                 error: '서비스 설정 오류가 발생했습니다.'
             });
         }
+        
+        console.log('✅ [generate-itinerary] Claude API key found');
         
         // Claude AI로 여행계획서 생성
         console.log('🤖 [generate-itinerary] Calling Claude API...');
@@ -104,7 +108,7 @@ module.exports = async function handler(req, res) {
         let anthropic;
         try {
             anthropic = new Anthropic({
-                apiKey: process.env.claude_api_key
+                apiKey: apiKey
             });
         } catch (initError) {
             console.error('❌ [generate-itinerary] Anthropic initialization error:', initError.message);
