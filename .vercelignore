@@ -1,0 +1,34 @@
+# Development files
+node_modules
+.env
+.env.local
+
+# Large data files (already in restaurants.json)
+R_data/
+*.csv
+*.xlsx
+
+# Git and IDE files
+.git
+.vscode
+.idea
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Documentation (not needed for production)
+README*.md
+SETUP*.md
+NAVER_MAPS_SETUP.md
+GOOGLE_MAPS_SETUP.md
+
+# Deprecated files
+server.js
+restaurantAI.js
+
+# Cache
+.cache
+dist
+build
