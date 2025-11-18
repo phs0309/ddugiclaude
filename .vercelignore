@@ -24,9 +24,10 @@ SETUP*.md
 NAVER_MAPS_SETUP.md
 GOOGLE_MAPS_SETUP.md
 
-# Deprecated files
+# Deprecated files (now using Next.js)
 server.js
 restaurantAI.js
+public/*.html
 
 # Cache
 .cache

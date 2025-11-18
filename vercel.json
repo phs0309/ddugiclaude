@@ -1,22 +1,23 @@
 {
   "regions": ["icn1"],
+  "framework": "nextjs",
   "functions": {
-    "api/chat.js": {
+    "pages/api/chat.js": {
       "maxDuration": 30
     },
-    "api/random.js": {
+    "pages/api/random.js": {
       "maxDuration": 10
     },
-    "api/naver_map_api.js": {
+    "pages/api/naver_map_api.js": {
       "maxDuration": 10
     },
-    "api/basic-auth.js": {
+    "pages/api/basic-auth.js": {
       "maxDuration": 10
     },
-    "api/user-restaurants.js": {
+    "pages/api/user-restaurants.js": {
       "maxDuration": 15
     },
-    "api/nearby-restaurants.js": {
+    "pages/api/nearby-restaurants.js": {
       "maxDuration": 10
     }
   },
@@ -24,10 +25,6 @@
     {
       "source": "/api/random/:count",
       "destination": "/api/random"
-    },
-    {
-      "source": "/",
-      "destination": "/public/index.html"
     }
   ]
 }

@@ -41,7 +41,16 @@
       "WebFetch(domain:docs.claude.com)",
       "Bash(git fetch:*)",
       "Bash(vercel logs:*)",
-      "Bash(vercel env:*)"
+      "Bash(vercel env:*)",
+      "Bash(powershell:*)",
+      "Bash(vercel ls:*)",
+      "Bash(vercel login:*)",
+      "Bash(set VERCEL_USER_AGENT=\"vercel-cli\")",
+      "Bash(if not exist pages mkdir pages)",
+      "Bash(if not exist components mkdir components)",
+      "Bash(if not exist styles mkdir styles)",
+      "Bash(if not exist \"pages\\api\" mkdir \"pages\\api\")",
+      "Bash(copy api*.js pagesapi)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"
